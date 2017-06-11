@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ink people</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+   <link rel="stylesheet" type="text/css" href="css/style_page.css">
+   <meta name="description" content="Тату, Тату магазин">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link href="img/Без имени-44343434.ico" rel="shortcut icon" type="img/x-icon">
+</head>
+<body>
+<div id="wrapper">
+   <div id="content">
+     <header>
+      <div id="logo">
+         <a href="index.html" title="На главную">
+          <img src="img/Слой 9999.png" title="InkPeople.ru" alt="InkPeople.ru">
+          <span>InkPeople</span>
+          </a>
+      </div>
+      <div id="about">
+         <a href="Shares.html" title="Акции от наших партнеров">Акции</a>
+         <a href="Feedback.html" title="Свзаться с нами">Обратная связь</a>
+         <a href="https://vk.com/ipnur" title="Зайти в нашу группу VK">В Контакте</a>
+         <a href="INK_Store.html" title="Приобрести нужный вам товар">Магазин INK</a>
+         <a href="partners.html" title="Всегда рады с ними работать">Партнеры</a>
+      </div>
+      <div id="reg_aust">
+         <a href="" title="Зайти в ваш татуированный кабинет">
+            <div id="btn">
+               Войти
+            </div>
+         </a>
+         <a href="" title="Зарегистрировать свой татуированный аккаунт">
+            <div id="btn">
+               Регистрация
+            </div>
+         </a>
+      </div>
+   </header>
+   </div>
+   
+   <footer>
+      <div id="site_name">
+         <span>InkPeople</span> - Сообщество тату культуры
+      </div>
+      <div id="clear"></div>
+      <div id="footer_menu">
+         <a href="advertising.html" title="Узнать детальнее об рекламе">Реклама</a>
+         <a href="Support_the_project.html" title="Поддержать проект">Поддержать проект</a>
+         <a href="Feedback.html" title="Написать письмо">Обратная связь</a>
+      </div>
+      <div id="rights">
+         <a href="rights.html">Все права защищены &copy; <?=date ('Y')?>2017</a>
+      </div>
+   </footer>
+   </div>
+</body>
+</html>

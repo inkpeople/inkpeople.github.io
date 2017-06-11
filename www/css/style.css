@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css?family=Coustard|Mogra');
+
+/* font-family: 'Mogra', cursive;
+font-family: 'Coustard', serif; 
+*/
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body, html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+   background-color: #000;
+}
+
+a {
+	color: #696969;
+	text-decoration: none;
+	transition: all.6s ease;
+	-ms-transition: all.6s ease;
+	-o-transition: all.6s ease;
+	-moz-transition: all.6s ease;
+	-webkit-transition: all.6s ease;
+}
+
+a:hover {
+	color: #DCDCDC;
+	text-decoration: none;
+	transition: all.6s ease;
+	-ms-transition: all.6s ease;
+	-o-transition: all.6s ease;
+	-moz-transition: all.6s ease;
+	-webkit-transition: all.6s ease;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	width: auto\9; /* ie8 */
+	transition: all 3s ease-out;
+	-ms-transition: all 3s ease-out;
+	-o-transition: all 3s ease-out;
+	-moz-transition: all 3s ease-out;
+	-webkit-transition: all 3s ease-out;
+}
+
+hr {
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid #ccc;
+	margin: 1em 0;
+	padding: 0;
+}
+
+header {
+	float: left;
+	background-color: #000;
+	width: 99.4%;
+	padding: 0.3%;
+	border-bottom: 5px solid #59595a;
+}
+
+header>div#logo>a>img {
+	width: 120px;
+	height: 120px;
+	float: left;
+}
+
+header>div#logo>a {
+	color: white;
+}
+
+header>div#logo>a>span {
+	font-size: 2.5em;
+	margin-left: 10px;
+	font-family: 'Mogra', serif;
+}
+
+@media (min-width: 1886px) {
+	header>div#logo>a>img {
+	margin-left: 10%;
+}
+  #logo {
+  	float: left;
+  	width: 30%;
+  }
+
+  #about {
+  	float: left;
+  	width: 37%;
+  }
+
+  #reg_aust {
+  	float: right;
+  	width: 30%;
+  }
+}  
+
+@media (max-width: 1885px) and (min-width: 1523px) {
+	header>div#logo>a>img {
+	margin-left: 10%;
+}
+  #logo {
+  	float: left;
+  	width: 50%;
+  }
+
+  #about {
+  	visibility: hidden;
+  	display: none;
+  }
+
+  #reg_aust {
+  	float: right;
+  	width: 50%;
+  }
+}  
+
+@media (max-width: 1523px) {
+	header>div#logo>a>img {
+	  margin-left: 5%;
+}
+  #logo {
+  	width: 100%;
+  }
+
+  #about {
+  	visibility: hidden;
+  	display: none;
+  }
+
+  #reg_aust {
+  	visibility: hidden;
+  	display: none;
+  }
+} 
+
+#about {
+	text-align: center;
+	font-family: 'Coustard', serif;
+	font-size: 1.5em;
+	padding-top: 80px;
+}
+
+#about>a {
+	color: white;
+}
+
+#about>a:hover {
+	color: #dfdfdf;
+	border-bottom: 1px solid silver;
+}
+
+#about>a {
+	margin-left: 2.1%;
+}
+
+#reg_aust>a {
+	color: white;
+}
+
+#btn:hover {
+	border-bottom: 2px solid #D3D3D3;
+	margin-top: 4px;
+}
+
+#btn:active {
+	border-bottom: 0;
+	margin-top: 6px;
+}
+
+#btn {
+	float: right;
+	margin-right: 1%;
+	margin-top: 2px;
+	border-radius: 5px;
+	padding: 2px 4px;
+	font-size: 1em;
+	background-color: #696969;
+	text-shadow: #fff 0 0 2px;
+	border-bottom: 4px solid #D3D3D3;
+	font-family: 'Coustard', serif;
+	color: white;
+}
+
+/*Конец стиля для шапки сайта начало футара */
+
+#wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+#content {
+	flex: 1 0 auto;
+}
+
+footer {
+	float: left;
+	background-color: #000;
+	width: 98%;
+	padding: 1%;
+	border-top: 5px solid #59595a;
+	font-family: 'Coustard', serif;
+}
+
+#site_name {
+	margin-right: 5%;
+	color: #f4f4f4;
+	font-size: 1.5em;
+	float: right;
+}
+
+#site_name>span {
+	font-family: 'Mogra', serif;
+}
+
+@media (max-width: 1080px) {
+	#clear {
+		clear: both;
+	}
+}
+
+#footer_menu {
+	font-size: 1.2em;
+}
+
+#footer_menu>a {
+	margin-left: 2%;
+	color: #f4f4f4;
+}
+
+#footer_menu>a:hover {
+	border-bottom: 1px solid silver;
+	color: #fff;
+}
+
+#rights {
+	float: left;
+	margin-left: 43%;
+	font-size: 1.2em;
+	margin-top: 10px;
+}
+
+@media (max-width: 520px) {
+	#site_name {
+		display: none;
+	}
+}
