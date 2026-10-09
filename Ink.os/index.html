@@ -1198,10 +1198,12 @@ async function saveSettings(){ S.settings.id='main'; await idbPut('settings',S.s
 
 /* ====================== NOTIFICATIONS ENGINE ====================== */
 function addNotification(text,kind,refId,extra){
-  const n=Object.assign({id:uid(),text,kind:kind||'info',refId:refId||null,createdAt:Date.now(),read:false},extra||{});
+  const suppressDelivery=!!(extra&&extra.suppressDelivery);
+  const cleanExtra=Object.assign({},extra||{}); delete cleanExtra.suppressDelivery;
+  const n=Object.assign({id:uid(),text,kind:kind||'info',refId:refId||null,createdAt:Date.now(),read:false},cleanExtra);
   S.notifications.unshift(n);
   idbPut('notifications',n);
-  if(kind!=='tip'){
+  if(kind!=='tip'&&!suppressDelivery){
     if(isNative()){ if(!(refId&&_nativeRefs.has(refId))) nativeNow('INK.OS',text); }
     else if(pushOn()){ const c=pushCfg(); if(!(refId&&c.sent[refId])) ntfyPublish('INK.OS',pushSafeText(n.kind,text)).catch(()=>sysNotify(text)); }
     else sysNotify(text);
@@ -4809,6 +4811,63 @@ function computeSmartNotifications(){
 }
 (function(){ const _c=computeAutoNotifications; computeAutoNotifications=function(){ _c(); try{ computeSmartNotifications(); }catch(e){ console.error(e); } renderNotifCount(); }; })();
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&S.settings) computeAutoNotifications(); });
+
+/* ===== Owner alerts for automated session-reminder delivery ===== */
+let inkosReminderDeliveryTimer=null;
+let inkosReminderDeliveryBusy=false;
+async function pollInkOSReminderDelivery(){
+  const user=inkosCurrentUser, clientSdk=inkosSupabase;
+  if(!user||!user.id||!clientSdk||inkosReminderDeliveryBusy)return;
+  inkosReminderDeliveryBusy=true;
+  const key='inkos_reminder_delivery_seen_'+user.id;
+  let state={started:false,keys:[]};
+  try{ const raw=localStorage.getItem(key); if(raw){const parsed=JSON.parse(raw);if(parsed&&typeof parsed==='object')state={started:!!parsed.started,keys:Array.isArray(parsed.keys)?parsed.keys:[]};} }catch(_){}
+  try{
+    const {data,error}=await clientSdk.from('inkos_reminder_log')
+      .select('id,event_id,client_id,reminder_type,channel,status,sent_at,updated_at,last_error,owner_push_sent')
+      .eq('user_id',user.id).in('status',['sent','failed'])
+      .order('updated_at',{ascending:false}).limit(50);
+    if(error)throw error;
+    const rows=Array.isArray(data)?data.slice().reverse():[];
+    const known=new Set(state.keys);
+    const now=Date.now();
+    for(const row of rows){
+      const updatedAt=String(row.updated_at||row.sent_at||'');
+      const fingerprint=String(row.id)+':'+String(row.status)+':'+updatedAt;
+      if(known.has(fingerprint))continue;
+      known.add(fingerprint);
+      const recent=now-(Date.parse(updatedAt)||0)<=10*60*1000;
+      if(state.started||recent){
+        const client=S.clients.find(c=>String(c.id)===String(row.client_id));
+        const when=row.reminder_type==='24h'?'за 24 часа':'за 2 часа';
+        const sent=row.status==='sent';
+        const text=sent
+          ? 'Клиенту '+(client&&client.name?client.name:'')+' отправлено напоминание '+when+'.'
+          : 'Не удалось отправить напоминание '+when+(client&&client.name?' клиенту '+client.name:'')+'. Проверь журнал отправок.';
+        const ref='delivery-'+fingerprint;
+        addNotification(text,sent?'reminder_sent':'reminder_failed',ref,{
+          eventId:row.event_id,clientId:row.client_id,reminderLogId:row.id,
+          suppressDelivery:row.owner_push_sent===true
+        });
+        toast((sent?'✅ ':'⚠️ ')+text);
+      }
+    }
+    state.started=true;
+    state.keys=Array.from(known).slice(-120);
+    localStorage.setItem(key,JSON.stringify(state));
+  }catch(error){
+    const message=String(error&&error.message||error);
+    if(!window.__inkosReminderLogWarned){console.warn('INK.OS reminder status check:',message);window.__inkosReminderLogWarned=true;}
+  }finally{inkosReminderDeliveryBusy=false;}
+}
+function inkosStartReminderDeliveryWatcher(){
+  if(inkosReminderDeliveryTimer!==null)return;
+  inkosReminderDeliveryTimer=setInterval(()=>{if(inkosCurrentUser)pollInkOSReminderDelivery();},60000);
+  window.addEventListener('focus',()=>{if(inkosCurrentUser)pollInkOSReminderDelivery();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&inkosCurrentUser)pollInkOSReminderDelivery();});
+  setTimeout(()=>{if(inkosCurrentUser)pollInkOSReminderDelivery();},2500);
+}
+
 (function(){ const _rs=RENDERERS.settings; RENDERERS.settings=function(){ _rs.apply(this,arguments);
   const c=notifCfg(), perm='Notification' in window?Notification.permission:'unsupported';
   $('#content').insertAdjacentHTML('afterbegin',`<div class="cl-card"><div class="cl-lbl">Уведомления</div>
@@ -5546,7 +5605,7 @@ async function inkosStartUser(user){
   return inkosStartPromise;
 }
 function inkosStartApp(){
-  inkosActiveUserId=inkosCurrentUser&&inkosCurrentUser.id;inkosPendingLegacySnapshot=null;const gate=document.getElementById('inkosAuthGate');gate.classList.add('hidden');gate.innerHTML='';inkosUpdateAccountButton();
+  inkosActiveUserId=inkosCurrentUser&&inkosCurrentUser.id;inkosPendingLegacySnapshot=null;const gate=document.getElementById('inkosAuthGate');gate.classList.add('hidden');gate.innerHTML='';inkosUpdateAccountButton();inkosStartReminderDeliveryWatcher();
   if(!appBooted){const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;runSplash();}
   else{document.getElementById('app').classList.remove('hidden');buildNav();go('dashboard');}
 }
