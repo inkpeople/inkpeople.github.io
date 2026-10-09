@@ -5280,7 +5280,7 @@ async function inkosSubmitAuth(event){
   event.preventDefault();if(!inkosSupabase){inkosShowAuthMessage('Не удалось загрузить модуль входа. Проверь интернет и перезагрузи страницу.');return;}
   const form=event.currentTarget,email=String(form.elements.email.value||'').trim().toLowerCase(),password=String(form.elements.password.value||''),isSignup=inkosAuthMode==='signup',
   displayName=isSignup?String(form.elements.displayName.value||'').trim():'',submit=document.getElementById('inkosAuthSubmit');
-  if(!email||!password){inkosShowAuthMessage('Заполни почту и пароль.');return;}if(password.length<8){inkosShowAuthMessage('Пароль должен содержать не менее 8 символов.');return;}
+  if(!email||!password){inkosShowAuthMessage('Заполни почту и пароль.');return;}if(isSignup&&password.length<8){inkosShowAuthMessage('Пароль должен содержать не менее 8 символов.');return;}
   if(isSignup&&password!==String(form.elements.password2.value||'')){inkosShowAuthMessage('Пароли не совпадают.');return;}if(isSignup&&!displayName){inkosShowAuthMessage('Укажи имя.');return;}
   submit.disabled=true;submit.textContent=isSignup?'Создаём аккаунт…':'Входим…';
   try{
