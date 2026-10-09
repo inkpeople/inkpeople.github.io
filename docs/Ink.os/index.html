@@ -4553,7 +4553,7 @@ function generateAppIcon(){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   try{
     const swUrl=new URL('sw.js',document.baseURI);
-    swUrl.searchParams.set('build','premium-20261009-v4-ai');
+    swUrl.searchParams.set('build','premium-20261009-v5-ai');
     navigator.serviceWorker.register(swUrl,{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('INK.OS: service worker не зарегистрирован',err));
   }catch(e){}
 }
@@ -5180,7 +5180,7 @@ function aiAssistantAsk(text){
   },80);
 }
 function aiAssistantQuick(code){
-  const prompts={finance:'Сколько я заработал в этом месяце?',unpaid:'Покажи неоплаченные сеансы',inactive:'Кому из клиентов давно не писал?',week:'Составь план работы на неделю',savings:'Где можно сэкономить?',marketing:'Напиши рекламный пост про реализм'};
+  const prompts={finance:'Сколько я заработал в этом месяце?',unpaid:'Покажи неоплаченные сеансы',inactive:'Кому из клиентов давно не писал?',week:'Составь план работы на неделю',savings:'Где можно сэкономить?',marketing:'Напиши рекламный пост про реализм',growth:'Проанализируй загруженность и доходность студии',forecast:'Сделай прогноз дохода к концу месяца'};
   aiAssistantAsk(prompts[code]||'Чем ты можешь помочь?');
 }
 function aiAssistantReset(){
@@ -5205,6 +5205,8 @@ RENDERERS.assistant=function(){
           '<button class="ai-quick" onclick="aiAssistantQuick(\'week\')"><span class="ai-q-ic">▦</span><span>План на неделю</span></button>'+
           '<button class="ai-quick" onclick="aiAssistantQuick(\'savings\')"><span class="ai-q-ic">⌁</span><span>Найти экономию</span></button>'+
           '<button class="ai-quick" onclick="aiAssistantQuick(\'marketing\')"><span class="ai-q-ic">✎</span><span>Создать рекламный пост</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'growth\')"><span class="ai-q-ic">↗</span><span>Анализ студии</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'forecast\')"><span class="ai-q-ic">⌁</span><span>Прогноз дохода</span></button>'+
         '</div></section>'+
       '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Данные остаются в этом приложении</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
         '<div id="aiMessages" class="ai-messages" aria-live="polite"></div>'+
