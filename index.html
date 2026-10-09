@@ -620,6 +620,64 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
 @media(max-width:520px){h2{font-size:23px!important;}#content{padding-left:12px!important;padding-right:12px!important;}.card{padding:14px!important;border-radius:15px!important;}.fin-card{padding:13px!important;border-radius:14px!important;}.fin-card .fv{font-size:19px!important;overflow-wrap:anywhere;}.fin-pair{gap:8px!important;}.qa-btn{padding:12px 11px!important;font-size:12px!important;}.analytics-card{padding:12px!important;gap:10px!important;}.analytics-card .n{font-size:18px!important;}.tile{min-height:72px!important;padding:12px 8px!important;}.segmented button{padding:9px 8px!important;font-size:10.5px!important;}.modal{border-radius:17px!important;padding:15px!important;}#bottomnav .navbtn{padding-top:7px!important;padding-bottom:5px!important;}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 
+
+/* INK.OS — FREE LOCAL AI ASSISTANT */
+.assistant-fab{position:fixed;z-index:55;right:18px;bottom:22px;display:flex;align-items:center;gap:9px;padding:12px 16px;border:1px solid rgba(237,190,149,.55);border-radius:999px;background:linear-gradient(135deg,#4a171a,#201112 68%,#17100f);color:#fff0df;font-size:13px;font-weight:800;letter-spacing:.1px;box-shadow:0 8px 30px rgba(0,0,0,.42),0 0 22px rgba(160,38,43,.28);transition:transform .18s,box-shadow .18s}
+.assistant-fab:hover{transform:translateY(-2px);box-shadow:0 10px 34px rgba(0,0,0,.5),0 0 28px rgba(190,70,66,.4)}
+.assistant-fab .fab-spark{font-size:19px;line-height:1}
+#assistantFab.hidden{display:none!important}
+.ai-page{width:100%;max-width:1020px;margin:0 auto;padding:4px 4px 32px;display:flex;flex-direction:column;gap:14px}
+.ai-hero{position:relative;display:flex;align-items:center;gap:14px;padding:18px;border:1px solid rgba(202,112,93,.3);border-radius:18px;overflow:hidden;background:radial-gradient(120% 150% at 5% 0%,rgba(154,48,50,.22),transparent 60%),linear-gradient(135deg,#1a1514,#100e0d);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.ai-hero-mark{width:54px;height:54px;flex-shrink:0;display:grid;place-items:center;border:1px solid rgba(237,190,149,.4);border-radius:16px;background:linear-gradient(145deg,#542124,#251617);color:#f0c9a6;font-size:27px;box-shadow:0 0 22px rgba(155,47,52,.22)}
+.ai-hero-copy{flex:1;min-width:0}
+.ai-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#c99274;text-transform:uppercase;margin-bottom:4px}
+.ai-hero h2{font-size:23px;line-height:1.15;margin:0 0 5px;color:#f6eee8}
+.ai-hero p{font-size:12px;color:#b6aaa4;line-height:1.5;margin:0;max-width:620px}
+.ai-local-badge{align-self:flex-start;white-space:nowrap;border:1px solid rgba(72,191,132,.27);border-radius:999px;background:rgba(44,160,100,.09);color:#9ee3b8;font-size:10px;font-weight:800;padding:7px 10px}
+.ai-quick-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px}
+.ai-quick-title strong{font-size:13px}
+.ai-quick-title span{font-size:11px;color:var(--text-dim)}
+.ai-quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ai-quick{min-height:58px;display:flex;align-items:center;gap:10px;padding:10px 12px;text-align:left;white-space:normal;border:1px solid #392725;border-radius:12px;background:linear-gradient(145deg,#1b1716,#12100f);color:#e9dfd8;font-size:12px;font-weight:700;line-height:1.35;transition:background .16s,border-color .16s,transform .16s}
+.ai-quick:hover{border-color:#9f4e46;background:#271718;transform:translateY(-1px)}
+.ai-quick .ai-q-ic{width:29px;height:29px;flex-shrink:0;display:grid;place-items:center;border-radius:9px;background:rgba(179,67,61,.13);color:#e7a18f;font-size:16px}
+.ai-chat-shell{min-height:360px;height:min(54vh,590px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #352624;border-radius:16px;background:#100f0e;box-shadow:0 12px 32px rgba(0,0,0,.15)}
+.ai-chat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 15px;border-bottom:1px solid #2b2220;background:#171312}
+.ai-chat-title{font-size:12px;font-weight:800;display:flex;align-items:center;gap:8px}
+.ai-live-dot{width:7px;height:7px;border-radius:50%;background:#63c991;box-shadow:0 0 10px rgba(99,201,145,.45)}
+.ai-chat-meta{display:flex;align-items:center;gap:8px}
+.ai-chat-meta small{font-size:10px;color:#8e817b}
+.ai-reset{height:29px;padding:0 9px;border:1px solid #3b2b29;border-radius:8px;background:#1b1514;color:#cdbdb3;font-size:11px}
+.ai-messages{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:11px;padding:14px;scroll-behavior:smooth}
+.ai-message{max-width:min(88%,720px);padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.ai-message.assistant{align-self:flex-start;background:#1d1817;border:1px solid #382927;color:#e8ded8;border-top-left-radius:4px}
+.ai-message.user{align-self:flex-end;background:linear-gradient(135deg,#512124,#34191b);border:1px solid #67312f;color:#fff0e8;border-top-right-radius:4px}
+.ai-message-name{margin-bottom:4px;font-size:9px;font-weight:900;letter-spacing:.7px;text-transform:uppercase;color:#c98b76}
+.ai-message.user .ai-message-name{color:#e8bca9}
+.ai-message-text{white-space:normal}
+.ai-chat-form{display:flex;align-items:flex-end;gap:8px;padding:11px;border-top:1px solid #2b2220;background:#171312}
+.ai-chat-input{flex:1;min-width:0;min-height:43px;max-height:110px;resize:vertical;padding:11px 12px;border:1px solid #3c2b29;border-radius:11px;background:#0f0d0c;color:#f4e9e1;outline:none;font-size:13px;line-height:1.35}
+.ai-chat-input:focus{border-color:#9a5147;box-shadow:0 0 0 3px rgba(169,68,61,.11)}
+.ai-send{height:43px;min-width:46px;padding:0 14px;border:1px solid #6f302d;border-radius:11px;background:linear-gradient(180deg,#a94940,#732925);color:#fff;font-size:15px;font-weight:900}
+.ai-note{font-size:11px;color:#8f837d;line-height:1.5;padding:0 2px}
+@media(max-width:760px){
+ .assistant-fab{right:12px;bottom:calc(78px + env(safe-area-inset-bottom));padding:11px 13px}
+ .assistant-fab .fab-label{font-size:12px}
+ .ai-hero{align-items:flex-start;flex-wrap:wrap;padding:15px}
+ .ai-hero-mark{width:45px;height:45px;border-radius:13px;font-size:23px}
+ .ai-hero h2{font-size:20px}
+ .ai-local-badge{margin-left:59px;margin-top:-6px}
+ .ai-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .ai-quick{min-height:57px;padding:9px;font-size:11px;gap:7px}
+ .ai-chat-shell{height:46vh;min-height:310px}
+ .ai-message{max-width:95%;font-size:12.5px}
+}
+@media(max-width:380px){
+ .ai-quick-grid{grid-template-columns:1fr}
+ .ai-hero p{font-size:11px}
+ .ai-chat-meta small{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -667,6 +725,7 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
     <div id="content"></div>
   </div>
   <div id="bottomnav"></div>
+  <button id="assistantFab" class="assistant-fab" type="button" onclick="go('assistant')" aria-label="Открыть ИИ-помощника"><span class="fab-spark">✦</span><span class="fab-label">ИИ-помощник</span></button>
 </div>
 
 <div id="moreSheet"><div class="sheet" id="moreSheetInner"></div></div>
@@ -1117,7 +1176,7 @@ function addNotification(text,kind,refId,extra){
 async function sysNotify(text){
   if(!('Notification' in window)||Notification.permission!=='granted') return;
   try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
-    if(reg&&reg.showNotification){ await reg.showNotification('INK.OS',{body:text,icon:'icon-192.png',badge:'icon-192.png',tag:'ink-'+Date.now()}); return; } }catch(e){}
+    if(reg&&reg.showNotification){ await reg.showNotification('INK.OS',{body:text,icon:'icon.svg',badge:'icon.svg',tag:'ink-'+Date.now()}); return; } }catch(e){}
   try{ new Notification('INK.OS',{body:text}); }catch(e){}
 }
 function requestNotifPermission(){
@@ -1236,6 +1295,7 @@ const NAV=[
   {id:'clients',label:'Клиенты',icon:'clients'},
   {id:'projects',label:'Проекты',icon:'projects'},
   {id:'finance',label:'Финансы',icon:'finance'},
+  {id:'assistant',label:'ИИ-помощник',icon:'help'},
   {id:'training',label:'Менторство',icon:'training'},
   {id:'inventory',label:'Склад',icon:'inventory'},
   {id:'guestspot',label:'Guest Spot',icon:'guestspot'},
@@ -1292,7 +1352,8 @@ const RENDERERS={};
 function go(route){
   if($('#modalOverlay').classList.contains('client-open')) closeModal();
   currentRoute=route;
-  $$('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
+  const assistantFab=$('#assistantFab'); if(assistantFab) assistantFab.classList.toggle('hidden',route==='assistant');
+  $('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   $$('#bottomnav .navbtn').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   {const nv=NAV.find(n=>n.id===route)||{}; $('#topbarSub').innerHTML=(nv.icon?icon(nv.icon):'')+(nv.label||''); $('#topbar').dataset.route=route;}
   $('#tipsBtn').classList.toggle('hidden', route!=='dashboard');
@@ -4492,7 +4553,7 @@ function generateAppIcon(){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   try{
     const swUrl=new URL('sw.js',document.baseURI);
-    swUrl.searchParams.set('build','premium-20261009-v2');
+    swUrl.searchParams.set('build','premium-20261009-v3-ai');
     navigator.serviceWorker.register(swUrl,{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('INK.OS: service worker не зарегистрирован',err));
   }catch(e){}
 }
@@ -4906,6 +4967,255 @@ $('#notifBtn').onclick=()=>{
   $$('[data-copy]').forEach(b=>b.onclick=()=>{ const n=S.notifications.find(x=>x.id===b.dataset.copy), e=S.events.find(x=>x.id===n.eventId), c=S.clients.find(x=>x.id===n.clientId);
     copyText(`Здравствуйте${c?', '+c.name.split(' ')[0]:''}! Напоминаю, что ${e&&e.date===todayISO()?'сегодня':'завтра'} в ${e&&e.start||''} ждём вас на сеанс. Подтвердите, пожалуйста, что всё в силе 🙏`); });
 };
+
+/* ====================== INK.OS LOCAL AI ASSISTANT ======================
+   No paid API and no client data is sent to an external model.
+   Answers below are computed from CRM records and local templates.
+*/
+function aiAssistantLastVisit(client){
+  if(client && client.lastVisit) return client.lastVisit;
+  const today=todayISO();
+  const completed=(S.events||[]).filter(e=>e.clientId===client.id && e.date && e.date<today && ['completed','done','finished','Завершён','Завершено'].includes(String(e.status||'')));
+  if(completed.length) return completed.sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0].date;
+  if(Number(client.visits||0)===1 && client.firstVisit) return client.firstVisit;
+  return '';
+}
+function aiAssistantMonth(text){
+  const now=new Date();
+  let year=now.getFullYear(), month=now.getMonth();
+  const q=String(text||'').toLowerCase();
+  const y=q.match(/\b(20\d{2})\b/);
+  if(y) year=Number(y[1]);
+  if(/прошл(?:ый|ого)?\s+месяц/.test(q)){
+    month=now.getMonth()-1;
+    if(month<0){month=11;year--;}
+  }else{
+    const names=['январ','феврал','март','апрел','май','июн','июл','август','сентябр','октябр','ноябр','декабр'];
+    for(let i=0;i<names.length;i++){if(q.includes(names[i])){month=i;if(!y&&month>now.getMonth())year--;break;}}
+  }
+  const d=new Date(year,month,1);
+  return {key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),date:d,label:d.toLocaleDateString('ru-RU',{month:'long',year:'numeric'}),days:new Date(d.getFullYear(),d.getMonth()+1,0).getDate()};
+}
+function aiAssistantCategoryLabel(key){
+  if(!key) return 'Без категории';
+  try{
+    if(typeof INCOME_CATEGORIES!=='undefined'&&INCOME_CATEGORIES[key]) return INCOME_CATEGORIES[key];
+    if(typeof EXPENSE_CATEGORIES!=='undefined'&&EXPENSE_CATEGORIES[key]) return EXPENSE_CATEGORIES[key];
+  }catch(e){}
+  return String(key);
+}
+function aiAssistantFinanceAnswer(text){
+  const period=aiAssistantMonth(text);
+  const items=(Array.isArray(S.finance)?S.finance:[]).filter(f=>f&&f.date&&String(f.date).slice(0,7)===period.key);
+  const income=items.filter(f=>f.type==='income').reduce((sum,f)=>sum+Number(f.amount||0),0);
+  const expense=items.filter(f=>f.type==='expense').reduce((sum,f)=>sum+Number(f.amount||0),0);
+  const profit=income-expense;
+  const expenseCats={};
+  items.filter(f=>f.type==='expense').forEach(f=>{const k=aiAssistantCategoryLabel(f.category);expenseCats[k]=(expenseCats[k]||0)+Number(f.amount||0);});
+  const biggest=Object.entries(expenseCats).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  let answer='Финансы за '+period.label+':\n\nДоход: '+fmtMoney(income)+'\nРасходы: '+fmtMoney(expense)+'\nЧистый результат: '+fmtMoney(profit)+'\nОпераций в журнале: '+items.length+'.';
+  if(!items.length) answer='В финансовом журнале INK.OS за '+period.label+' пока нет операций. Поэтому я не буду придумывать сумму заработка. Добавь доходы и расходы в разделе «Финансы», и я рассчитаю результат.';
+  if(biggest.length) answer+='\n\nКрупнейшие внесённые расходы:\n'+biggest.map(x=>'• '+x[0]+': '+fmtMoney(x[1])).join('\n');
+  if(/прогноз|к концу месяца|ожидаем.*доход|сколько.*получится/.test(String(text).toLowerCase())){
+    const now=new Date();
+    if(period.key===todayISO().slice(0,7)){
+      const day=Math.max(1,now.getDate());
+      const predicted=Math.round(income/day*period.days);
+      answer+='\n\nПростой прогноз выручки к концу месяца: около '+fmtMoney(predicted)+', если текущий темп сохранится. Это линейная оценка по уже внесённым доходам, не гарантия будущей выручки.';
+    }else answer+='\n\nПрогноз по темпу не рассчитан: выбран не текущий месяц.';
+  }
+  return answer;
+}
+function aiAssistantSavingsAnswer(){
+  const p=aiAssistantMonth('этот месяц');
+  const items=(Array.isArray(S.finance)?S.finance:[]).filter(f=>f&&f.type==='expense'&&f.date&&String(f.date).slice(0,7)===p.key);
+  if(!items.length) return 'За текущий месяц в журнале INK.OS пока нет записанных расходов. Добавь их в разделе «Финансы», чтобы я мог найти крупнейшие статьи экономии. Не буду советовать сокращать расходы на основании отсутствующих данных.';
+  const groups={};
+  items.forEach(f=>{const k=aiAssistantCategoryLabel(f.category);groups[k]=(groups[k]||0)+Number(f.amount||0);});
+  const top=Object.entries(groups).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const sum=items.reduce((n,f)=>n+Number(f.amount||0),0);
+  return 'Посмотрел внесённые расходы за '+p.label+'. Всего: '+fmtMoney(sum)+'.\n\nСамые крупные статьи:\n'+top.map((x,i)=>(i+1)+'. '+x[0]+' — '+fmtMoney(x[1])).join('\n')+'\n\nЧто проверить:\n• Сравнить цены поставщиков по самым крупным категориям.\n• Отметить регулярные подписки и покупки, которые можно отложить.\n• Не урезать стерильные одноразовые материалы и безопасность ради экономии.\n\nЭто точки для проверки, а не утверждение, что расход лишний.';
+}
+function aiAssistantInactiveClients(){
+  const today=todayISO();
+  return (Array.isArray(S.clients)?S.clients:[]).map(c=>{
+    const last=aiAssistantLastVisit(c);
+    const days=last?daysBetween(last,today):null;
+    return {client:c,last,days};
+  }).filter(x=>x.days!==null?x.days>=60:x.client.status==='Давно не был')
+    .sort((a,b)=>(b.days||9999)-(a.days||9999));
+}
+function aiAssistantInactiveAnswer(){
+  const list=aiAssistantInactiveClients();
+  if(!list.length) return 'Не нашёл клиентов с последним визитом 60 дней назад или раньше. Проверь, заполнены ли у карточек клиентов поля «Последний визит» и «Количество посещений».';
+  const top=list.slice(0,12);
+  return 'Клиенты, которым можно аккуратно напомнить о себе (60+ дней без визита): '+list.length+'.\n\n'+top.map((x,i)=>(i+1)+'. '+x.client.name+' — '+(x.days===null?'статус «Давно не был»':x.days+' дн. без визита'+(x.last?', последний: '+fmtDate(x.last):''))+'; посещений: '+Number(x.client.visits||0)+(x.client.totalSum?' ; сумма визитов: '+fmtMoney(x.client.totalSum):'')).join('\n')+'\n\nПример сообщения:\n«Привет, '+(top[0].client.name||'')+'! Давно не виделись 🖤 Как насчёт продолжить тату-проект или подобрать новую идею? Если актуально — напиши, обсудим эскиз и удобные даты».\n\nЯ только подготовил список и текст. Сообщения клиентам автоматически не отправлялись.';
+}
+function aiAssistantOutstanding(){
+  const excluded=['cancelled','canceled','noshow','refunded','void','отменена','отменено'];
+  return (Array.isArray(S.events)?S.events:[]).map(e=>{
+    const status=String(e.status||'').toLowerCase();
+    const cost=Number(e.cost||0);
+    const ps=(Array.isArray(S.payments)?S.payments:[]).filter(p=>p&&p.eventId===e.id&&!['cancelled','canceled','refunded','void'].includes(String(p.status||'').toLowerCase()));
+    const paidFromPayments=ps.reduce((n,p)=>n+Number(p.amount||0),0);
+    const deposit=Number(e.bookingAmount||0);
+    const paid=Math.max(deposit,paidFromPayments);
+    return {event:e,cost,paid,left:Math.max(0,cost-paid),client:(S.clients||[]).find(c=>c.id===e.clientId)};
+  }).filter(x=>x.cost>0 && x.left>0 && !excluded.includes(String(x.event.status||'').toLowerCase()) && ['session','correction','model'].includes(x.event.type))
+    .sort((a,b)=>String(a.event.date||'').localeCompare(String(b.event.date||'')));
+}
+function aiAssistantOutstandingAnswer(){
+  const list=aiAssistantOutstanding();
+  if(!list.length) return 'По данным INK.OS я не нашёл сеансов с указанной стоимостью и незакрытым остатком. Это не гарантирует, что все расчёты завершены: проверь, что стоимость сеанса и поступившие оплаты внесены в карточки.';
+  return 'По внесённой в INK.OS стоимости и зарегистрированным оплатам есть '+list.length+' сеанс(ов) с остатком:\n\n'+list.slice(0,12).map((x,i)=>(i+1)+'. '+(x.client?x.client.name:'Клиент не указан')+' — '+(x.event.date?fmtDate(x.event.date+'T12:00:00'):'дата не указана')+'\n   Стоимость: '+fmtMoney(x.cost)+'; учтено оплаты: '+fmtMoney(x.paid)+'; остаток: '+fmtMoney(x.left)).join('\n')+'\n\nПроверь список перед напоминанием: если клиент уже заплатил вне CRM, отметь оплату, чтобы не отправить ошибочное сообщение.';
+}
+function aiAssistantUpcomingAnswer(text){
+  const today=todayISO();
+  const d=new Date();d.setDate(d.getDate()+7);
+  const end=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const onlyToday=/сегодня/.test(String(text).toLowerCase());
+  const items=(Array.isArray(S.events)?S.events:[]).filter(e=>e&&e.date&&e.date>=today&&(onlyToday?e.date===today:e.date<=end)&&!['cancelled','canceled','noshow'].includes(String(e.status||'').toLowerCase()))
+    .sort((a,b)=>(String(a.date)+String(a.start||'')).localeCompare(String(b.date)+String(b.start||'')));
+  if(!items.length) return onlyToday?'На сегодня в календаре записей нет.':'В ближайшие 7 дней в календаре не нашёл записей.';
+  return (onlyToday?'Записи на сегодня':'Ближайшие записи на 7 дней')+' ('+items.length+'):\n\n'+items.slice(0,14).map((e,i)=>{
+    const c=(S.clients||[]).find(x=>x.id===e.clientId);
+    const label=(typeof EVENT_TYPES!=='undefined'&&EVENT_TYPES[e.type]?EVENT_TYPES[e.type].label:e.title||e.type||'Событие');
+    return (i+1)+'. '+fmtDate(e.date+'T12:00:00')+' '+(e.start||'')+' — '+label+(c?' · '+c.name:'')+(Number(e.cost||0)>0?' · '+fmtMoney(e.cost):'');
+  }).join('\n')+(items.length>14?'\n…и ещё '+(items.length-14)+' записей.':'');
+}
+function aiAssistantClientAnswer(text){
+  const q=String(text||'').toLowerCase();
+  const all=Array.isArray(S.clients)?S.clients:[];
+  let client=all.find(c=>c.name&&q.includes(String(c.name).toLowerCase()));
+  if(!client && /клиент|найди|найти|информац|профиль|контакт/.test(q)){
+    const tail=q.replace(/^.*?(?:клиент(?:а|у|ом|е)?|найди|найти|информация о|профиль|контакт(?:ы)?)(?:\s+|:)+/,'').trim();
+    const words=tail.split(/\s+/).filter(w=>w.length>=3);
+    const matches=all.filter(c=>words.some(w=>String(c.name||'').toLowerCase().includes(w)));
+    if(matches.length===1) client=matches[0];
+  }
+  if(!client) return null;
+  const last=aiAssistantLastVisit(client);
+  const next=(Array.isArray(S.events)?S.events:[]).filter(e=>e.clientId===client.id&&e.date>=todayISO()&&!['cancelled','canceled','noshow'].includes(String(e.status||'').toLowerCase())).sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||'')))[0];
+  const contacts=[];
+  if(client.phone) contacts.push('Телефон: '+client.phone);
+  if(client.telegram) contacts.push('Telegram: '+client.telegram);
+  if(client.instagram) contacts.push('Instagram: '+client.instagram);
+  if(client.vk) contacts.push('ВКонтакте: '+client.vk);
+  if(client.whatsapp) contacts.push('WhatsApp: '+client.whatsapp);
+  return 'Карточка клиента: '+client.name+'\n\nСтатус: '+(client.status||'не указан')+'\nПосещений: '+Number(client.visits||0)+'\nСумма по карточке: '+fmtMoney(client.totalSum||0)+'\nПоследний визит: '+(last?fmtDate(last+'T12:00:00'):'не указан')+'\nСледующий контакт: '+(client.nextContact?fmtDate(client.nextContact+'T12:00:00'):'не назначен')+'\nБлижайшая запись: '+(next?fmtDate(next.date+'T12:00:00')+' '+(next.start||''):'не найдена')+'\n\n'+(contacts.length?contacts.join('\n'):'Контакты в карточке не заполнены.')+(client.comment?'\nЗаметка: '+client.comment:'')+(client.quickNotes&&client.quickNotes.length?'\nБыстрые заметки: '+client.quickNotes.join(', '):'');
+}
+function aiAssistantMarketingAnswer(text){
+  const q=String(text||'').toLowerCase();
+  const styles=[['чикано','чикано'],['реализм','реализм'],['графика','графика'],['акварель','акварель'],['blackwork','blackwork'],['аниме','аниме'],['японск','японский стиль']];
+  let style='татуировка с идеей и характером';
+  for(const x of styles){if(q.includes(x[0])){style=x[1];break;}}
+  if(/акци|скидк|предложен|распродаж/.test(q)){
+    return 'Идея акции без выдуманных цен и дат:\n\n🔥 '+style.toUpperCase()+': подбери свою идею для следующей татуировки.\n\nХочется обновить образ или начать большой проект? Обсудим эскиз, размер и место нанесения, а затем подберём удобную дату.\n\n🖤 Для записи напиши в личные сообщения.\n\nПеред публикацией добавь реальные условия акции: сумму в рублях, срок действия, количество мест и ограничения. Я не стал придумывать скидку или свободные даты.';
+  }
+  return 'Черновик рекламного поста:\n\n🔥 ТВОЯ ИДЕЯ. ТВОЯ ИСТОРИЯ. ТВОЯ ТАТУИРОВКА.\n\n'+(style==='татуировка с идеей и характером'?'Подберём стиль, композицию и место нанесения под твою идею.':('Работаю в стиле «'+style+'» — от идеи и эскиза до готовой работы.'))+'\n\nНеобязательно приходить с готовым рисунком. Расскажи, что хочешь передать через татуировку, — вместе найдём подходящее решение.\n\n🖤 Есть идея? Напиши в личные сообщения, обсудим эскиз и удобную дату.\n\nПеред публикацией лучше добавить фото собственной работы, свободные даты и ключевые фразы под конкретный город/услугу.';
+}
+function aiAssistantWeekAnswer(){
+  const dates=[];
+  for(let i=0;i<7;i++){
+    const d=new Date();d.setDate(d.getDate()+i);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const ev=(S.events||[]).filter(e=>e.date===key&&!['cancelled','canceled','noshow'].includes(String(e.status||'').toLowerCase()));
+    dates.push({key,day:d.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'}),events:ev});
+  }
+  const tasks=(S.tasks||[]).filter(t=>!t.done);
+  const inactive=aiAssistantInactiveClients().length;
+  const busy=dates.reduce((n,d)=>n+d.events.length,0);
+  return 'План на ближайшие 7 дней на основе календаря INK.OS:\n\n'+dates.map(d=>'• '+d.day+': '+(d.events.length?d.events.length+' событ. — '+d.events.slice(0,2).map(e=>{const c=(S.clients||[]).find(x=>x.id===e.clientId);return (e.start?e.start+' ':'')+(c?c.name:(e.title||((typeof EVENT_TYPES!=='undefined'&&EVENT_TYPES[e.type])?EVENT_TYPES[e.type].label:'событие')));}).join(', '):'нет записей в календаре — можно выделить окно для эскизов/контента')).join('\n')+'\n\nЗаписей в календаре: '+busy+'. Незавершённых задач: '+tasks.length+'. Клиентов, которым можно написать повторно: '+inactive+'.\n\nПредлагаемый порядок:\n1. Подтвердить ближайшие записи.\n2. Выделить свободный блок для эскизов и фотосъёмки работ.\n3. Написать 3–5 клиентам из списка повторного контакта.\n4. Под конец недели проверить доходы и расходы в разделе «Финансы».';
+}
+function aiAssistantGrowthAnswer(){
+  const p=aiAssistantMonth('этот месяц');
+  const finance=(S.finance||[]).filter(f=>f&&f.date&&String(f.date).slice(0,7)===p.key);
+  const income=finance.filter(f=>f.type==='income').reduce((n,f)=>n+Number(f.amount||0),0);
+  const expense=finance.filter(f=>f.type==='expense').reduce((n,f)=>n+Number(f.amount||0),0);
+  const clients=(S.clients||[]).length;
+  const repeat=(S.clients||[]).filter(c=>Number(c.visits||0)>1).length;
+  const upcoming=(S.events||[]).filter(e=>e.date>=todayISO()&&!['cancelled','canceled','noshow'].includes(String(e.status||'').toLowerCase())).length;
+  const inactive=aiAssistantInactiveClients().length;
+  const styles={};
+  (S.tattooWork||[]).forEach(w=>{if(w.style)styles[w.style]=(styles[w.style]||0)+1;});
+  const popular=Object.entries(styles).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return 'Срез по данным INK.OS:\n\nКлиентов в базе: '+clients+'\nПовторных клиентов (2+ посещения): '+repeat+'\nКлиентов для повторного контакта: '+inactive+'\nПредстоящих записей в календаре: '+upcoming+'\nФинансовый результат за '+p.label+': '+fmtMoney(income-expense)+' (доход '+fmtMoney(income)+', расходы '+fmtMoney(expense)+').'+(popular.length?'\nЧастые стили в записях о работах: '+popular.map(x=>x[0]+' ('+x[1]+')').join(', ')+'.':'')+'\n\nЧто сделать в первую очередь:\n1. Написать клиентам из списка повторного контакта и предложить продолжить проект.\n2. После каждого сеанса заносить оплату и стоимость — тогда финансовый анализ будет точнее.\n3. Публиковать реальные фото завершённых работ с описанием стиля, размера и этапа проекта.\n4. Проверить, какие публикации приводят к обращениям и записям, а не только к лайкам.';
+}
+function aiAssistantAnswer(text){
+  const q=String(text||'').trim().toLowerCase();
+  if(!q) return 'Напиши вопрос о финансах, клиентах, записях или продвижении студии.';
+  if(/^(привет|здравствуй|добрый день|доброе утро|добрый вечер|здарова)\b/.test(q)) return 'Привет! Я помощник INK.OS. Могу посчитать доходы и расходы, найти записи, показать клиентов для повторного контакта, составить план недели или подготовить черновик поста. Ответы основаны на данных, которые уже внесены в приложение.';
+  if(/неоплачен|долг|задолж|остаток по оплат|кто не оплат|доплат/.test(q)) return aiAssistantOutstandingAnswer();
+  if(/давно не был|давно не приход|вернуть клиент|повторн.*клиент|кому написать|кому стоит написать|кто.*не приход|не был.*месяц|спящ.*клиент/.test(q)) return aiAssistantInactiveAnswer();
+  if(/предстоящ|ближайш.*запис|покажи запис|сколько запис|расписан|календар|сеанс.*сегодня/.test(q)) return aiAssistantUpcomingAnswer(q);
+  if(/план.*недел|рабоч.*недел|на неделю|распланируй/.test(q)) return aiAssistantWeekAnswer();
+  if(/реклам|напиши.*пост|создай.*пост|контент|акци|скидк|публикац|идея для пост/.test(q)) return aiAssistantMarketingAnswer(q);
+  if(/сэконом|сократ.*расход|на чём можно сэкономить|где сэкономить|оптимизир.*расход/.test(q)) return aiAssistantSavingsAnswer();
+  const client=aiAssistantClientAnswer(text);
+  if(client && /клиент|найди|найти|информац|профиль|контакт|кто такой|последн.*визит/.test(q)) return client;
+  if(/заработ|доход|выручк|прибыл|финанс|расход|прогноз|сколько.*получ/.test(q)) return aiAssistantFinanceAnswer(text);
+  if(/развити|увелич.*запис|рост|загружен|доходност|как.*больше.*клиент|как.*больше.*запис|анализ.*студ/.test(q)) return aiAssistantGrowthAnswer();
+  if(/клиент|найди|найти|информац|профиль|контакт/.test(q)) return 'В базе INK.OS сейчас '+(S.clients||[]).length+' клиент(ов). Чтобы открыть карточку, напиши, например: «Найди клиента Иван Иванов». Я покажу только поля, которые заполнены в его карточке.';
+  return 'Я работаю в бесплатном локальном режиме: считаю показатели по данным INK.OS и помогаю с типовыми задачами, но пока не подключена полноценная генеративная языковая модель.\n\nПопробуй спросить:\n• «Сколько я заработал в сентябре?»\n• «Покажи неоплаченные сеансы»\n• «Кому давно не писал?»\n• «Составь план на неделю»\n• «Где можно сэкономить?»\n• «Напиши рекламный пост про реализм».';
+}
+function aiAssistantPaintMessages(){
+  const host=$('#aiMessages');
+  if(!host) return;
+  const history=window.__inkosAssistantHistory||[];
+  host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':'INK.OS · помощник')+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
+  host.scrollTop=host.scrollHeight;
+}
+function aiAssistantAsk(text){
+  const q=String(text||'').trim();
+  if(!q) return;
+  const history=window.__inkosAssistantHistory=window.__inkosAssistantHistory||[];
+  history.push({role:'user',text:q});
+  aiAssistantPaintMessages();
+  const input=$('#aiChatInput');if(input)input.value='';
+  const send=$('#aiSendBtn');if(send)send.disabled=true;
+  setTimeout(function(){
+    history.push({role:'assistant',text:aiAssistantAnswer(q)});
+    aiAssistantPaintMessages();
+    const currentSend=$('#aiSendBtn');if(currentSend)currentSend.disabled=false;
+  },80);
+}
+function aiAssistantQuick(code){
+  const prompts={finance:'Сколько я заработал в этом месяце?',unpaid:'Покажи неоплаченные сеансы',inactive:'Кому из клиентов давно не писал?',week:'Составь план работы на неделю',savings:'Где можно сэкономить?',marketing:'Напиши рекламный пост про реализм'};
+  aiAssistantAsk(prompts[code]||'Чем ты можешь помочь?');
+}
+function aiAssistantReset(){
+  window.__inkosAssistantHistory=[{role:'assistant',text:'Чат очищен. Чем займёмся?'}];
+  aiAssistantPaintMessages();
+}
+RENDERERS.assistant=function(){
+  const history=window.__inkosAssistantHistory=window.__inkosAssistantHistory||[];
+  if(!history.length) history.push({role:'assistant',text:'Привет! Я помощник INK.OS. Задавай вопрос обычным языком — посчитаю показатели по внесённым данным, помогу найти клиента или запись и подготовлю идеи для продвижения.'});
+  $('#content').innerHTML=
+    '<div class="ai-page">'+
+      '<section class="ai-hero">'+
+        '<div class="ai-hero-mark">✦</div>'+
+        '<div class="ai-hero-copy"><div class="ai-eyebrow">INK.OS INTELLIGENCE</div><h2>ИИ-помощник</h2><p>Финансы, клиенты, записи и развитие тату-студии — в одном чате. Ответы по данным твоей CRM.</p></div>'+
+        '<div class="ai-local-badge">● БЕСПЛАТНЫЙ РЕЖИМ</div>'+
+      '</section>'+
+      '<section><div class="ai-quick-title"><strong>Быстрые действия</strong><span>Нажми, чтобы начать</span></div>'+
+        '<div class="ai-quick-grid">'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'finance\')"><span class="ai-q-ic">₽</span><span>Доход, расходы и прибыль</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'unpaid\')"><span class="ai-q-ic">◷</span><span>Неоплаченные сеансы</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'inactive\')"><span class="ai-q-ic">↺</span><span>Вернуть старых клиентов</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'week\')"><span class="ai-q-ic">▦</span><span>План на неделю</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'savings\')"><span class="ai-q-ic">⌁</span><span>Найти экономию</span></button>'+
+          '<button class="ai-quick" onclick="aiAssistantQuick(\'marketing\')"><span class="ai-q-ic">✎</span><span>Создать рекламный пост</span></button>'+
+        '</div></section>'+
+      '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Данные остаются в этом приложении</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
+        '<div id="aiMessages" class="ai-messages" aria-live="polite"></div>'+
+        '<form id="aiChatForm" class="ai-chat-form"><input id="aiChatInput" class="ai-chat-input" type="text" autocomplete="off" maxlength="600" placeholder="Например: сколько я заработал в сентябре?"><button id="aiSendBtn" class="ai-send" type="submit" aria-label="Отправить сообщение">➤</button></form>'+
+      '</section>'+
+      '<div class="ai-note">Бесплатная версия работает локально, без внешнего ИИ API и без отправки данных клиентов на сторонний сервис. Финансовые ответы считаются по внесённым операциям; тексты и рекомендации пока формируются локальными правилами, а не полноценной нейросетью.</div>'+
+    '</div>';
+  aiAssistantPaintMessages();
+  $('#aiChatForm').onsubmit=function(e){e.preventDefault();aiAssistantAsk($('#aiChatInput').value);};
+};
+
 </script>
 </body>
 </html>
