@@ -5191,26 +5191,99 @@ function aiAssistantAnswer(text){
   if(/клиент|найди|найти|информац|профиль|контакт/.test(q)) return 'В базе INK.OS сейчас '+(S.clients||[]).length+' клиент(ов). Чтобы открыть карточку, напиши, например: «Найди клиента Иван Иванов». Я покажу только поля, которые заполнены в его карточке.';
   return 'Я работаю в бесплатном локальном режиме: считаю показатели по данным INK.OS и помогаю с типовыми задачами, но пока не подключена полноценная генеративная языковая модель.\n\nПопробуй спросить:\n• «Сколько я заработал в сентябре?»\n• «Покажи неоплаченные сеансы»\n• «Кому давно не писал?»\n• «Составь план на неделю»\n• «Где можно сэкономить?»\n• «Напиши рекламный пост про реализм».';
 }
+function aiAssistantBuildContext(){
+  const fieldSets={
+    clients:['name','status','styles','style','zones','zone','visits','totalSum','firstVisit','lastVisit','nextContact','source','city','country'],
+    events:['title','name','label','date','eventDate','startAt','start','startTime','time','endAt','end','type','status','clientName','amount','sum','price','paid','paidAmount','paymentStatus','category','duration'],
+    payments:['date','createdAt','type','amount','sum','price','paid','paidAmount','status','paymentStatus','method','category','clientName','direction','currency'],
+    finance:['date','createdAt','type','amount','sum','price','cost','status','method','category','title','name','direction','incomeType','expenseType','currency'],
+    tattooWork:['name','title','date','status','style','styles','zone','zones','price','sum','paid','paidAmount','clientName','type'],
+    photos:['title','name','date','createdAt','type','clientName','status'],
+    students:['name','status','course','stage','date','createdAt','updatedAt'],
+    homework:['title','name','status','deadline','priority','completed','date','createdAt'],
+    inventory:['name','title','category','quantity','stock','cost','price','unitCost','salePrice','sku','updatedAt'],
+    cartridgeUsage:['date','createdAt','name','type','quantity','count','cost','price'],
+    healingFilmSales:['date','createdAt','name','quantity','count','amount','sum','price','cost'],
+    guestSpots:['name','city','country','date','status','price','amount'],
+    cities:['name','city','country','count'],
+    reminders:['title','name','date','deadline','status','type','completed'],
+    tasks:['title','name','date','deadline','status','type','priority','completed','done'],
+    notifications:['text','kind','createdAt','read'],
+    backups:['name','date','createdAt','status'],
+    projects:['title','name','date','status','style','zones','clientName','price','sum','paid'],
+    consents:['type','status','createdAt','date','clientName'],
+    auditLog:['action','type','createdAt','date','result']
+  };
+  const stores={},counts={};
+  for(const store of STORES){
+    if(store==='settings')continue;
+    const rows=Array.isArray(S[store])?S[store]:[];
+    counts[store]=rows.length;
+    const keys=fieldSets[store]||['name','title','date','status','type','amount','sum','price','category'];
+    stores[store]=rows.slice(-60).map(row=>{
+      const clean={};
+      for(const key of keys){
+        const value=row&&row[key];
+        if(value===undefined||value===null||typeof value==='object')continue;
+        const text=String(value);
+        if(text.length>180)continue;
+        clean[key]=value;
+      }
+      return clean;
+    }).filter(row=>Object.keys(row).length);
+  }
+  const now=new Date();
+  const context={currentDate:now.toISOString().slice(0,10),currency:(S.settings&&S.settings.currency)||'₽',
+    workingHours:{start:S.settings&&S.settings.workHoursStart,end:S.settings&&S.settings.workHoursEnd},
+    recordCounts:counts,stores};
+  let serialized=JSON.stringify(context);
+  while(serialized.length>24000){
+    let changed=false;
+    for(const name of Object.keys(stores)){
+      if(stores[name].length>8){stores[name]=stores[name].slice(-Math.max(8,Math.floor(stores[name].length*0.7)));changed=true;}
+    }
+    if(!changed)break;
+    serialized=JSON.stringify(context);
+  }
+  return context;
+}
 function aiAssistantPaintMessages(){
   const host=$('#aiMessages');
-  if(!host) return;
+  if(!host)return;
   const history=window.__inkosAssistantHistory||[];
-  host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':'INK.OS · помощник')+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
+  host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':(m.provider?'INK.OS · '+esc(m.provider):'INK.OS · помощник'))+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
   host.scrollTop=host.scrollHeight;
 }
-function aiAssistantAsk(text){
+async function aiAssistantAsk(text){
   const q=String(text||'').trim();
-  if(!q) return;
+  if(!q)return;
+  if(q.length>1200){toast('Вопрос слишком длинный — сократи его до 1200 символов.');return;}
   const history=window.__inkosAssistantHistory=window.__inkosAssistantHistory||[];
   history.push({role:'user',text:q});
   aiAssistantPaintMessages();
   const input=$('#aiChatInput');if(input)input.value='';
   const send=$('#aiSendBtn');if(send)send.disabled=true;
-  setTimeout(function(){
-    history.push({role:'assistant',text:aiAssistantAnswer(q)});
+  try{
+    if(!inkosCurrentUser||!inkosSupabase)throw new Error('Сначала войди в личный аккаунт INK.OS.');
+    const {data,error}=await inkosSupabase.functions.invoke('inkos-ai-assistant',{
+      body:{question:q,history:history.slice(-12),context:aiAssistantBuildContext()}
+    });
+    if(error){
+      let message='';
+      try{if(error.context&&typeof error.context.json==='function'){const payload=await error.context.json();message=payload&&payload.error||'';}}catch(_){}
+      throw new Error(message||error.message||'Не удалось соединиться с ИИ-сервисом.');
+    }
+    if(!data||data.error||typeof data.answer!=='string')throw new Error(data&&data.error||'ИИ-сервис не вернул ответ.');
+    history.push({role:'assistant',text:data.answer,provider:data.provider||'ИИ'});
+  }catch(error){
+    console.error('INK.OS AI chat:',error);
+    const message=String(error&&error.message||error);
+    history.push({role:'assistant',text:message.includes('DEEPSEEK_API_KEY')||message.includes('Настройка DeepSeek')
+      ?message:'Не удалось получить ответ от ИИ. Проверь интернет и настройки сервера. Детали: '+message});
+  }finally{
     aiAssistantPaintMessages();
     const currentSend=$('#aiSendBtn');if(currentSend)currentSend.disabled=false;
-  },80);
+  }
 }
 function aiAssistantQuick(code){
   const prompts={finance:'Сколько я заработал в этом месяце?',unpaid:'Покажи неоплаченные сеансы',inactive:'Кому из клиентов давно не писал?',week:'Составь план работы на неделю',savings:'Где можно сэкономить?',marketing:'Напиши рекламный пост про реализм',growth:'Проанализируй загруженность и доходность студии',forecast:'Сделай прогноз дохода к концу месяца'};
@@ -5228,7 +5301,7 @@ RENDERERS.assistant=function(){
       '<section class="ai-hero">'+
         '<div class="ai-hero-mark">✦</div>'+
         '<div class="ai-hero-copy"><div class="ai-eyebrow">INK.OS INTELLIGENCE</div><h2>ИИ-помощник</h2><p>Финансы, клиенты, записи и развитие тату-студии — в одном чате. Ответы по данным твоей CRM.</p></div>'+
-        '<div class="ai-local-badge">● БЕСПЛАТНЫЙ РЕЖИМ</div>'+
+        '<div class="ai-local-badge">● AI · DEEPSEEK / MISTRAL</div>'+
       '</section>'+
       '<section><div class="ai-quick-title"><strong>Быстрые действия</strong><span>Нажми, чтобы начать</span></div>'+
         '<div class="ai-quick-grid">'+
@@ -5241,11 +5314,11 @@ RENDERERS.assistant=function(){
           '<button class="ai-quick" onclick="aiAssistantQuick(\'growth\')"><span class="ai-q-ic">↗</span><span>Анализ студии</span></button>'+
           '<button class="ai-quick" onclick="aiAssistantQuick(\'forecast\')"><span class="ai-q-ic">⌁</span><span>Прогноз дохода</span></button>'+
         '</div></section>'+
-      '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Данные остаются в этом приложении</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
+      '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Ответы генерирует ИИ-модель</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
         '<div id="aiMessages" class="ai-messages" aria-live="polite"></div>'+
         '<form id="aiChatForm" class="ai-chat-form"><input id="aiChatInput" class="ai-chat-input" type="text" autocomplete="off" maxlength="600" placeholder="Например: сколько я заработал в сентябре?"><button id="aiSendBtn" class="ai-send" type="submit" aria-label="Отправить сообщение">➤</button></form>'+
       '</section>'+
-      '<div class="ai-note">Бесплатная версия работает локально, без внешнего ИИ API и без отправки данных клиентов на сторонний сервис. Финансовые ответы считаются по внесённым операциям; тексты и рекомендации пока формируются локальными правилами, а не полноценной нейросетью.</div>'+
+      '<div class="ai-note">Ответы генерирует ИИ-модель на сервере. Для анализа передаются вопрос и ограниченная выборка данных CRM. Телефоны, мессенджеры, даты рождения, аллергии, фотографии и личные заметки в контекст не включаются. Подключение DeepSeek требует API-ключа в настройках сервера.</div>'+
     '</div>';
   aiAssistantPaintMessages();
   $('#aiChatForm').onsubmit=function(e){e.preventDefault();aiAssistantAsk($('#aiChatInput').value);};
