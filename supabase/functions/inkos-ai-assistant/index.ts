@@ -65,7 +65,7 @@ async function callDeepSeek(apiKey: string, messages: Array<{role: string; conte
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
     body: JSON.stringify({
-      model: 'deepseek-v4-flash',
+      model: 'deepseek-flash',
       messages,
       thinking: { type: 'disabled' },
       temperature: 0.35,
