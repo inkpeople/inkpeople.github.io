@@ -2287,8 +2287,11 @@ function guestSpotsOnDate(iso){
   return (S.guestSpots||[]).filter(g=>g.dateStart && g.dateEnd && iso>=g.dateStart && iso<=g.dateEnd);
 }
 function eventHours(e){
-  if(!e.start||!e.end) return e.duration?Number(e.duration):0;
+  if(!e || typeof e!=='object') return 0;
+  const fallback=Number(e.duration);
+  if(typeof e.start!=='string' || typeof e.end!=='string') return Number.isFinite(fallback)?Math.max(0,fallback):0;
   const [sh,sm]=e.start.split(':').map(Number), [eh,em]=e.end.split(':').map(Number);
+  if(![sh,sm,eh,em].every(Number.isFinite)) return Number.isFinite(fallback)?Math.max(0,fallback):0;
   return Math.max(0,((eh*60+em)-(sh*60+sm))/60);
 }
 function renderCalGrid(){
@@ -2982,6 +2985,11 @@ function decrementInventoryCartridge(config,size,qty){
 
 /* ====================== FINANCE ====================== */
 let financePeriod='month';
+function financePlural(n,one,few,many){
+  const n10=Math.abs(Number(n))%10, n100=Math.abs(Number(n))%100;
+  const word=(n10===1&&n100!==11)?one:([2,3,4].includes(n10)&&![12,13,14].includes(n100))?few:many;
+  return Number(n)+' '+word;
+}
 const INCOME_CATEGORIES={tattoo:'Татуировки',consult:'Консультации',correction:'Коррекции',training:'Менторство',film:'Продажа заживляющей плёнки'};
 const EXPENSE_CATEGORIES={cartridges:'Картриджи',pigments:'Пигменты',transferPaper:'Трансферная бумага',oilFoam:'Масло/пенка',lidocaine:'Ледокаин',rent:'Аренда',travel:'Guest Spot / поездки',other:'Другое'};
 function periodRangeISO(period,offset){
@@ -3025,6 +3033,13 @@ function buildIncomeSeries(startISO,endISO,granularity){
   return points;
 }
 RENDERERS.finance=function(){
+  try {
+  // Normalize records imported from older backups before reading finance analytics.
+  S.finance=Array.isArray(S.finance)?S.finance.filter(f=>f&&typeof f==='object'):[];
+  S.events=Array.isArray(S.events)?S.events.filter(e=>e&&typeof e==='object'):[];
+  S.clients=Array.isArray(S.clients)?S.clients.filter(c=>c&&typeof c==='object'):[];
+  S.payments=Array.isArray(S.payments)?S.payments.filter(p=>p&&typeof p==='object'):[];
+  S.settings=S.settings&&typeof S.settings==='object'?S.settings:defaultSettings();
   const items=S.finance.filter(f=>financeScope(f));
   const income=items.filter(f=>f.type==='income').reduce((s,f)=>s+Number(f.amount||0),0);
   const expense=items.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount||0),0);
@@ -3070,7 +3085,7 @@ RENDERERS.finance=function(){
     <div class="fin-card exp">${icon('reports')}<div class="fl">Расходы</div><div class="fv">${finVal(fmtMoney(expense))}</div></div>
   </div>
   ${financePeriod!=='all'?`<div class="fin-forecast" onclick="openForecastSheet()">
-    <div><div class="fl">Ещё заработаю ${fcLabel}</div><div class="fv">+${finVal(fmtMoney(fcExpected))}</div><div class="small dim">${fcList.length?fcList.length+' '+pl(fcList.length,'запись','записи','записей')+' с неоплаченным остатком':'Нет предстоящих записей с остатком'}</div></div>
+    <div><div class="fl">Ещё заработаю ${fcLabel}</div><div class="fv">+${finVal(fmtMoney(fcExpected))}</div><div class="small dim">${fcList.length?fcList.length+' '+financePlural(fcList.length,'запись','записи','записей')+' с неоплаченным остатком':'Нет предстоящих записей с остатком'}</div></div>
     <div class="tot"><div class="fl">Итого за период</div><div class="fv">${finVal(fmtMoney(income+fcExpected))}</div><div class="small dim">с учётом прогноза</div></div>
   </div>`:''}
   <div class="segmented" style="margin-bottom:14px">${['day','week','month','quarter','year','all'].map(p=>`<button class="${financePeriod===p?'active':''}" onclick="setFinPeriod('${p}')">${{day:'День',week:'Неделя',month:'Месяц',quarter:'Квартал',year:'Год',all:'Всё'}[p]}</button>`).join('')}</div>
@@ -3108,6 +3123,20 @@ RENDERERS.finance=function(){
   </div>
   <p class="small dim">* В доход не входят расходные материалы (картриджи, пигменты, бумага и т.д.) и зарплаты мастеров. Изменение % — по сравнению с предыдущим таким же периодом.</p>`;
   if(!S.settings.hideFinance) setTimeout(()=>drawLineChart($('#finMainChart'),chartPoints),20);
+  } catch(err) {
+    console.error('INK.OS: finance renderer failed',err);
+    const root=$('#content');
+    if(root) root.innerHTML=`<h2>Финансы</h2>
+      <div class="card">
+        <p>Не удалось полностью загрузить финансовую сводку.</p>
+        <p class="small dim">Данные операций сохранены. Можно повторить загрузку или добавить операцию.</p>
+        <p class="small dim" style="overflow-wrap:anywhere">Ошибка: ${esc(err&&err.message?err.message:String(err))}</p>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="go('finance')">Повторить</button>
+          <button class="btn btn-sm btn-primary" onclick="openFinanceForm()">Добавить операцию</button>
+        </div>
+      </div>`;
+  }
 };
 function openFinCategories(){
   const items=window._finItems||[];
@@ -3135,15 +3164,11 @@ function openFinChart(){
   setTimeout(()=>drawBarChart(canvas,series),20);
 }
 function financeScope(f){
-  if(!f.date) return financePeriod==='all';
-  const now=new Date(); const d=new Date(f.date);
+  if(!f || typeof f!=='object') return false;
   if(financePeriod==='all') return true;
-  if(financePeriod==='day') return f.date===todayISO();
-  if(financePeriod==='week'){ const s=new Date(now); s.setDate(now.getDate()-now.getDay()+1); return d>=s; }
-  if(financePeriod==='month') return f.date.slice(0,7)===now.toISOString().slice(0,7);
-  if(financePeriod==='quarter'){ const q=Math.floor(now.getMonth()/3); return d.getFullYear()===now.getFullYear() && Math.floor(d.getMonth()/3)===q; }
-  if(financePeriod==='year') return d.getFullYear()===now.getFullYear();
-  return true;
+  if(typeof f.date!=='string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(f.date)) return false;
+  const range=periodRangeISO(financePeriod,0);
+  return f.date>=range.start && f.date<=range.end;
 }
 function openForecastSheet(){
   const list=window._finForecast||[];
