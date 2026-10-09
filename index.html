@@ -5254,11 +5254,49 @@ function aiAssistantPaintMessages(){
   host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':(m.provider?'INK.OS · '+esc(m.provider):'INK.OS · помощник'))+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
   host.scrollTop=host.scrollHeight;
 }
+function aiAssistantBuildCloudContext(){
+  const context=aiAssistantBuildContext();
+  const stores=context&&context.stores||{};
+  const nameMap=new Map();
+  const clients=Array.isArray(stores.clients)?stores.clients:[];
+  clients.forEach((row,index)=>{
+    const original=String(row.name||'').trim();
+    if(original)nameMap.set(original,'Клиент '+(index+1));
+    row.name='Клиент '+(index+1);
+    delete row.city;delete row.country;delete row.source;
+    delete row.firstVisit;delete row.lastVisit;delete row.nextContact;
+  });
+  const removeKeys=/phone|email|telegram|whats|birth|allerg|address|personal.?note|contact/i;
+  for(const list of Object.values(stores)){
+    if(!Array.isArray(list))continue;
+    for(const row of list){
+      if(!row||typeof row!=='object')continue;
+      for(const key of Object.keys(row)){
+        if(removeKeys.test(key)){delete row[key];continue;}
+        if(typeof row[key]==='string'){
+          for(const [name,pseudo] of nameMap)if(name)row[key]=row[key].split(name).join(pseudo);
+        }
+      }
+    }
+  }
+  if(Array.isArray(stores.auditLog))stores.auditLog=[];
+  return context;
+}
 function aiAssistantLocalReply(question){
   const q=String(question||'').toLowerCase(), now=new Date();
   const currency=(S.settings&&S.settings.currency)||'₽';
-  const num=v=>{const n=typeof v==='number'?v:parseFloat(String(v??'0').replace(/[\\s\\u00a0]/g,'').replace(',','.'));return Number.isFinite(n)?n:0;};
-  const dateOf=v=>{if(!v)return null;const s=String(v).trim();const ru=s.match(/^(\\d{1,2})[.\\/](\\d{1,2})[.\\/](\\d{4})$/);const d=ru?new Date(+ru[3],+ru[2]-1,+ru[1]):new Date(v);return Number.isNaN(d.getTime())?null:d;};
+  const num=v=>{
+    if(typeof v==='number')return Number.isFinite(v)?v:0;
+    const n=parseFloat(String(v??'0').replace(/[\s\u00a0]/g,'').replace(',','.'));
+    return Number.isFinite(n)?n:0;
+  };
+  const dateOf=v=>{
+    if(!v)return null;
+    const text=String(v).trim();
+    const ru=text.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    const d=ru?new Date(+ru[3],+ru[2]-1,+ru[1]):new Date(v);
+    return Number.isNaN(d.getTime())?null:d;
+  };
   const money=v=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(v)+' '+currency;
   const finance=Array.isArray(S.finance)?S.finance:[], clients=Array.isArray(S.clients)?S.clients:[], events=Array.isArray(S.events)?S.events:[];
   const typeOf=r=>String(r.type||r.direction||r.incomeType||r.expenseType||r.category||'').toLowerCase();
@@ -5267,30 +5305,38 @@ function aiAssistantLocalReply(question){
   const inMonth=r=>{const d=dateOf(r.date||r.createdAt||r.eventDate||r.startAt);return d&&d>=first&&d<next;};
   const monthRows=finance.filter(inMonth), inc=monthRows.filter(r=>/income|доход|выручк|поступлен/.test(typeOf(r))), exp=monthRows.filter(r=>/expense|расход|затрат|покупк/.test(typeOf(r)));
   const total=arr=>arr.reduce((s,r)=>s+Math.abs(amountOf(r)),0), month=now.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
-  const head='🟠 ЛОКАЛЬНЫЙ РЕЖИМ — облачные ИИ недоступны или исчерпали лимит.\\n';
-  if(/привет|здравств|что ты умеешь|чем поможешь|помощь/.test(q))return head+'Могу без облака считать финансовые записи, искать клиентов и ближайшие события, находить возможную задолженность и выдавать готовые шаблоны. Свободная генерация сложных текстов требует облачной модели.\\n\\nКлиентов: '+clients.length+'. Финансовых записей: '+finance.length+'. Событий: '+events.length+'.';
+  const head='🟠 ЛОКАЛЬНЫЙ РЕЖИМ — облачные ИИ недоступны или исчерпали лимит.\n';
+  if(/привет|здравств|что ты умеешь|чем поможешь|помощь/.test(q))
+    return head+'Могу без облака считать финансовые записи, искать клиентов и ближайшие события, находить возможную задолженность и выдавать готовые шаблоны. Свободная генерация сложных текстов требует облачной модели.\n\nКлиентов: '+clients.length+'. Финансовых записей: '+finance.length+'. Событий: '+events.length+'.';
   if(/доход|заработ|выручк|прибыл|финанс|расход|сколько.*денег|месяц/.test(q)){
     if(!monthRows.length)return head+'За '+month+' в разделе «Финансы» нет записей с датой этого месяца. Добавь доходы и расходы в CRM — тогда я смогу посчитать локально.';
     const unknown=monthRows.length-inc.length-exp.length;
-    return head+'Сводка за '+month+':\\n• Доходы: '+money(total(inc))+' ('+inc.length+' записей)\\n• Расходы: '+money(total(exp))+' ('+exp.length+' записей)\\n• Доходы минус расходы: '+money(total(inc)-total(exp))+(unknown?'\\n• Не распознано по типу: '+unknown+' записей.':'')+'\\n\\nРасчёт по локальным данным CRM.';
+    return head+'Сводка за '+month+':\n• Доходы: '+money(total(inc))+' ('+inc.length+' записей)\n• Расходы: '+money(total(exp))+' ('+exp.length+' записей)\n• Доходы минус расходы: '+money(total(inc)-total(exp))+(unknown?'\n• Не распознано по типу: '+unknown+' записей.':'')+'\n\nРасчёт по локальным данным CRM.';
   }
   if(/сколько.*клиент|количеств.*клиент|база клиент/.test(q))return head+'В локальной базе INK.OS '+clients.length+' клиентов.';
-  if(/найди клиент|клиент.*(найти|информац)|данные клиента/.test(q)){
-    const terms=q.replace(/[?!.,:;«»"']/g,' ').split(/\\s+/).filter(w=>w.length>2&&!/найди|клиент|информацию|данные|про|который/.test(w));
+  if(/найди клиент|покажи клиента|данные клиента|информация о клиенте|история клиента/.test(q)){
+    const terms=q.replace(/[?!.,:;«»"']/g,' ').split(/\s+/).filter(w=>w.length>2&&!/найди|покажи|клиент|информац|данные|про|который|которую|история|когда|последний|визит/.test(w));
     const found=clients.filter(c=>terms.some(t=>String(c.name||'').toLowerCase().includes(t))).slice(0,8);
-    return head+(found.length?found.map(c=>'• '+String(c.name||'Без имени')+' · статус: '+String(c.status||'—')+' · визиты: '+String(c.visits??'—')+' · сумма: '+(c.totalSum!=null?money(c.totalSum):'—')).join('\\n'):'Не нашёл совпадений. Укажи имя или фамилию, как в CRM.');
+    return head+(found.length?found.map(c=>'• '+String(c.name||'Без имени')+' · статус: '+String(c.status||'—')+' · визиты: '+String(c.visits??'—')+' · сумма: '+(c.totalSum!=null?money(c.totalSum):'—')).join('\n'):'Не нашёл совпадений. Укажи имя или фамилию, как в CRM.');
+  }
+  if(/давно|не писал|не приходил|вернуть старых|последн.*визит|не был/.test(q)){
+    const withDates=clients.map(c=>({c,d:dateOf(c.lastVisit)})).filter(x=>x.d).sort((a,b)=>a.d-b.d).slice(0,10);
+    return head+(withDates.length?'Клиенты с самыми давними датами последнего визита:\n'+withDates.map(x=>'• '+String(x.c.name||'Без имени')+' — '+x.d.toLocaleDateString('ru-RU')+(x.c.nextContact?' · следующий контакт: '+String(x.c.nextContact):'')).join('\n'):'У клиентов не заполнено поле последнего визита. Добавь дату последнего визита — тогда локальный бот сможет выделить тех, кому пора написать.');
   }
   if(/неоплач|долг|задолж/.test(q)){
-    const unpaid=events.filter(e=>/неоплач|unpaid|долг/.test(String(e.paymentStatus||'').toLowerCase())||(/неоплач|unpaid|долг/.test(String(e.status||'').toLowerCase()))||((e.amount??e.cost??e.price??e.sum)!=null&&(e.paidAmount??e.paid)!=null&&amountOf({amount:e.amount??e.cost??e.price??e.sum})>num(e.paidAmount??e.paid)));
-    return head+(unpaid.length?'Потенциально неоплаченных событий: '+unpaid.length+'.\\n'+unpaid.slice(0,10).map(e=>'• '+String(e.date||e.eventDate||'дата не указана')+' — '+String(e.title||e.name||e.clientName||'Сеанс')).join('\\n')+'\\nПерепроверь суммы и статус в CRM.':'По явным отметкам неоплаты событий не найдено. Убедись, что стоимость и оплаченная сумма заполнены.');
+    const unpaid=events.filter(e=>/неоплач|unpaid|долг/.test(String(e.paymentStatus||'').toLowerCase())||/неоплач|unpaid|долг/.test(String(e.status||'').toLowerCase())||((e.amount??e.cost??e.price??e.sum)!=null&&(e.paidAmount??e.paid)!=null&&amountOf({amount:e.amount??e.cost??e.price??e.sum})>num(e.paidAmount??e.paid)));
+    return head+(unpaid.length?'Потенциально неоплаченных событий: '+unpaid.length+'.\n'+unpaid.slice(0,10).map(e=>'• '+String(e.date||e.eventDate||'дата не указана')+' — '+String(e.title||e.name||e.clientName||'Сеанс')).join('\n')+'\nПерепроверь суммы и статус в CRM.':'По явным отметкам неоплаты событий не найдено. Убедись, что стоимость и оплаченная сумма заполнены.');
   }
   if(/запис|календар|сеанс|завтра|сегодня|ближайш/.test(q)){
     const list=events.map(e=>({e,d:dateOf(e.date||e.eventDate||e.startAt||e.start)})).filter(x=>x.d&&x.d>=new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>a.d-b.d).slice(0,10);
-    return head+(list.length?'Ближайшие события из локальной CRM:\\n'+list.map(x=>'• '+x.d.toLocaleDateString('ru-RU')+' · '+String(x.e.startTime||x.e.time||'время не указано')+' · '+String(x.e.title||x.e.name||x.e.clientName||'Событие')+' · '+String(x.e.status||'—')).join('\\n'):'Не нашёл будущих событий с распознанной датой.');
+    return head+(list.length?'Ближайшие события из локальной CRM:\n'+list.map(x=>'• '+x.d.toLocaleDateString('ru-RU')+' · '+String(x.e.startTime||x.e.time||'время не указано')+' · '+String(x.e.title||x.e.name||x.e.clientName||'Событие')+' · '+String(x.e.status||'—')).join('\n'):'Не нашёл будущих событий с распознанной датой.');
   }
-  if(/реклам|пост|объявлен|подпись|маркетинг/.test(q))return head+'Шаблон поста для VK:\\n\\n«Татуировка — это история, которую ты выбираешь носить каждый день. 🖤\\n\\nРаботаю в стилях графика, реализм и акварель. Помогу адаптировать идею под анатомию, подобрать размер и продумать композицию.\\n\\nЕсть задумка? Напиши в сообщения — обсудим эскиз, стоимость и свободные даты.\\n\\n#тату #татуировка #татуНовосибирск #реализм #графика #акварель»\\n\\nДобавь фото своей работы и актуальные свободные даты перед публикацией.';
-  if(/план|недел|что делать|приоритет/.test(q))return head+'План на неделю:\\n1. Проверить календарь и подтвердить записи.\\n2. Написать клиентам, которым пора на продолжение или проверку заживления.\\n3. Опубликовать готовую работу и процесс/эскиз.\\n4. Разобрать доходы и расходы.\\n5. Проверить остатки расходников.\\n6. Ответить на заявки и предложить конкретные свободные даты.';
-  if(/эконом|сэконом|сократ.*расход/.test(q))return head+'Проверь закупочные цены вместе с доставкой, списания и остатки расходников. Сравни доходы и расходы по месяцу и не считай предоплату чистой прибылью. Для конкретной экономии нужно заполнить суммы и категории расходов в CRM.';
+  if(/реклам|пост|объявлен|подпись|маркетинг/.test(q))
+    return head+'Шаблон поста для VK:\n\n«Татуировка — это история, которую ты выбираешь носить каждый день. 🖤\n\nРаботаю в стилях графика, реализм и акварель. Помогу адаптировать идею под анатомию, подобрать размер и продумать композицию.\n\nЕсть задумка? Напиши в сообщения — обсудим эскиз, стоимость и свободные даты.\n\n#тату #татуировка #татуНовосибирск #реализм #графика #акварель»\n\nДобавь фото своей работы и актуальные свободные даты перед публикацией.';
+  if(/план|недел|что делать|приоритет/.test(q))
+    return head+'План на неделю:\n1. Проверить календарь и подтвердить записи.\n2. Написать клиентам, которым пора на продолжение или проверку заживления.\n3. Опубликовать готовую работу и процесс/эскиз.\n4. Разобрать доходы и расходы.\n5. Проверить остатки расходников.\n6. Ответить на заявки и предложить конкретные свободные даты.';
+  if(/эконом|сэконом|сократ.*расход/.test(q))
+    return head+'Проверь закупочные цены вместе с доставкой, списания и остатки расходников. Сравни доходы и расходы по месяцу и не считай предоплату чистой прибылью. Для конкретной экономии нужно заполнить суммы и категории расходов в CRM.';
   return head+'Я работаю без генеративной модели в облегчённом режиме. Спроси «Сколько доходов и расходов в этом месяце?», «Сколько клиентов?», «Покажи ближайшие записи», «Покажи возможные долги», «Составь рекламный пост» или «Составь план на неделю».';
 }
 async function aiAssistantAsk(text){
@@ -5303,9 +5349,14 @@ async function aiAssistantAsk(text){
   const input=$('#aiChatInput');if(input)input.value='';
   const send=$('#aiSendBtn');if(send)send.disabled=true;
   try{
+    const localOnly=/сколько.*клиент|количеств.*клиент|база клиент|найди клиент|покажи клиента|данные клиента|информация о клиенте|история клиента|неоплач|задолж|давно не писал|не приходил|вернуть старых|покажи ближайшие записи|ближайшие записи|календарь|записи на сегодня|записи на завтра/i.test(q);
+    if(localOnly){
+      history.push({role:'assistant',text:aiAssistantLocalReply(q),provider:'Локальный поиск CRM'});
+      return;
+    }
     if(!inkosCurrentUser||!inkosSupabase)throw new Error('Сначала войди в личный аккаунт INK.OS.');
     const {data,error}=await inkosSupabase.functions.invoke('inkos-ai-assistant',{
-      body:{question:q,history:history.slice(-12),context:aiAssistantBuildContext()}
+      body:{question:q,history:history.slice(-12),context:aiAssistantBuildCloudContext()}
     });
     if(error){
       let message='';
