@@ -93,6 +93,34 @@ function messageFor(kind: '24h' | '2h', client: any, event: any, eventAt: number
     ', примерно через 2 часа. Если планы изменились или нужно уточнить детали, напишите мне. До встречи!';
 }
 
+async function notifyOwner(settings: any, stage: '24h' | '2h', result: 'sent' | 'failed', client: any): Promise<boolean> {
+  try {
+    const push = settings?.push;
+    if (push?.enabled !== true || !String(push?.topic || '').trim()) return false;
+    const server = new URL(String(push?.server || 'https://ntfy.sh'));
+    // Keep the privileged scheduler from posting arbitrary user-supplied URLs.
+    if (server.protocol !== 'https:' || server.hostname.toLowerCase() !== 'ntfy.sh' ||
+        server.username || server.password || server.port) return false;
+    const when = stage === '24h' ? 'за 24 часа' : 'за 2 часа';
+    const withName = push?.names === true;
+    const who = withName && client?.name ? ' (' + String(client.name).slice(0, 70) + ')' : '';
+    const title = result === 'sent' ? 'INK.OS · Напоминание отправлено' : 'INK.OS · Ошибка отправки';
+    const message = result === 'sent'
+      ? 'Клиенту' + who + ' отправлено напоминание ' + when + '.'
+      : 'Не удалось отправить клиенту' + who + ' напоминание ' + when + '. Проверьте журнал отправки в INK.OS.';
+    const response = await fetch(server.origin, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: String(push.topic).trim(), title, message, priority: result === 'sent' ? 3 : 4 }),
+      signal: AbortSignal.timeout(8000),
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('INK.OS owner notification failed:', String((error as Error)?.message || error).slice(0, 100));
+    return false;
+  }
+}
+
 async function sendTelegram(chatIdValue: unknown, message: string): Promise<string> {
   const token = env('TELEGRAM_BOT_TOKEN');
   if (!token) throw new Error('TELEGRAM_BOT_TOKEN_NOT_CONFIGURED');
@@ -146,7 +174,7 @@ function filters(userId: string, eventId: string, stage: string): string {
     '&reminder_type=eq.' + encodeURIComponent(stage);
 }
 
-async function sendDueReminder(userId: string, event: any, client: any, stage: '24h' | '2h', targetAt: number, zone: string): Promise<'sent' | 'failed' | 'skipped'> {
+async function sendDueReminder(userId: string, event: any, client: any, settings: any, stage: '24h' | '2h', targetAt: number, zone: string): Promise<'sent' | 'failed' | 'skipped'> {
   if (!event?.id || !client?.id || !consentGiven(client)) return 'skipped';
   const channel = String(client.reminderChannel || 'telegram').toLowerCase() === 'vk' ? 'vk' : 'telegram';
   const eventId = String(event.id);
@@ -193,6 +221,14 @@ async function sendDueReminder(userId: string, event: any, client: any, stage: '
         last_error: null, updated_at: new Date().toISOString(),
       }),
     });
+    const ownerPushSent = await notifyOwner(settings, stage, 'sent', client);
+    if (ownerPushSent) {
+      await dbRequest('inkos_reminder_log?id=eq.' + encodeURIComponent(claimed.id), {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ owner_push_sent: true }),
+      });
+    }
     return 'sent';
   } catch (error) {
     const message = String((error as Error)?.message || error).slice(0, 120);
@@ -201,6 +237,14 @@ async function sendDueReminder(userId: string, event: any, client: any, stage: '
       headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify({ status: 'failed', last_error: message, updated_at: new Date().toISOString() }),
     });
+    const ownerPushSent = await notifyOwner(settings, stage, 'failed', client);
+    if (ownerPushSent) {
+      await dbRequest('inkos_reminder_log?id=eq.' + encodeURIComponent(claimed.id), {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ owner_push_sent: true }),
+      });
+    }
     return 'failed';
   }
 }
@@ -245,7 +289,7 @@ Deno.serve(async (req: Request) => {
         for (const target of targets) {
           if (target.at > now || now - target.at > windowMs) continue;
           checked++;
-          const result = await sendDueReminder(userId, event, client, target.stage, target.at, zone);
+          const result = await sendDueReminder(userId, event, client, settings, target.stage, target.at, zone);
           if (result === 'sent') sent++;
           else if (result === 'failed') failed++;
           else skipped++;
