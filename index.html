@@ -5378,7 +5378,58 @@ function inkosStartApp(){
   else{document.getElementById('app').classList.remove('hidden');buildNav();go('dashboard');}
 }
 function inkosUpdateAccountButton(){const button=document.getElementById('accountBtn');if(!button)return;button.classList.toggle('hidden',!inkosCurrentUser);if(inkosCurrentUser){button.title=inkosCurrentUser.email||'Аккаунт';button.setAttribute('aria-label','Аккаунт: '+(inkosCurrentUser.email||''));}}
-function inkosAccountMenu(){if(!inkosCurrentUser)return;openSheet('Личный аккаунт','<div style="padding:8px 0 14px"><div class="small dim">Вы вошли как</div><div style="font-weight:800;overflow-wrap:anywhere">'+esc(inkosCurrentUser.email||'')+'</div><p class="small dim" style="margin-top:10px">Клиенты, записи, финансы и настройки синхронизируются только с этим аккаунтом.</p><button class="btn btn-danger btn-block" type="button" onclick="inkosDoSignOut()">Выйти из аккаунта</button></div>');}
+
+/* ====================== SAFE JSON BACKUP IMPORT ====================== */
+function inkosPickBackupFile(){
+  if(!inkosCurrentUser||!inkosSupabase){toast('Сначала войди в свой аккаунт INK.OS.');return;}
+  closeSheet();
+  const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.style.display='none';document.body.appendChild(input);
+  input.onchange=async()=>{
+    const file=input.files&&input.files[0];input.remove();if(!file)return;
+    if(file.size>10*1024*1024){alert('Файл больше 10 МБ. Выбери JSON-файл резервной копии размером до 10 МБ.');return;}
+    try{
+      const parsed=JSON.parse(await file.text());
+      const source=parsed&&parsed.stores&&typeof parsed.stores==='object'?parsed.stores:parsed;
+      if(!source||typeof source!=='object'||Array.isArray(source)){alert('Не удалось распознать резервную копию INK.OS.');return;}
+      const recognized=STORES.filter(store=>store==='settings'?(source.settings&&typeof source.settings==='object') : Array.isArray(source[store]));
+      const hasRecords=STORES.some(store=>store!=='settings'&&Array.isArray(source[store])&&source[store].length>0);
+      if(!recognized.length||!hasRecords){alert('В файле не найдены данные INK.OS. Выбери резервную копию JSON из приложения.');return;}
+      const incomingCounts={};STORES.forEach(store=>{incomingCounts[store]=store==='settings'?0:(Array.isArray(source[store])?source[store].length:0);});
+      const labelMap={clients:'Клиенты',events:'События календаря',payments:'Платежи',finance:'Финансовые операции',tattooWork:'Тату-работы',inventory:'Склад',cartridgeUsage:'Расход картриджей',notifications:'Уведомления',consents:'Согласия',auditLog:'Записи журнала'};
+      const preview=Object.keys(labelMap).filter(store=>incomingCounts[store]>0).map(store=>labelMap[store]+': '+incomingCounts[store]).join('\n');
+      const incomingTotal=STORES.reduce((sum,store)=>sum+(store==='settings'?0:incomingCounts[store]),0);
+      if(!confirm('Найдена резервная копия INK.OS: '+file.name+'\n\n'+preview+'\nДругие разделы: '+Math.max(0,incomingTotal-Object.keys(labelMap).reduce((sum,store)=>sum+incomingCounts[store],0))+' записей.\n\nИмпорт объединит данные с текущими. Совпадающие ID обновятся из копии, остальные записи сохранятся. Продолжить?'))return;
+      const mergedStores={};let added=0,updated=0;
+      for(const store of STORES){
+        if(store==='settings'){
+          let val=source.settings;if(Array.isArray(val))val=val[0];
+          mergedStores.settings=val&&typeof val==='object'?{...(S.settings||{}),...val,id:'main'}:{...(S.settings||{id:'main',...defaultSettings()}),id:'main'};
+          continue;
+        }
+        const map=new Map();
+        (Array.isArray(S[store])?S[store]:[]).filter(row=>row&&typeof row==='object').forEach(row=>{const clean={...row,id:row.id||uid()};map.set(String(clean.id),clean);});
+        (Array.isArray(source[store])?source[store]:[]).filter(row=>row&&typeof row==='object').forEach(row=>{const clean={...row,id:row.id||uid()},key=String(clean.id);if(map.has(key))updated++;else added++;map.set(key,clean);});
+        mergedStores[store]=Array.from(map.values());
+      }
+      const finalSnapshot={schemaVersion:1,stores:mergedStores};
+      if(JSON.stringify(finalSnapshot).length>7*1024*1024){alert('После объединения резервная копия превышает лимит облачной синхронизации 7 МБ. Данные не изменены.');return;}
+      await inkosApplySnapshot(finalSnapshot);
+      inkosLocalRevision++;
+      let synced=false;
+      try{synced=await inkosWriteCloudSnapshot(true);}catch(e){console.error('INK.OS backup import sync:',e);}
+      if(synced){
+        toast('Импорт завершён: добавлено '+added+', обновлено '+updated+'. Облако синхронизировано.');
+        inkosStartApp();
+      }else{
+        toast('Данные импортированы на устройство, но облачная синхронизация не подтверждена. Не выходи из аккаунта; проверь интернет и повтори синхронизацию.');
+        inkosStartApp();
+      }
+    }catch(error){console.error('INK.OS backup import:',error);alert('Не удалось импортировать резервную копию: '+String(error.message||error));}
+  };
+  input.click();
+}
+
+function inkosAccountMenu(){if(!inkosCurrentUser)return;openSheet('Личный аккаунт','<div style="padding:8px 0 14px"><div class="small dim">Вы вошли как</div><div style="font-weight:800;overflow-wrap:anywhere">'+esc(inkosCurrentUser.email||'')+'</div><p class="small dim" style="margin-top:10px">Клиенты, записи, финансы и настройки синхронизируются только с этим аккаунтом.</p><button class="btn btn-block" style="margin-bottom:10px" type="button" onclick="inkosPickBackupFile()">Импортировать резервную копию JSON</button><button class="btn btn-danger btn-block" type="button" onclick="inkosDoSignOut()">Выйти из аккаунта</button></div>');}
 async function inkosDoSignOut(){try{clearTimeout(inkosCloudTimer);await inkosWriteCloudSnapshot(false);const {error}=await inkosSupabase.auth.signOut();if(error)throw error;closeSheet();inkosHandleSignedOut();}catch(error){toast('Не удалось выйти: '+String(error.message||error));}}
 function inkosHandleSignedOut(){
   inkosCurrentUser=null;inkosActiveUserId=null;inkosPendingLegacySnapshot=null;if(db){try{db.close();}catch(e){}db=null;}DB_NAME='inkos_db';inkosResetMemory();document.getElementById('app').classList.add('hidden');appBooted=false;
