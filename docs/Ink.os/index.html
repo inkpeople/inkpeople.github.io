@@ -4553,7 +4553,7 @@ function generateAppIcon(){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   try{
     const swUrl=new URL('sw.js',document.baseURI);
-    swUrl.searchParams.set('build','premium-20261009-v3-ai');
+    swUrl.searchParams.set('build','premium-20261009-v4-ai');
     navigator.serviceWorker.register(swUrl,{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('INK.OS: service worker не зарегистрирован',err));
   }catch(e){}
 }
@@ -5146,7 +5146,7 @@ function aiAssistantAnswer(text){
   if(!q) return 'Напиши вопрос о финансах, клиентах, записях или продвижении студии.';
   if(/^(привет|здравствуй|добрый день|доброе утро|добрый вечер|здарова)\b/.test(q)) return 'Привет! Я помощник INK.OS. Могу посчитать доходы и расходы, найти записи, показать клиентов для повторного контакта, составить план недели или подготовить черновик поста. Ответы основаны на данных, которые уже внесены в приложение.';
   if(/неоплачен|долг|задолж|остаток по оплат|кто не оплат|доплат/.test(q)) return aiAssistantOutstandingAnswer();
-  if(/давно не был|давно не приход|вернуть клиент|повторн.*клиент|кому написать|кому стоит написать|кто.*не приход|не был.*месяц|спящ.*клиент/.test(q)) return aiAssistantInactiveAnswer();
+  if(/давно не был|давно не приход|вернуть клиент|повторн.*клиент|кому написать|кому стоит написать|кому.*давно.*писал|давно.*не писал|не писал.*клиент|кто.*не приход|не был.*месяц|спящ.*клиент/.test(q)) return aiAssistantInactiveAnswer();
   if(/предстоящ|ближайш.*запис|покажи запис|сколько запис|расписан|календар|сеанс.*сегодня/.test(q)) return aiAssistantUpcomingAnswer(q);
   if(/план.*недел|рабоч.*недел|на неделю|распланируй/.test(q)) return aiAssistantWeekAnswer();
   if(/реклам|напиши.*пост|создай.*пост|контент|акци|скидк|публикац|идея для пост/.test(q)) return aiAssistantMarketingAnswer(q);
