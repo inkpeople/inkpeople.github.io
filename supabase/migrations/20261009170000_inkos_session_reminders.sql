@@ -12,6 +12,7 @@ create table if not exists public.inkos_reminder_log (
   sent_at timestamptz,
   provider_message_id text,
   last_error text,
+  owner_push_sent boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint inkos_reminder_log_unique unique (user_id,event_id,reminder_type)
