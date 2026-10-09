@@ -5208,11 +5208,11 @@ function aiAssistantBuildContext(){
     cities:['name','city','country','count'],
     reminders:['title','name','date','deadline','status','type','completed'],
     tasks:['title','name','date','deadline','status','type','priority','completed','done'],
-    notifications:['text','kind','createdAt','read'],
+    notifications:['kind','createdAt','read'],
     backups:['name','date','createdAt','status'],
     projects:['title','name','date','status','style','zones','clientName','price','sum','paid'],
     consents:['type','status','createdAt','date','clientName'],
-    auditLog:['action','type','createdAt','date','result']
+    auditLog:['action','type','createdAt','date']
   };
   const stores={},counts={};
   for(const store of STORES){
