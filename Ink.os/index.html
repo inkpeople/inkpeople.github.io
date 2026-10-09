@@ -1777,7 +1777,7 @@ function openQuickClientSheet(selectId){
     const fd=new FormData(ev.target);
     const name=(fd.get('name')||'').trim();
     if(!name){ toast('Введите имя клиента'); return; }
-    const newClient={id:uid(),name,phone:(fd.get('phone')||'').trim(),instagram:'',whatsapp:'',telegram:'',vk:'',max:'',profileLink:'',city:'',country:'',cameFrom:'',firstVisit:todayISO(),lastVisit:'',visits:0,totalSum:0,source:'',styles:'',zones:'',status:'Новый',nextContact:'',quickNotes:[]};
+    const newClient={id:uid(),name,phone:(fd.get('phone')||'').trim(),instagram:'',whatsapp:'',telegram:'',telegramChatId:'',vk:'',vkPeerId:'',max:'',reminderChannel:'telegram',reminderConsent:false,profileLink:'',city:'',country:'',cameFrom:'',firstVisit:todayISO(),lastVisit:'',visits:0,totalSum:0,source:'',styles:'',zones:'',status:'Новый',nextContact:'',quickNotes:[]};
     await idbPut('clients',newClient);
     S.clients.push(newClient);
     closeSheet();
@@ -1838,7 +1838,7 @@ function renderClientsList(){
     </div>`).join('') : '<p class="dim">Клиенты не найдены.</p>';
 }
 function openClientForm(existing){
-  const c=existing||{id:null,name:'',phone:'',instagram:'',whatsapp:'',telegram:'',vk:'',max:'',profileLink:'',city:'',country:'',cameFrom:'',firstVisit:todayISO(),lastVisit:'',visits:0,totalSum:0,source:'',styles:'',zones:'',status:'Новый',nextContact:'',quickNotes:[],birthDate:'',allergies:'',comment:''};
+  const c=existing||{id:null,name:'',phone:'',instagram:'',whatsapp:'',telegram:'',telegramChatId:'',vk:'',vkPeerId:'',max:'',reminderChannel:'telegram',reminderConsent:false,profileLink:'',city:'',country:'',cameFrom:'',firstVisit:todayISO(),lastVisit:'',visits:0,totalSum:0,source:'',styles:'',zones:'',status:'Новый',nextContact:'',quickNotes:[],birthDate:'',allergies:'',comment:''};
   openModal(`<div class="modal-header"><h3>${existing?'Редактировать клиента':'Новый клиент'}</h3><button class="x" onclick="closeModal()">✕</button></div>
   <form id="clientForm">
   <label>Имя*</label><input required name="name" value="${esc(c.name)}">
@@ -1851,6 +1851,15 @@ function openClientForm(existing){
   <div class="field-row">
     <div><label style="margin-top:0">ВКонтакте</label><input name="vk" value="${esc(c.vk)}" placeholder="ссылка на профиль"></div>
     <div><label style="margin-top:0">MAX</label><input name="max" value="${esc(c.max)}" placeholder="ссылка/ID"></div>
+  </div>
+  <div class="card" style="margin:10px 0;padding:10px">
+    <h4 style="margin-bottom:8px">Автонапоминания о сеансах</h4>
+    <label>Канал отправки</label>
+    <select name="reminderChannel"><option value="telegram" ${(c.reminderChannel||"telegram")==="telegram"?"selected":""}>Telegram</option><option value="vk" ${c.reminderChannel==="vk"?"selected":""}>ВКонтакте</option></select>
+    <label>Telegram Chat ID (не @username)</label><input name="telegramChatId" value="${esc(c.telegramChatId||"")}" placeholder="Например, 123456789">
+    <label>VK peer_id (ID диалога)</label><input name="vkPeerId" value="${esc(c.vkPeerId||"")}" placeholder="Числовой ID диалога">
+    <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0"><input type="checkbox" name="reminderConsent" ${c.reminderConsent?"checked":""} style="width:auto;min-width:auto"> Клиент согласился получать напоминания</label>
+    <p class="small dim">Telegram: клиент должен открыть бота и нажать Start. VK: клиент должен разрешить сообщения сообщества. Ссылка или @username недостаточны.</p>
   </div>
   <label>WhatsApp</label><input name="whatsapp" value="${esc(c.whatsapp)}">
   <label>Другая ссылка на профиль</label><input name="profileLink" value="${esc(c.profileLink)}">
@@ -1886,6 +1895,9 @@ function openClientForm(existing){
     const oldStatus=c.status, oldComment=c.comment;
     const obj={...c};
     fd.forEach((v,k)=>obj[k]=v);
+    obj.reminderConsent=!!e.target.elements.reminderConsent?.checked;
+    obj.reminderConsentAt=obj.reminderConsent?(obj.reminderConsentAt||new Date().toISOString()):null;
+    obj.reminderChannel=String(fd.get('reminderChannel')||'telegram');
     obj.quickNotes=$$('#quickNotesWrap .chip.active').map(ch=>ch.dataset.n);
     if(!obj.id) obj.id=uid();
     await idbPut('clients',obj);
@@ -2860,7 +2872,7 @@ function openDayAdd(iso){
 }
 function openEventForm(id,presets){
   const existing=id?S.events.find(e=>e.id===id):null;
-  const e=existing||{id:null,title:'',type:(presets&&presets.type)||'session',date:(presets&&presets.date)||todayISO(),start:'10:00',end:'11:00',clientId:(presets&&presets.clientId)||'',studentId:'',cost:'',bookingAmount:'',comment:'',link:'',reminder:'',status:'planned',homeworkId:'',serviceType:'Тату',zone:'',styles:[],clientIdeas:'',referenceImages:[]};
+  const e=existing||{id:null,title:'',type:(presets&&presets.type)||'session',date:(presets&&presets.date)||todayISO(),start:'10:00',end:'11:00',clientId:(presets&&presets.clientId)||'',studentId:'',cost:'',bookingAmount:'',comment:'',link:'',reminder:'',remindersEnabled:true,status:'planned',homeworkId:'',serviceType:'Тату',zone:'',styles:[],clientIdeas:'',referenceImages:[]};
   const client=e.clientId?S.clients.find(c=>c.id===e.clientId):null;
   const isTattooEvent=['session','correction','model'].includes(e.type);
   openModal(`<div class="modal-header"><h3>${existing?'Событие':'Новое событие'}</h3><button class="x" onclick="closeModal()">✕</button></div>
@@ -2895,7 +2907,7 @@ function openEventForm(id,presets){
     <div class="small dim" id="evtRemainderText" style="margin:2px 0 6px"></div>
   </div>
   <label>Стоимость</label><input type="number" name="cost" id="evtCostInput" value="${e.cost}">
-  <label>Напоминание</label><input name="reminder" value="${esc(e.reminder)}" placeholder="за 1 день...">
+  <label>Напоминание</label><input name="reminder" value="${esc(e.reminder)}" placeholder="за 1 день...">\n  <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0"><input type="checkbox" name="remindersEnabled" ${e.remindersEnabled!==false?"checked":""} style="width:auto;min-width:auto"> Автоотправка за 24 часа и за 2 часа</label><p class="small dim">Отправка только при согласии клиента и настроенном Telegram/VK.</p>
   <label>Ссылка</label><input name="link" value="${esc(e.link)}">
   <label>Комментарий</label><textarea name="comment" rows="2">${esc(e.comment)}</textarea>
   <div class="row" style="margin-top:14px">
@@ -2972,7 +2984,7 @@ function openEventForm(id,presets){
   $('#eventForm').onsubmit=async ev=>{
     ev.preventDefault();
     const fd=new FormData(ev.target);
-    const obj={...e}; fd.forEach((v,k)=>obj[k]=v);
+    const obj={...e}; fd.forEach((v,k)=>obj[k]=v); obj.remindersEnabled=!!ev.target.elements.remindersEnabled?.checked;
     obj.serviceType=$('#serviceTypeWrap .chip.active')?.dataset.s||'';
     obj.zone=$('#zoneWrap .chip.active')?.dataset.z||'';
     obj.styles=$$('#styleWrap .chip.active').map(c=>c.dataset.st);
@@ -4413,7 +4425,7 @@ RENDERERS.settings=function(){
       </select>
       <p class="small dim" style="margin-top:6px">Применяется ко всем суммам в приложении (дашборд, финансы, клиенты, события). Курс не пересчитывается — только меняется отображаемый символ.</p>
     </div>
-    <div class="card">
+    <div class="card"><h3>Часовой пояс и напоминания</h3><label>Часовой пояс студии</label><select id="reminderTimezoneSelect">${[["Asia/Novosibirsk","Новосибирск"],["Asia/Krasnoyarsk","Красноярск"],["Europe/Moscow","Москва"],["Europe/Riga","Рига"],["Asia/Almaty","Алматы"]].map(([tz,label])=>`<option value="${tz}" ${(S.settings.reminderTimezone||"Asia/Novosibirsk")===tz?"selected":""}>${label}</option>`).join("")}</select><p class="small dim" style="margin-top:6px">Автоматические напоминания о сеансах ориентируются на местное время студии.</p></div> <div class="card">
       <h3>Безопасность</h3>
       <div class="row"><span>PIN-код</span><button class="btn btn-sm" onclick="showPinScreen('set')">${S.settings.pin?'Изменить PIN':'Задать PIN'}</button></div>
       ${S.settings.pin?`<div class="row" style="margin-top:6px"><span>Отключить PIN</span><button class="btn btn-sm btn-danger" onclick="disablePin()">Отключить</button></div>`:''}
@@ -4438,7 +4450,7 @@ RENDERERS.settings=function(){
     <button class="btn btn-danger" onclick="openSettingsSheet('data')">Демо / удаление</button>
   </div>`;
   $('#ownerNameInput').onchange=async e=>{ S.settings.ownerName=e.target.value; await saveSettings(); toast('Сохранено'); };
-  $('#currencySelect').onchange=async e=>{ S.settings.currency=e.target.value; await saveSettings(); toast('Валюта изменена'); go('settings'); };
+  $('#reminderTimezoneSelect').onchange=async e=>{ S.settings.reminderTimezone=e.target.value; await saveSettings(); toast('Часовой пояс сохранён'); }; $('#currencySelect').onchange=async e=>{ S.settings.currency=e.target.value; await saveSettings(); toast('Валюта изменена'); go('settings'); };
   $('#hideFinanceChk').onchange=async e=>{ S.settings.hideFinance=e.target.checked; await saveSettings(); toast('Сохранено'); go('settings'); };
   $('#autoLockInput').onchange=async e=>{ S.settings.autoLockMinutes=Number(e.target.value)||0; await saveSettings(); resetInactivityTimer(); toast('Сохранено'); };
   $('#logoInput').onchange=e=>{
