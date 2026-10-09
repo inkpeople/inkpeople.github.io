@@ -5254,6 +5254,45 @@ function aiAssistantPaintMessages(){
   host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':(m.provider?'INK.OS · '+esc(m.provider):'INK.OS · помощник'))+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
   host.scrollTop=host.scrollHeight;
 }
+function aiAssistantLocalReply(question){
+  const q=String(question||'').toLowerCase(), now=new Date();
+  const currency=(S.settings&&S.settings.currency)||'₽';
+  const num=v=>{const n=typeof v==='number'?v:parseFloat(String(v??'0').replace(/[\\s\\u00a0]/g,'').replace(',','.'));return Number.isFinite(n)?n:0;};
+  const dateOf=v=>{if(!v)return null;const s=String(v).trim();const ru=s.match(/^(\\d{1,2})[.\\/](\\d{1,2})[.\\/](\\d{4})$/);const d=ru?new Date(+ru[3],+ru[2]-1,+ru[1]):new Date(v);return Number.isNaN(d.getTime())?null:d;};
+  const money=v=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(v)+' '+currency;
+  const finance=Array.isArray(S.finance)?S.finance:[], clients=Array.isArray(S.clients)?S.clients:[], events=Array.isArray(S.events)?S.events:[];
+  const typeOf=r=>String(r.type||r.direction||r.incomeType||r.expenseType||r.category||'').toLowerCase();
+  const amountOf=r=>num(r.amount??r.sum??r.price??r.cost??r.paidAmount??0);
+  const first=new Date(now.getFullYear(),now.getMonth(),1), next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const inMonth=r=>{const d=dateOf(r.date||r.createdAt||r.eventDate||r.startAt);return d&&d>=first&&d<next;};
+  const monthRows=finance.filter(inMonth), inc=monthRows.filter(r=>/income|доход|выручк|поступлен/.test(typeOf(r))), exp=monthRows.filter(r=>/expense|расход|затрат|покупк/.test(typeOf(r)));
+  const total=arr=>arr.reduce((s,r)=>s+Math.abs(amountOf(r)),0), month=now.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  const head='🟠 ЛОКАЛЬНЫЙ РЕЖИМ — облачные ИИ недоступны или исчерпали лимит.\\n';
+  if(/привет|здравств|что ты умеешь|чем поможешь|помощь/.test(q))return head+'Могу без облака считать финансовые записи, искать клиентов и ближайшие события, находить возможную задолженность и выдавать готовые шаблоны. Свободная генерация сложных текстов требует облачной модели.\\n\\nКлиентов: '+clients.length+'. Финансовых записей: '+finance.length+'. Событий: '+events.length+'.';
+  if(/доход|заработ|выручк|прибыл|финанс|расход|сколько.*денег|месяц/.test(q)){
+    if(!monthRows.length)return head+'За '+month+' в разделе «Финансы» нет записей с датой этого месяца. Добавь доходы и расходы в CRM — тогда я смогу посчитать локально.';
+    const unknown=monthRows.length-inc.length-exp.length;
+    return head+'Сводка за '+month+':\\n• Доходы: '+money(total(inc))+' ('+inc.length+' записей)\\n• Расходы: '+money(total(exp))+' ('+exp.length+' записей)\\n• Доходы минус расходы: '+money(total(inc)-total(exp))+(unknown?'\\n• Не распознано по типу: '+unknown+' записей.':'')+'\\n\\nРасчёт по локальным данным CRM.';
+  }
+  if(/сколько.*клиент|количеств.*клиент|база клиент/.test(q))return head+'В локальной базе INK.OS '+clients.length+' клиентов.';
+  if(/найди клиент|клиент.*(найти|информац)|данные клиента/.test(q)){
+    const terms=q.replace(/[?!.,:;«»"']/g,' ').split(/\\s+/).filter(w=>w.length>2&&!/найди|клиент|информацию|данные|про|который/.test(w));
+    const found=clients.filter(c=>terms.some(t=>String(c.name||'').toLowerCase().includes(t))).slice(0,8);
+    return head+(found.length?found.map(c=>'• '+String(c.name||'Без имени')+' · статус: '+String(c.status||'—')+' · визиты: '+String(c.visits??'—')+' · сумма: '+(c.totalSum!=null?money(c.totalSum):'—')).join('\\n'):'Не нашёл совпадений. Укажи имя или фамилию, как в CRM.');
+  }
+  if(/неоплач|долг|задолж/.test(q)){
+    const unpaid=events.filter(e=>/неоплач|unpaid|долг/.test(String(e.paymentStatus||'').toLowerCase())||(/неоплач|unpaid|долг/.test(String(e.status||'').toLowerCase()))||((e.amount??e.cost??e.price??e.sum)!=null&&(e.paidAmount??e.paid)!=null&&amountOf({amount:e.amount??e.cost??e.price??e.sum})>num(e.paidAmount??e.paid)));
+    return head+(unpaid.length?'Потенциально неоплаченных событий: '+unpaid.length+'.\\n'+unpaid.slice(0,10).map(e=>'• '+String(e.date||e.eventDate||'дата не указана')+' — '+String(e.title||e.name||e.clientName||'Сеанс')).join('\\n')+'\\nПерепроверь суммы и статус в CRM.':'По явным отметкам неоплаты событий не найдено. Убедись, что стоимость и оплаченная сумма заполнены.');
+  }
+  if(/запис|календар|сеанс|завтра|сегодня|ближайш/.test(q)){
+    const list=events.map(e=>({e,d:dateOf(e.date||e.eventDate||e.startAt||e.start)})).filter(x=>x.d&&x.d>=new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>a.d-b.d).slice(0,10);
+    return head+(list.length?'Ближайшие события из локальной CRM:\\n'+list.map(x=>'• '+x.d.toLocaleDateString('ru-RU')+' · '+String(x.e.startTime||x.e.time||'время не указано')+' · '+String(x.e.title||x.e.name||x.e.clientName||'Событие')+' · '+String(x.e.status||'—')).join('\\n'):'Не нашёл будущих событий с распознанной датой.');
+  }
+  if(/реклам|пост|объявлен|подпись|маркетинг/.test(q))return head+'Шаблон поста для VK:\\n\\n«Татуировка — это история, которую ты выбираешь носить каждый день. 🖤\\n\\nРаботаю в стилях графика, реализм и акварель. Помогу адаптировать идею под анатомию, подобрать размер и продумать композицию.\\n\\nЕсть задумка? Напиши в сообщения — обсудим эскиз, стоимость и свободные даты.\\n\\n#тату #татуировка #татуНовосибирск #реализм #графика #акварель»\\n\\nДобавь фото своей работы и актуальные свободные даты перед публикацией.';
+  if(/план|недел|что делать|приоритет/.test(q))return head+'План на неделю:\\n1. Проверить календарь и подтвердить записи.\\n2. Написать клиентам, которым пора на продолжение или проверку заживления.\\n3. Опубликовать готовую работу и процесс/эскиз.\\n4. Разобрать доходы и расходы.\\n5. Проверить остатки расходников.\\n6. Ответить на заявки и предложить конкретные свободные даты.';
+  if(/эконом|сэконом|сократ.*расход/.test(q))return head+'Проверь закупочные цены вместе с доставкой, списания и остатки расходников. Сравни доходы и расходы по месяцу и не считай предоплату чистой прибылью. Для конкретной экономии нужно заполнить суммы и категории расходов в CRM.';
+  return head+'Я работаю без генеративной модели в облегчённом режиме. Спроси «Сколько доходов и расходов в этом месяце?», «Сколько клиентов?», «Покажи ближайшие записи», «Покажи возможные долги», «Составь рекламный пост» или «Составь план на неделю».';
+}
 async function aiAssistantAsk(text){
   const q=String(text||'').trim();
   if(!q)return;
@@ -5276,10 +5315,8 @@ async function aiAssistantAsk(text){
     if(!data||data.error||typeof data.answer!=='string')throw new Error(data&&data.error||'ИИ-сервис не вернул ответ.');
     history.push({role:'assistant',text:data.answer,provider:data.provider||'ИИ'});
   }catch(error){
-    console.error('INK.OS AI chat:',error);
-    const message=String(error&&error.message||error);
-    history.push({role:'assistant',text:message.includes('DEEPSEEK_API_KEY')||message.includes('Настройка DeepSeek')
-      ?message:'Не удалось получить ответ от ИИ. Проверь интернет и настройки сервера. Детали: '+message});
+    console.warn('INK.OS cloud AI unavailable; switching to local assistant:',String(error&&error.message||error).slice(0,180));
+    history.push({role:'assistant',text:aiAssistantLocalReply(q),provider:'Локальный бот · офлайн'});
   }finally{
     aiAssistantPaintMessages();
     const currentSend=$('#aiSendBtn');if(currentSend)currentSend.disabled=false;
@@ -5301,7 +5338,7 @@ RENDERERS.assistant=function(){
       '<section class="ai-hero">'+
         '<div class="ai-hero-mark">✦</div>'+
         '<div class="ai-hero-copy"><div class="ai-eyebrow">INK.OS INTELLIGENCE</div><h2>ИИ-помощник</h2><p>Финансы, клиенты, записи и развитие тату-студии — в одном чате. Ответы по данным твоей CRM.</p></div>'+
-        '<div class="ai-local-badge">● AI · DEEPSEEK / MISTRAL</div>'+
+        '<div class="ai-local-badge">● GEMINI FREE → GROQ FREE → OFFLINE</div>'+
       '</section>'+
       '<section><div class="ai-quick-title"><strong>Быстрые действия</strong><span>Нажми, чтобы начать</span></div>'+
         '<div class="ai-quick-grid">'+
