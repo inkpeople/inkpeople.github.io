@@ -1353,7 +1353,7 @@ function go(route){
   if($('#modalOverlay').classList.contains('client-open')) closeModal();
   currentRoute=route;
   const assistantFab=$('#assistantFab'); if(assistantFab) assistantFab.classList.toggle('hidden',route==='assistant');
-  $('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
+  $$('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   $$('#bottomnav .navbtn').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   {const nv=NAV.find(n=>n.id===route)||{}; $('#topbarSub').innerHTML=(nv.icon?icon(nv.icon):'')+(nv.label||''); $('#topbar').dataset.route=route;}
   $('#tipsBtn').classList.toggle('hidden', route!=='dashboard');
