@@ -681,9 +681,34 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
  .ai-chat-meta small{display:none}
 }
 
+
+/* ===== INK.OS ACCOUNT / USER DATA ISOLATION ===== */
+#inkosAuthGate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:22px 14px;background:radial-gradient(120% 90% at 12% 0%,rgba(145,34,38,.24),transparent 55%),#090807;color:#f3eae4}
+#inkosAuthGate.hidden{display:none!important}
+.inkos-auth-card{width:min(430px,100%);padding:24px 21px;border-radius:20px;border:1px solid #4a2625;background:linear-gradient(145deg,rgba(31,23,22,.98),rgba(13,11,10,.99));box-shadow:0 24px 75px rgba(0,0,0,.6),0 0 28px rgba(198,43,40,.12)}
+.inkos-auth-brand{text-align:center;font-family:'Arial Black',Impact,sans-serif;font-size:27px;font-weight:900;letter-spacing:1px;color:#fff;margin-bottom:4px}
+.inkos-auth-brand b{color:#e5453f}
+.inkos-auth-sub{text-align:center;font-size:12px;color:#a99a92;margin:0 0 21px;line-height:1.5}
+.inkos-auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border:1px solid #3a2927;background:#100d0c;border-radius:12px;margin-bottom:18px}
+.inkos-auth-tabs button{height:37px;border:0;border-radius:8px;background:transparent;color:#a99a92;font-size:13px;font-weight:800}
+.inkos-auth-tabs button.active{background:linear-gradient(180deg,#bd302c,#8f201e);color:#fff;box-shadow:0 3px 12px rgba(198,43,40,.22)}
+.inkos-auth-field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.inkos-auth-field label{font-size:11px;color:#c8b8ad;font-weight:700}
+.inkos-auth-field input{width:100%;min-width:0;height:45px;border:1px solid #3c2b29;border-radius:10px;background:#100e0d;padding:0 12px;color:#fff;font-size:14px;outline:none}
+.inkos-auth-field input:focus{border-color:#c62b28;box-shadow:0 0 0 3px rgba(198,43,40,.14)}
+.inkos-auth-primary{width:100%;height:45px;margin-top:8px;border:1px solid #7a211f;border-radius:11px;background:linear-gradient(180deg,#d23832,#a3211e);color:white;font-size:14px;font-weight:900;box-shadow:0 5px 17px rgba(198,43,40,.18)}
+.inkos-auth-primary:disabled{opacity:.55;cursor:wait}
+.inkos-auth-message{display:none;margin:12px 0 0;padding:10px 11px;border-radius:9px;background:#181312;border:1px solid #46302d;color:#ecd9cf;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.inkos-auth-message.show{display:block}
+.inkos-auth-foot{margin:16px 2px 0;text-align:center;font-size:10px;line-height:1.55;color:#887c75}
+.inkos-auth-secondary{width:100%;height:41px;margin-top:8px;border:1px solid #49302e;border-radius:10px;background:#171211;color:#e8d8ce;font-size:12px;font-weight:800}
+.inkos-auth-note{display:flex;gap:8px;margin-top:14px;padding:10px;border-radius:10px;background:rgba(44,160,100,.06);border:1px solid rgba(72,191,132,.18);font-size:10px;line-height:1.5;color:#b2c7b8}
+@media(max-width:380px){.inkos-auth-card{padding:20px 16px}.inkos-auth-brand{font-size:24px}}
+
 </style>
 </head>
 <body>
+<div id="inkosAuthGate" role="main" aria-label="Вход в INK.OS"></div>
 
 <div id="splash">
   <div class="sp-col">
@@ -714,6 +739,9 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
         <svg class="ico" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.9v.2h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0 0 12 3Z"/></svg>
         <span class="bell-badge hidden" id="tipsCount"></span>
       </button>
+      <button class="bell-btn hidden" id="accountBtn" aria-label="Аккаунт" title="Аккаунт" onclick="inkosAccountMenu()">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.4-3.6 3.1-5.5 7.5-5.5s7.1 1.9 7.5 5.5"/></svg>
+      </button>
       <button class="bell-btn" id="notifBtn" aria-label="Уведомления">
         <svg class="ico" viewBox="0 0 24 24"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
         <span class="bell-badge hidden" id="notifCount"></span>
@@ -736,9 +764,10 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
 <div id="genericSheetOverlay"><div class="gsheet" id="genericSheetBody"></div></div>
 <div class="toast-wrap" id="toastWrap"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ====================== APP STATE / CONSTANTS ====================== */
-const DB_NAME='inkos_db', DB_VER=4;
+let DB_NAME='inkos_db', DB_VER=4;
 let db=null;
 const STORES=['clients','events','payments','finance','tattooWork','photos','students','homework','inventory','cartridgeUsage','healingFilmSales','guestSpots','cities','reminders','tasks','notifications','settings','backups','projects','consents','auditLog'];
 const EVENT_TYPES={
@@ -1122,27 +1151,31 @@ function idbPut(store,obj){
       const arr=S[store]||[]; const i=arr.findIndex(x=>x.id===obj.id);
       if(i>=0) arr[i]=obj; else arr.push(obj);
       S[store]=arr; persistLocalFallback();
+      inkosMarkLocalChange();
       resolve(obj); return;
     }
     const tx=db.transaction(store,'readwrite');
     tx.objectStore(store).put(obj);
-    tx.oncomplete=()=>resolve(obj);
+    tx.oncomplete=()=>{ resolve(obj); inkosMarkLocalChange(); };
     tx.onerror=()=>reject(tx.error);
   });
 }
 function idbDel(store,id){
   return new Promise((resolve,reject)=>{
-    if(!db){ S[store]=(S[store]||[]).filter(x=>x.id!==id); persistLocalFallback(); resolve(); return; }
+    if(!db){ S[store]=(S[store]||[]).filter(x=>x.id!==id); persistLocalFallback(); inkosMarkLocalChange(); resolve(); return; }
     const tx=db.transaction(store,'readwrite');
-    tx.objectStore(store).delete(id);    tx.oncomplete=()=>resolve();
+    tx.objectStore(store).delete(id);    tx.oncomplete=()=>{ resolve(); inkosMarkLocalChange(); };
     tx.onerror=()=>reject(tx.error);
   });
 }
+function inkosFallbackStorageKey(){
+  return inkosCurrentUser&&inkosCurrentUser.id ? inkosFallbackKeyForUser(inkosCurrentUser.id) : 'inkos_fallback_db';
+}
 function persistLocalFallback(){
-  try{ localStorage.setItem('inkos_fallback_db',JSON.stringify(S)); }catch(e){}
+  try{ localStorage.setItem(inkosFallbackStorageKey(),JSON.stringify(S)); }catch(e){}
 }
 function loadLocalFallback(){
-  try{ const raw=localStorage.getItem('inkos_fallback_db'); if(raw) Object.assign(S,JSON.parse(raw)); }catch(e){}
+  try{ const raw=localStorage.getItem(inkosFallbackStorageKey()); if(raw) Object.assign(S,JSON.parse(raw)); }catch(e){}
 }
 async function loadAllData(){
   if(db){
@@ -1467,15 +1500,13 @@ function setupInactivityLock(){
 function finVal(html){
   return S.settings.hideFinance ? `<span title="Финансовые данные скрыты — включите показ в Настройках → Безопасность" style="letter-spacing:2px">••••••</span>` : html;
 }
-async function init(){
+async function inkosInitLocalStore(){
   try{ db=await idbOpen(); }catch(e){ db=null; toast('IndexedDB недоступен — используется резервное хранилище localStorage.'); }
   await loadAllData();
   if(S.clients.length===0 && S.settings._seeded!==true){
     // first run: offer demo data via prompt on dashboard; do not auto-seed silently more than once
   }
-  runSplash();
 }
-init();
 
 /* ====================== BACKGROUND PATTERN (inline SVG skulls/graffiti, low opacity) ====================== */
 (function setBgPattern(){
@@ -5220,6 +5251,150 @@ RENDERERS.assistant=function(){
   aiAssistantPaintMessages();
   $('#aiChatForm').onsubmit=function(e){e.preventDefault();aiAssistantAsk($('#aiChatInput').value);};
 };
+
+/* ====================== ACCOUNT AUTH + PRIVATE CLOUD DATA ====================== */
+const INKOS_SUPABASE_URL='https://jgzzdsittnzomedvsspj.supabase.co';
+const INKOS_SUPABASE_KEY='sb_publishable_z40zmd4oAy9jUr3Q4BgDY_Q_-IpiIlJe';
+let inkosSupabase=null, inkosCurrentUser=null, inkosActiveUserId=null, inkosStartingUserId=null, inkosStartPromise=null;
+let inkosPendingLegacySnapshot=null, inkosCloudPause=0, inkosCloudTimer=null, inkosCloudSaving=false, inkosCloudDirtyAfterSave=false, inkosLocalRevision=0, inkosAuthMode='login';
+function inkosRenderAuth(mode,message){
+  inkosAuthMode=mode||'login';const gate=document.getElementById('inkosAuthGate');if(!gate)return;gate.classList.remove('hidden');
+  const isSignup=inkosAuthMode==='signup',isLoading=inkosAuthMode==='loading';
+  gate.innerHTML=isLoading?'<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Защищённая загрузка аккаунта…</p><div class="inkos-auth-message show">'+esc(message||'Подключаем личную базу данных.')+'</div></div>'
+  :'<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Личный кабинет тату-мастера<br>У каждого аккаунта — свои клиенты, записи и финансы.</p>'+
+  '<div class="inkos-auth-tabs"><button type="button" class="'+(!isSignup?'active':'')+'" id="inkosLoginTab">Вход</button><button type="button" class="'+(isSignup?'active':'')+'" id="inkosSignupTab">Регистрация</button></div>'+
+  '<form id="inkosAuthForm" novalidate>'+(isSignup?'<div class="inkos-auth-field"><label for="inkosAuthName">Имя</label><input id="inkosAuthName" name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Как к тебе обращаться" required></div>':'')+
+  '<div class="inkos-auth-field"><label for="inkosAuthEmail">Электронная почта</label><input id="inkosAuthEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com" required></div>'+
+  '<div class="inkos-auth-field"><label for="inkosAuthPassword">Пароль</label><input id="inkosAuthPassword" name="password" type="password" autocomplete="'+(isSignup?'new-password':'current-password')+'" minlength="8" maxlength="128" placeholder="'+(isSignup?'Не менее 8 символов':'Твой пароль')+'" required></div>'+
+  (isSignup?'<div class="inkos-auth-field"><label for="inkosAuthPassword2">Повтори пароль</label><input id="inkosAuthPassword2" name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Повтори пароль" required></div>':'')+
+  '<button class="inkos-auth-primary" id="inkosAuthSubmit" type="submit">'+(isSignup?'Создать аккаунт':'Войти в INK.OS')+'</button></form>'+
+  '<button class="inkos-auth-secondary" id="inkosAuthReset" type="button" '+(isSignup?'hidden':'')+'>Не помню пароль</button>'+
+  '<div id="inkosAuthMessage" class="inkos-auth-message '+(message?'show':'')+'">'+esc(message||'')+'</div>'+
+  '<div class="inkos-auth-note"><span>🔒</span><span>Данные разделены на сервере по аккаунтам. Пароль не хранится в открытом виде в INK.OS.</span></div>'+
+  '<div class="inkos-auth-foot">Чтобы перейти к другому профилю на этом устройстве, сначала выйди из текущего аккаунта.</div></div>';
+  if(isLoading)return;document.getElementById('inkosLoginTab').onclick=()=>inkosRenderAuth('login');document.getElementById('inkosSignupTab').onclick=()=>inkosRenderAuth('signup');
+  document.getElementById('inkosAuthForm').addEventListener('submit',inkosSubmitAuth);const reset=document.getElementById('inkosAuthReset');if(reset)reset.onclick=inkosSendPasswordReset;
+}
+function inkosShowAuthMessage(m){const e=document.getElementById('inkosAuthMessage');if(e){e.textContent=m;e.classList.add('show');}}
+async function inkosSubmitAuth(event){
+  event.preventDefault();if(!inkosSupabase){inkosShowAuthMessage('Не удалось загрузить модуль входа. Проверь интернет и перезагрузи страницу.');return;}
+  const form=event.currentTarget,email=String(form.elements.email.value||'').trim().toLowerCase(),password=String(form.elements.password.value||''),isSignup=inkosAuthMode==='signup',
+  displayName=isSignup?String(form.elements.displayName.value||'').trim():'',submit=document.getElementById('inkosAuthSubmit');
+  if(!email||!password){inkosShowAuthMessage('Заполни почту и пароль.');return;}if(password.length<8){inkosShowAuthMessage('Пароль должен содержать не менее 8 символов.');return;}
+  if(isSignup&&password!==String(form.elements.password2.value||'')){inkosShowAuthMessage('Пароли не совпадают.');return;}if(isSignup&&!displayName){inkosShowAuthMessage('Укажи имя.');return;}
+  submit.disabled=true;submit.textContent=isSignup?'Создаём аккаунт…':'Входим…';
+  try{
+    if(isSignup){const {data,error}=await inkosSupabase.auth.signUp({email,password,options:{data:{display_name:displayName}}});if(error)throw error;
+      if(data.session&&data.user)await inkosStartUser(data.user);else inkosRenderAuth('login','Аккаунт зарегистрирован. Если включено подтверждение почты, перейди по ссылке из письма, затем вернись сюда и войди.');
+    }else{const {data,error}=await inkosSupabase.auth.signInWithPassword({email,password});if(error)throw error;if(!data.user)throw new Error('Не удалось определить аккаунт после входа.');await inkosStartUser(data.user);}
+  }catch(error){console.error('INK.OS account auth:',error);inkosShowAuthMessage(inkosReadableAuthError(error));const btn=document.getElementById('inkosAuthSubmit');if(btn){btn.disabled=false;btn.textContent=isSignup?'Создать аккаунт':'Войти в INK.OS';}}
+}
+function inkosReadableAuthError(error){
+  const raw=String(error&&error.message||error||'Неизвестная ошибка');if(/invalid login credentials/i.test(raw))return 'Неверная почта или пароль.';
+  if(/email not confirmed/i.test(raw))return 'Подтверди электронную почту по ссылке в письме.';if(/user already registered/i.test(raw))return 'Этот адрес уже зарегистрирован. Переключись на «Вход».';
+  if(/password should be at least|weak password/i.test(raw))return 'Выбери более надёжный пароль длиной не менее 8 символов.';if(/rate limit|too many requests/i.test(raw))return 'Слишком много попыток. Подожди немного и попробуй снова.';
+  if(/failed to fetch|network|load failed/i.test(raw))return 'Нет соединения с сервером. Проверь интернет и повтори попытку.';return 'Не удалось выполнить операцию: '+raw;
+}
+async function inkosSendPasswordReset(){
+  const email=String(document.getElementById('inkosAuthEmail')?.value||'').trim().toLowerCase();if(!email){inkosShowAuthMessage('Сначала введи электронную почту.');return;}
+  try{const {error}=await inkosSupabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;inkosShowAuthMessage('Если для этой почты есть аккаунт, письмо для сброса пароля отправлено. Проверь входящие и папку «Спам».');}catch(error){inkosShowAuthMessage(inkosReadableAuthError(error));}
+}
+function inkosUserDbName(id){return 'inkos_db_user_'+String(id||'').replace(/[^a-z0-9]/gi,'');}
+function inkosFallbackKeyForUser(id){return 'inkos_fallback_db_'+String(id||'').replace(/[^a-z0-9]/gi,'');}
+function inkosResetMemory(){STORES.forEach(s=>{if(s==='settings')S.settings={};else S[s]=[];});}
+function inkosSnapshotFromState(){const stores={};STORES.forEach(s=>{stores[s]=s==='settings'?{...(S.settings||{}),id:'main'}:(Array.isArray(S[s])?S[s]:[]);});return {schemaVersion:1,stores};}
+function inkosSnapshotHasRecords(snapshot){const st=snapshot&&snapshot.stores?snapshot.stores:snapshot||{};return STORES.some(s=>s!=='settings'&&Array.isArray(st[s])&&st[s].length>0);}
+function inkosLocalDataExists(){return STORES.some(s=>s!=='settings'&&Array.isArray(S[s])&&S[s].length>0);}
+function inkosMarkLocalChange(){if(inkosCloudPause>0||!inkosCurrentUser)return;inkosLocalRevision++;try{localStorage.setItem('inkos_cloud_dirty_'+inkosCurrentUser.id,String(Date.now()));}catch(e){}inkosQueueCloudSave();}
+function inkosQueueCloudSave(){if(inkosCloudPause>0||!inkosCurrentUser||!inkosSupabase)return;clearTimeout(inkosCloudTimer);inkosCloudTimer=setTimeout(()=>inkosWriteCloudSnapshot(false),1100);}
+async function inkosWriteCloudSnapshot(showErrors){
+  if(!inkosCurrentUser||!inkosSupabase||inkosCloudPause>0)return false;if(inkosCloudSaving){inkosCloudDirtyAfterSave=true;return false;}
+  inkosCloudSaving=true;inkosCloudDirtyAfterSave=false;const userId=inkosCurrentUser.id,revision=inkosLocalRevision;
+  try{const snapshot=inkosSnapshotFromState(),size=JSON.stringify(snapshot).length;if(size>7*1024*1024)throw new Error('Объём данных больше 7 МБ. На этом устройстве данные сохранены, но для облачной синхронизации больших фотографий потребуется отдельное хранилище.');
+    const {error}=await inkosSupabase.from('inkos_user_data').upsert({user_id:userId,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;
+    try{localStorage.setItem('inkos_cloud_synced_'+userId,String(Date.now()));if(revision===inkosLocalRevision)localStorage.removeItem('inkos_cloud_dirty_'+userId);}catch(e){}
+    if(showErrors)toast('Данные аккаунта синхронизированы ☁️');return true;
+  }catch(error){console.error('INK.OS cloud sync:',error);if(showErrors||navigator.onLine)toast('Не удалось синхронизировать INK.OS: '+String(error.message||error));return false;}
+  finally{inkosCloudSaving=false;if(inkosCloudDirtyAfterSave){inkosCloudDirtyAfterSave=false;clearTimeout(inkosCloudTimer);inkosCloudTimer=setTimeout(()=>inkosWriteCloudSnapshot(false),400);}}
+}
+async function inkosReplaceStore(store,records){
+  const clean=(Array.isArray(records)?records:[]).filter(x=>x&&typeof x==='object').map(x=>({...x,id:x.id||uid()}));
+  if(!db){if(store==='settings')S.settings=clean[0]||{id:'main',...defaultSettings()};else S[store]=clean;persistLocalFallback();return;}
+  await new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite'),os=tx.objectStore(store);os.clear();clean.forEach(row=>os.put(row));tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Не удалось обновить локальную базу.'));});
+}
+async function inkosApplySnapshot(snapshot){
+  const source=snapshot&&snapshot.stores?snapshot.stores:(snapshot||{});inkosCloudPause++;
+  try{for(const store of STORES){if(store==='settings'){let value=source.settings;if(Array.isArray(value))value=value[0];S.settings=value&&typeof value==='object'?{...value,id:'main'}:{id:'main',...defaultSettings()};await inkosReplaceStore('settings',[S.settings]);}
+    else{S[store]=Array.isArray(source[store])?source[store].filter(x=>x&&typeof x==='object'):[];await inkosReplaceStore(store,S[store]);}}}
+  finally{inkosCloudPause=Math.max(0,inkosCloudPause-1);}
+}
+function inkosReadLegacySnapshot(){
+  return new Promise(async resolve=>{
+    try{const fallback=localStorage.getItem('inkos_fallback_db');if(fallback){const old=JSON.parse(fallback),stores={};STORES.forEach(s=>stores[s]=s==='settings'?(old.settings||{id:'main',...defaultSettings()}):(Array.isArray(old[s])?old[s]:[]));const snap={schemaVersion:1,stores};if(inkosSnapshotHasRecords(snap)){resolve(snap);return;}}}catch(e){}
+    let oldDb=null;try{
+      if(indexedDB.databases){const names=await indexedDB.databases();if(!names.some(x=>x.name==='inkos_db')){resolve(null);return;}}
+      oldDb=await new Promise(done=>{let newlyCreated=false;const req=indexedDB.open('inkos_db');req.onupgradeneeded=()=>{newlyCreated=true;try{req.transaction.abort();}catch(e){}};req.onsuccess=()=>{if(newlyCreated){try{req.result.close();}catch(e){}done(null);}else done(req.result);};req.onerror=()=>done(null);});
+      if(!oldDb){resolve(null);return;}const stores={};
+      for(const store of STORES){if(!oldDb.objectStoreNames.contains(store)){stores[store]=store==='settings'?{id:'main',...defaultSettings()}:[];continue;}
+        const rows=await new Promise((done,reject)=>{const req=oldDb.transaction(store,'readonly').objectStore(store).getAll();req.onsuccess=()=>done(req.result||[]);req.onerror=()=>reject(req.error);});
+        stores[store]=store==='settings'?(rows[0]||{id:'main',...defaultSettings()}):rows;}
+      oldDb.close();const snap={schemaVersion:1,stores};resolve(inkosSnapshotHasRecords(snap)?snap:null);
+    }catch(e){try{oldDb&&oldDb.close();}catch(x){}resolve(null);}
+  });
+}
+function inkosRenderImportChoice(snapshot){
+  inkosPendingLegacySnapshot=snapshot;const count=STORES.filter(s=>s!=='settings'&&Array.isArray((snapshot.stores||{})[s])).reduce((n,s)=>n+((snapshot.stores||{})[s]||[]).length,0);
+  const gate=document.getElementById('inkosAuthGate');gate.classList.remove('hidden');
+  gate.innerHTML='<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Аккаунт '+esc(inkosCurrentUser?.email||'')+' готов к работе.</p>'+
+    '<h2 style="font-size:19px;line-height:1.25;margin:0 0 8px">Что сделать со старыми данными?</h2>'+
+    '<p style="font-size:12px;color:#b7aaa2;line-height:1.55;margin:0 0 14px">На устройстве найдены прежние данные INK.OS ('+count+' записей). Они пока не показаны новому аккаунту. Выбери, переносить ли их в этот профиль.</p>'+
+    '<button class="inkos-auth-primary" id="inkosImportLegacyBtn" type="button">Перенести старые данные в мой аккаунт</button><button class="inkos-auth-secondary" id="inkosStartEmptyBtn" type="button">Начать с чистой базы</button>'+
+    '<div class="inkos-auth-foot">Старые локальные данные не удаляются. Перенос копирует их в аккаунт; после переноса изменения синхронизируются с облаком.</div><div id="inkosAuthMessage" class="inkos-auth-message"></div></div>';
+  document.getElementById('inkosImportLegacyBtn').onclick=()=>inkosChooseLegacyImport(true);document.getElementById('inkosStartEmptyBtn').onclick=()=>inkosChooseLegacyImport(false);
+}
+async function inkosChooseLegacyImport(importLegacy){
+  const message=document.getElementById('inkosAuthMessage'),importBtn=document.getElementById('inkosImportLegacyBtn'),emptyBtn=document.getElementById('inkosStartEmptyBtn');[importBtn,emptyBtn].forEach(b=>{if(b)b.disabled=true;});
+  if(message){message.textContent='Сохраняем личные данные аккаунта…';message.classList.add('show');}
+  try{if(importLegacy&&inkosPendingLegacySnapshot)await inkosApplySnapshot(inkosPendingLegacySnapshot);else{inkosResetMemory();await inkosApplySnapshot({schemaVersion:1,stores:{settings:{id:'main',...defaultSettings()}}});}
+    const ok=await inkosWriteCloudSnapshot(true);if(!ok)throw new Error('Облако не подтвердило сохранение. Проверь соединение и попробуй ещё раз.');inkosPendingLegacySnapshot=null;inkosStartApp();
+  }catch(error){if(message){message.textContent=String(error.message||error);message.classList.add('show');}[importBtn,emptyBtn].forEach(b=>{if(b)b.disabled=false;});}
+}
+async function inkosStartUser(user){
+  if(!user||!user.id)return;if(inkosActiveUserId===user.id&&appBooted)return;if(inkosStartPromise&&inkosStartingUserId===user.id)return inkosStartPromise;inkosStartingUserId=user.id;
+  inkosStartPromise=(async()=>{
+    inkosRenderAuth('loading','Проверяем права доступа и загружаем только данные этого аккаунта.');if(db){try{db.close();}catch(e){}db=null;}
+    inkosCurrentUser=user;inkosActiveUserId=null;DB_NAME=inkosUserDbName(user.id);inkosResetMemory();await inkosInitLocalStore();
+    let cloudRow=null;try{const {data,error}=await inkosSupabase.from('inkos_user_data').select('user_id,data,updated_at').eq('user_id',user.id).maybeSingle();if(error)throw error;cloudRow=data;}
+    catch(error){console.error('INK.OS account data load:',error);inkosRenderAuth('login','Не удалось проверить личную базу в облаке. Данные не открыты. Проверь интернет и войди ещё раз. Причина: '+String(error.message||error));throw error;}
+    if(cloudRow){await inkosApplySnapshot(cloudRow.data||{schemaVersion:1,stores:{}});try{localStorage.setItem('inkos_cloud_synced_'+user.id,String(Date.parse(cloudRow.updated_at)||Date.now()));}catch(e){}}
+    else if(inkosLocalDataExists()){const ok=await inkosWriteCloudSnapshot(false);if(!ok)throw new Error('В этой базе есть локальные изменения, но их не удалось сохранить в облако.');}
+    else{const legacy=await inkosReadLegacySnapshot();if(legacy){inkosRenderImportChoice(legacy);return;}const ok=await inkosWriteCloudSnapshot(false);if(!ok)throw new Error('Не удалось создать личное облачное хранилище. Проверь интернет и попробуй ещё раз.');}
+    inkosStartApp();
+  })().catch(error=>{console.error('INK.OS account bootstrap:',error);if(!inkosPendingLegacySnapshot)inkosRenderAuth('login',String(error.message||error));}).finally(()=>{inkosStartPromise=null;inkosStartingUserId=null;});
+  return inkosStartPromise;
+}
+function inkosStartApp(){
+  inkosActiveUserId=inkosCurrentUser&&inkosCurrentUser.id;inkosPendingLegacySnapshot=null;const gate=document.getElementById('inkosAuthGate');gate.classList.add('hidden');gate.innerHTML='';inkosUpdateAccountButton();
+  if(!appBooted){const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;runSplash();}
+  else{document.getElementById('app').classList.remove('hidden');buildNav();go('dashboard');}
+}
+function inkosUpdateAccountButton(){const button=document.getElementById('accountBtn');if(!button)return;button.classList.toggle('hidden',!inkosCurrentUser);if(inkosCurrentUser){button.title=inkosCurrentUser.email||'Аккаунт';button.setAttribute('aria-label','Аккаунт: '+(inkosCurrentUser.email||''));}}
+function inkosAccountMenu(){if(!inkosCurrentUser)return;openSheet('Личный аккаунт','<div style="padding:8px 0 14px"><div class="small dim">Вы вошли как</div><div style="font-weight:800;overflow-wrap:anywhere">'+esc(inkosCurrentUser.email||'')+'</div><p class="small dim" style="margin-top:10px">Клиенты, записи, финансы и настройки синхронизируются только с этим аккаунтом.</p><button class="btn btn-danger btn-block" type="button" onclick="inkosDoSignOut()">Выйти из аккаунта</button></div>');}
+async function inkosDoSignOut(){try{clearTimeout(inkosCloudTimer);await inkosWriteCloudSnapshot(false);const {error}=await inkosSupabase.auth.signOut();if(error)throw error;closeSheet();inkosHandleSignedOut();}catch(error){toast('Не удалось выйти: '+String(error.message||error));}}
+function inkosHandleSignedOut(){
+  inkosCurrentUser=null;inkosActiveUserId=null;inkosPendingLegacySnapshot=null;if(db){try{db.close();}catch(e){}db=null;}DB_NAME='inkos_db';inkosResetMemory();document.getElementById('app').classList.add('hidden');appBooted=false;
+  const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;inkosUpdateAccountButton();inkosRenderAuth('login','Ты вышел из аккаунта. Для просмотра личных данных войди снова.');
+}
+async function inkosAuthInit(){
+  inkosRenderAuth('loading','Проверяем сохранённый вход…');if(!window.supabase||typeof window.supabase.createClient!=='function'){inkosRenderAuth('login','Не загрузился модуль регистрации. Проверь соединение и перезагрузи страницу.');return;}
+  try{inkosSupabase=window.supabase.createClient(INKOS_SUPABASE_URL,INKOS_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    inkosSupabase.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session&&session.user){if(inkosActiveUserId!==session.user.id)inkosStartUser(session.user).catch(()=>{});}else if(event==='SIGNED_OUT')inkosHandleSignedOut();},0);});
+    const {data,error}=await inkosSupabase.auth.getSession();if(error)throw error;if(data&&data.session&&data.session.user)await inkosStartUser(data.session.user);else inkosRenderAuth('login');
+  }catch(error){console.error('INK.OS auth init:',error);inkosRenderAuth('login','Не удалось подключиться к сервису входа: '+String(error.message||error));}
+}
+window.addEventListener('online',()=>{if(inkosCurrentUser)inkosQueueCloudSave();});
+window.addEventListener('beforeunload',()=>{if(inkosCurrentUser&&inkosCloudTimer)clearTimeout(inkosCloudTimer);});
+inkosAuthInit();
 
 </script>
 </body>
