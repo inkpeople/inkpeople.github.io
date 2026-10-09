@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ink-os-shell-premium-v4-ai';
+const CACHE_NAME = 'ink-os-shell-premium-v5-ai';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
