@@ -663,10 +663,13 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
 @media(max-width:760px){
  .assistant-fab{right:12px;bottom:calc(78px + env(safe-area-inset-bottom));padding:11px 13px}
  .assistant-fab .fab-label{font-size:12px}
- .ai-hero{align-items:flex-start;flex-wrap:wrap;padding:15px}
+ .ai-hero{display:grid;grid-template-columns:45px minmax(0,1fr);align-items:start;column-gap:12px;row-gap:10px;padding:15px}
  .ai-hero-mark{width:45px;height:45px;border-radius:13px;font-size:23px}
- .ai-hero h2{font-size:20px}
- .ai-local-badge{margin-left:59px;margin-top:-6px}
+ .ai-hero-copy{min-width:0}
+ .ai-eyebrow{font-size:9px;letter-spacing:1px;white-space:nowrap}
+ .ai-hero h2{font-size:20px;white-space:nowrap}
+ .ai-hero p{word-break:normal;overflow-wrap:normal}
+ .ai-local-badge{grid-column:2;margin:0;justify-self:start}
  .ai-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
  .ai-quick{min-height:57px;padding:9px;font-size:11px;gap:7px}
  .ai-chat-shell{height:46vh;min-height:310px}
@@ -678,9 +681,34 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
  .ai-chat-meta small{display:none}
 }
 
+
+/* ===== INK.OS ACCOUNT / USER DATA ISOLATION ===== */
+#inkosAuthGate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:22px 14px;background:radial-gradient(120% 90% at 12% 0%,rgba(145,34,38,.24),transparent 55%),#090807;color:#f3eae4}
+#inkosAuthGate.hidden{display:none!important}
+.inkos-auth-card{width:min(430px,100%);padding:24px 21px;border-radius:20px;border:1px solid #4a2625;background:linear-gradient(145deg,rgba(31,23,22,.98),rgba(13,11,10,.99));box-shadow:0 24px 75px rgba(0,0,0,.6),0 0 28px rgba(198,43,40,.12)}
+.inkos-auth-brand{text-align:center;font-family:'Arial Black',Impact,sans-serif;font-size:27px;font-weight:900;letter-spacing:1px;color:#fff;margin-bottom:4px}
+.inkos-auth-brand b{color:#e5453f}
+.inkos-auth-sub{text-align:center;font-size:12px;color:#a99a92;margin:0 0 21px;line-height:1.5}
+.inkos-auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border:1px solid #3a2927;background:#100d0c;border-radius:12px;margin-bottom:18px}
+.inkos-auth-tabs button{height:37px;border:0;border-radius:8px;background:transparent;color:#a99a92;font-size:13px;font-weight:800}
+.inkos-auth-tabs button.active{background:linear-gradient(180deg,#bd302c,#8f201e);color:#fff;box-shadow:0 3px 12px rgba(198,43,40,.22)}
+.inkos-auth-field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.inkos-auth-field label{font-size:11px;color:#c8b8ad;font-weight:700}
+.inkos-auth-field input{width:100%;min-width:0;height:45px;border:1px solid #3c2b29;border-radius:10px;background:#100e0d;padding:0 12px;color:#fff;font-size:14px;outline:none}
+.inkos-auth-field input:focus{border-color:#c62b28;box-shadow:0 0 0 3px rgba(198,43,40,.14)}
+.inkos-auth-primary{width:100%;height:45px;margin-top:8px;border:1px solid #7a211f;border-radius:11px;background:linear-gradient(180deg,#d23832,#a3211e);color:white;font-size:14px;font-weight:900;box-shadow:0 5px 17px rgba(198,43,40,.18)}
+.inkos-auth-primary:disabled{opacity:.55;cursor:wait}
+.inkos-auth-message{display:none;margin:12px 0 0;padding:10px 11px;border-radius:9px;background:#181312;border:1px solid #46302d;color:#ecd9cf;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.inkos-auth-message.show{display:block}
+.inkos-auth-foot{margin:16px 2px 0;text-align:center;font-size:10px;line-height:1.55;color:#887c75}
+.inkos-auth-secondary{width:100%;height:41px;margin-top:8px;border:1px solid #49302e;border-radius:10px;background:#171211;color:#e8d8ce;font-size:12px;font-weight:800}
+.inkos-auth-note{display:flex;gap:8px;margin-top:14px;padding:10px;border-radius:10px;background:rgba(44,160,100,.06);border:1px solid rgba(72,191,132,.18);font-size:10px;line-height:1.5;color:#b2c7b8}
+@media(max-width:380px){.inkos-auth-card{padding:20px 16px}.inkos-auth-brand{font-size:24px}}
+
 </style>
 </head>
 <body>
+<div id="inkosAuthGate" role="main" aria-label="Вход в INK.OS"></div>
 
 <div id="splash">
   <div class="sp-col">
@@ -711,6 +739,9 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
         <svg class="ico" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.9v.2h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0 0 12 3Z"/></svg>
         <span class="bell-badge hidden" id="tipsCount"></span>
       </button>
+      <button class="bell-btn hidden" id="accountBtn" aria-label="Аккаунт" title="Аккаунт" onclick="inkosAccountMenu()">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.4-3.6 3.1-5.5 7.5-5.5s7.1 1.9 7.5 5.5"/></svg>
+      </button>
       <button class="bell-btn" id="notifBtn" aria-label="Уведомления">
         <svg class="ico" viewBox="0 0 24 24"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
         <span class="bell-badge hidden" id="notifCount"></span>
@@ -735,7 +766,7 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
 
 <script>
 /* ====================== APP STATE / CONSTANTS ====================== */
-const DB_NAME='inkos_db', DB_VER=4;
+let DB_NAME='inkos_db', DB_VER=4;
 let db=null;
 const STORES=['clients','events','payments','finance','tattooWork','photos','students','homework','inventory','cartridgeUsage','healingFilmSales','guestSpots','cities','reminders','tasks','notifications','settings','backups','projects','consents','auditLog'];
 const EVENT_TYPES={
@@ -1119,27 +1150,31 @@ function idbPut(store,obj){
       const arr=S[store]||[]; const i=arr.findIndex(x=>x.id===obj.id);
       if(i>=0) arr[i]=obj; else arr.push(obj);
       S[store]=arr; persistLocalFallback();
+      inkosMarkLocalChange();
       resolve(obj); return;
     }
     const tx=db.transaction(store,'readwrite');
     tx.objectStore(store).put(obj);
-    tx.oncomplete=()=>resolve(obj);
+    tx.oncomplete=()=>{ resolve(obj); inkosMarkLocalChange(); };
     tx.onerror=()=>reject(tx.error);
   });
 }
 function idbDel(store,id){
   return new Promise((resolve,reject)=>{
-    if(!db){ S[store]=(S[store]||[]).filter(x=>x.id!==id); persistLocalFallback(); resolve(); return; }
+    if(!db){ S[store]=(S[store]||[]).filter(x=>x.id!==id); persistLocalFallback(); inkosMarkLocalChange(); resolve(); return; }
     const tx=db.transaction(store,'readwrite');
-    tx.objectStore(store).delete(id);    tx.oncomplete=()=>resolve();
+    tx.objectStore(store).delete(id);    tx.oncomplete=()=>{ resolve(); inkosMarkLocalChange(); };
     tx.onerror=()=>reject(tx.error);
   });
 }
+function inkosFallbackStorageKey(){
+  return inkosCurrentUser&&inkosCurrentUser.id ? inkosFallbackKeyForUser(inkosCurrentUser.id) : 'inkos_fallback_db';
+}
 function persistLocalFallback(){
-  try{ localStorage.setItem('inkos_fallback_db',JSON.stringify(S)); }catch(e){}
+  try{ localStorage.setItem(inkosFallbackStorageKey(),JSON.stringify(S)); }catch(e){}
 }
 function loadLocalFallback(){
-  try{ const raw=localStorage.getItem('inkos_fallback_db'); if(raw) Object.assign(S,JSON.parse(raw)); }catch(e){}
+  try{ const raw=localStorage.getItem(inkosFallbackStorageKey()); if(raw) Object.assign(S,JSON.parse(raw)); }catch(e){}
 }
 async function loadAllData(){
   if(db){
@@ -1353,7 +1388,7 @@ function go(route){
   if($('#modalOverlay').classList.contains('client-open')) closeModal();
   currentRoute=route;
   const assistantFab=$('#assistantFab'); if(assistantFab) assistantFab.classList.toggle('hidden',route==='assistant');
-  $('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
+  $$('#sidebar .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   $$('#bottomnav .navbtn').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
   {const nv=NAV.find(n=>n.id===route)||{}; $('#topbarSub').innerHTML=(nv.icon?icon(nv.icon):'')+(nv.label||''); $('#topbar').dataset.route=route;}
   $('#tipsBtn').classList.toggle('hidden', route!=='dashboard');
@@ -1464,15 +1499,13 @@ function setupInactivityLock(){
 function finVal(html){
   return S.settings.hideFinance ? `<span title="Финансовые данные скрыты — включите показ в Настройках → Безопасность" style="letter-spacing:2px">••••••</span>` : html;
 }
-async function init(){
+async function inkosInitLocalStore(){
   try{ db=await idbOpen(); }catch(e){ db=null; toast('IndexedDB недоступен — используется резервное хранилище localStorage.'); }
   await loadAllData();
   if(S.clients.length===0 && S.settings._seeded!==true){
     // first run: offer demo data via prompt on dashboard; do not auto-seed silently more than once
   }
-  runSplash();
 }
-init();
 
 /* ====================== BACKGROUND PATTERN (inline SVG skulls/graffiti, low opacity) ====================== */
 (function setBgPattern(){
@@ -4553,7 +4586,7 @@ function generateAppIcon(){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   try{
     const swUrl=new URL('sw.js',document.baseURI);
-    swUrl.searchParams.set('build','premium-20261009-v5-ai');
+    swUrl.searchParams.set('build','premium-20261009-v7-ai');
     navigator.serviceWorker.register(swUrl,{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('INK.OS: service worker не зарегистрирован',err));
   }catch(e){}
 }
@@ -5158,26 +5191,187 @@ function aiAssistantAnswer(text){
   if(/клиент|найди|найти|информац|профиль|контакт/.test(q)) return 'В базе INK.OS сейчас '+(S.clients||[]).length+' клиент(ов). Чтобы открыть карточку, напиши, например: «Найди клиента Иван Иванов». Я покажу только поля, которые заполнены в его карточке.';
   return 'Я работаю в бесплатном локальном режиме: считаю показатели по данным INK.OS и помогаю с типовыми задачами, но пока не подключена полноценная генеративная языковая модель.\n\nПопробуй спросить:\n• «Сколько я заработал в сентябре?»\n• «Покажи неоплаченные сеансы»\n• «Кому давно не писал?»\n• «Составь план на неделю»\n• «Где можно сэкономить?»\n• «Напиши рекламный пост про реализм».';
 }
+function aiAssistantBuildContext(){
+  const fieldSets={
+    clients:['name','status','styles','style','zones','zone','visits','totalSum','firstVisit','lastVisit','nextContact','source','city','country'],
+    events:['title','name','label','date','eventDate','startAt','start','startTime','time','endAt','end','type','status','clientName','amount','sum','price','paid','paidAmount','paymentStatus','category','duration'],
+    payments:['date','createdAt','type','amount','sum','price','paid','paidAmount','status','paymentStatus','method','category','clientName','direction','currency'],
+    finance:['date','createdAt','type','amount','sum','price','cost','status','method','category','title','name','direction','incomeType','expenseType','currency'],
+    tattooWork:['name','title','date','status','style','styles','zone','zones','price','sum','paid','paidAmount','clientName','type'],
+    photos:['title','name','date','createdAt','type','clientName','status'],
+    students:['name','status','course','stage','date','createdAt','updatedAt'],
+    homework:['title','name','status','deadline','priority','completed','date','createdAt'],
+    inventory:['name','title','category','quantity','stock','cost','price','unitCost','salePrice','sku','updatedAt'],
+    cartridgeUsage:['date','createdAt','name','type','quantity','count','cost','price'],
+    healingFilmSales:['date','createdAt','name','quantity','count','amount','sum','price','cost'],
+    guestSpots:['name','city','country','date','status','price','amount'],
+    cities:['name','city','country','count'],
+    reminders:['title','name','date','deadline','status','type','completed'],
+    tasks:['title','name','date','deadline','status','type','priority','completed','done'],
+    notifications:['kind','createdAt','read'],
+    backups:['name','date','createdAt','status'],
+    projects:['title','name','date','status','style','zones','clientName','price','sum','paid'],
+    consents:['type','status','createdAt','date','clientName'],
+    auditLog:['action','type','createdAt','date']
+  };
+  const stores={},counts={};
+  for(const store of STORES){
+    if(store==='settings')continue;
+    const rows=Array.isArray(S[store])?S[store]:[];
+    counts[store]=rows.length;
+    const keys=fieldSets[store]||['name','title','date','status','type','amount','sum','price','category'];
+    stores[store]=rows.slice(-60).map(row=>{
+      const clean={};
+      for(const key of keys){
+        const value=row&&row[key];
+        if(value===undefined||value===null||typeof value==='object')continue;
+        const text=String(value);
+        if(text.length>180)continue;
+        clean[key]=value;
+      }
+      return clean;
+    }).filter(row=>Object.keys(row).length);
+  }
+  const now=new Date();
+  const context={currentDate:now.toISOString().slice(0,10),currency:(S.settings&&S.settings.currency)||'₽',
+    workingHours:{start:S.settings&&S.settings.workHoursStart,end:S.settings&&S.settings.workHoursEnd},
+    recordCounts:counts,stores};
+  let serialized=JSON.stringify(context);
+  while(serialized.length>24000){
+    let changed=false;
+    for(const name of Object.keys(stores)){
+      if(stores[name].length>8){stores[name]=stores[name].slice(-Math.max(8,Math.floor(stores[name].length*0.7)));changed=true;}
+    }
+    if(!changed)break;
+    serialized=JSON.stringify(context);
+  }
+  return context;
+}
 function aiAssistantPaintMessages(){
   const host=$('#aiMessages');
-  if(!host) return;
+  if(!host)return;
   const history=window.__inkosAssistantHistory||[];
-  host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':'INK.OS · помощник')+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
+  host.innerHTML=history.map(m=>'<div class="ai-message '+(m.role==='user'?'user':'assistant')+'"><div class="ai-message-name">'+(m.role==='user'?'Ты':(m.provider?'INK.OS · '+esc(m.provider):'INK.OS · помощник'))+'</div><div class="ai-message-text">'+esc(m.text).replace(/\n/g,'<br>')+'</div></div>').join('');
   host.scrollTop=host.scrollHeight;
 }
-function aiAssistantAsk(text){
+function aiAssistantBuildCloudContext(){
+  const context=aiAssistantBuildContext();
+  const stores=context&&context.stores||{};
+  const nameMap=new Map();
+  const clients=Array.isArray(stores.clients)?stores.clients:[];
+  clients.forEach((row,index)=>{
+    const original=String(row.name||'').trim();
+    if(original)nameMap.set(original,'Клиент '+(index+1));
+    row.name='Клиент '+(index+1);
+    delete row.city;delete row.country;delete row.source;
+    delete row.firstVisit;delete row.lastVisit;delete row.nextContact;
+  });
+  const removeKeys=/phone|email|telegram|whats|birth|allerg|address|personal.?note|contact/i;
+  for(const list of Object.values(stores)){
+    if(!Array.isArray(list))continue;
+    for(const row of list){
+      if(!row||typeof row!=='object')continue;
+      for(const key of Object.keys(row)){
+        if(removeKeys.test(key)){delete row[key];continue;}
+        if(typeof row[key]==='string'){
+          for(const [name,pseudo] of nameMap)if(name)row[key]=row[key].split(name).join(pseudo);
+        }
+      }
+    }
+  }
+  if(Array.isArray(stores.auditLog))stores.auditLog=[];
+  return context;
+}
+function aiAssistantLocalReply(question){
+  const q=String(question||'').toLowerCase(), now=new Date();
+  const currency=(S.settings&&S.settings.currency)||'₽';
+  const num=v=>{
+    if(typeof v==='number')return Number.isFinite(v)?v:0;
+    const n=parseFloat(String(v??'0').replace(/[\s\u00a0]/g,'').replace(',','.'));
+    return Number.isFinite(n)?n:0;
+  };
+  const dateOf=v=>{
+    if(!v)return null;
+    const text=String(v).trim();
+    const ru=text.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    const d=ru?new Date(+ru[3],+ru[2]-1,+ru[1]):new Date(v);
+    return Number.isNaN(d.getTime())?null:d;
+  };
+  const money=v=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(v)+' '+currency;
+  const finance=Array.isArray(S.finance)?S.finance:[], clients=Array.isArray(S.clients)?S.clients:[], events=Array.isArray(S.events)?S.events:[];
+  const typeOf=r=>String(r.type||r.direction||r.incomeType||r.expenseType||r.category||'').toLowerCase();
+  const amountOf=r=>num(r.amount??r.sum??r.price??r.cost??r.paidAmount??0);
+  const first=new Date(now.getFullYear(),now.getMonth(),1), next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const inMonth=r=>{const d=dateOf(r.date||r.createdAt||r.eventDate||r.startAt);return d&&d>=first&&d<next;};
+  const monthRows=finance.filter(inMonth), inc=monthRows.filter(r=>/income|доход|выручк|поступлен/.test(typeOf(r))), exp=monthRows.filter(r=>/expense|расход|затрат|покупк/.test(typeOf(r)));
+  const total=arr=>arr.reduce((s,r)=>s+Math.abs(amountOf(r)),0), month=now.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  const head='🟠 ЛОКАЛЬНЫЙ РЕЖИМ — облачные ИИ недоступны или исчерпали лимит.\n';
+  if(/привет|здравств|что ты умеешь|чем поможешь|помощь/.test(q))
+    return head+'Могу без облака считать финансовые записи, искать клиентов и ближайшие события, находить возможную задолженность и выдавать готовые шаблоны. Свободная генерация сложных текстов требует облачной модели.\n\nКлиентов: '+clients.length+'. Финансовых записей: '+finance.length+'. Событий: '+events.length+'.';
+  if(/доход|заработ|выручк|прибыл|финанс|расход|сколько.*денег|месяц/.test(q)){
+    if(!monthRows.length)return head+'За '+month+' в разделе «Финансы» нет записей с датой этого месяца. Добавь доходы и расходы в CRM — тогда я смогу посчитать локально.';
+    const unknown=monthRows.length-inc.length-exp.length;
+    return head+'Сводка за '+month+':\n• Доходы: '+money(total(inc))+' ('+inc.length+' записей)\n• Расходы: '+money(total(exp))+' ('+exp.length+' записей)\n• Доходы минус расходы: '+money(total(inc)-total(exp))+(unknown?'\n• Не распознано по типу: '+unknown+' записей.':'')+'\n\nРасчёт по локальным данным CRM.';
+  }
+  if(/сколько.*клиент|количеств.*клиент|база клиент/.test(q))return head+'В локальной базе INK.OS '+clients.length+' клиентов.';
+  if(/найди клиент|покажи клиента|данные клиента|информация о клиенте|история клиента/.test(q)){
+    const terms=q.replace(/[?!.,:;«»"']/g,' ').split(/\s+/).filter(w=>w.length>2&&!/найди|покажи|клиент|информац|данные|про|который|которую|история|когда|последний|визит/.test(w));
+    const found=clients.filter(c=>terms.some(t=>String(c.name||'').toLowerCase().includes(t))).slice(0,8);
+    return head+(found.length?found.map(c=>'• '+String(c.name||'Без имени')+' · статус: '+String(c.status||'—')+' · визиты: '+String(c.visits??'—')+' · сумма: '+(c.totalSum!=null?money(c.totalSum):'—')).join('\n'):'Не нашёл совпадений. Укажи имя или фамилию, как в CRM.');
+  }
+  if(/давно|не писал|не приходил|вернуть старых|последн.*визит|не был/.test(q)){
+    const withDates=clients.map(c=>({c,d:dateOf(c.lastVisit)})).filter(x=>x.d).sort((a,b)=>a.d-b.d).slice(0,10);
+    return head+(withDates.length?'Клиенты с самыми давними датами последнего визита:\n'+withDates.map(x=>'• '+String(x.c.name||'Без имени')+' — '+x.d.toLocaleDateString('ru-RU')+(x.c.nextContact?' · следующий контакт: '+String(x.c.nextContact):'')).join('\n'):'У клиентов не заполнено поле последнего визита. Добавь дату последнего визита — тогда локальный бот сможет выделить тех, кому пора написать.');
+  }
+  if(/неоплач|долг|задолж/.test(q)){
+    const unpaid=events.filter(e=>/неоплач|unpaid|долг/.test(String(e.paymentStatus||'').toLowerCase())||/неоплач|unpaid|долг/.test(String(e.status||'').toLowerCase())||((e.amount??e.cost??e.price??e.sum)!=null&&(e.paidAmount??e.paid)!=null&&amountOf({amount:e.amount??e.cost??e.price??e.sum})>num(e.paidAmount??e.paid)));
+    return head+(unpaid.length?'Потенциально неоплаченных событий: '+unpaid.length+'.\n'+unpaid.slice(0,10).map(e=>'• '+String(e.date||e.eventDate||'дата не указана')+' — '+String(e.title||e.name||e.clientName||'Сеанс')).join('\n')+'\nПерепроверь суммы и статус в CRM.':'По явным отметкам неоплаты событий не найдено. Убедись, что стоимость и оплаченная сумма заполнены.');
+  }
+  if(/запис|календар|сеанс|завтра|сегодня|ближайш/.test(q)){
+    const list=events.map(e=>({e,d:dateOf(e.date||e.eventDate||e.startAt||e.start)})).filter(x=>x.d&&x.d>=new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>a.d-b.d).slice(0,10);
+    return head+(list.length?'Ближайшие события из локальной CRM:\n'+list.map(x=>'• '+x.d.toLocaleDateString('ru-RU')+' · '+String(x.e.startTime||x.e.time||'время не указано')+' · '+String(x.e.title||x.e.name||x.e.clientName||'Событие')+' · '+String(x.e.status||'—')).join('\n'):'Не нашёл будущих событий с распознанной датой.');
+  }
+  if(/реклам|пост|объявлен|подпись|маркетинг/.test(q))
+    return head+'Шаблон поста для VK:\n\n«Татуировка — это история, которую ты выбираешь носить каждый день. 🖤\n\nРаботаю в стилях графика, реализм и акварель. Помогу адаптировать идею под анатомию, подобрать размер и продумать композицию.\n\nЕсть задумка? Напиши в сообщения — обсудим эскиз, стоимость и свободные даты.\n\n#тату #татуировка #татуНовосибирск #реализм #графика #акварель»\n\nДобавь фото своей работы и актуальные свободные даты перед публикацией.';
+  if(/план|недел|что делать|приоритет/.test(q))
+    return head+'План на неделю:\n1. Проверить календарь и подтвердить записи.\n2. Написать клиентам, которым пора на продолжение или проверку заживления.\n3. Опубликовать готовую работу и процесс/эскиз.\n4. Разобрать доходы и расходы.\n5. Проверить остатки расходников.\n6. Ответить на заявки и предложить конкретные свободные даты.';
+  if(/эконом|сэконом|сократ.*расход/.test(q))
+    return head+'Проверь закупочные цены вместе с доставкой, списания и остатки расходников. Сравни доходы и расходы по месяцу и не считай предоплату чистой прибылью. Для конкретной экономии нужно заполнить суммы и категории расходов в CRM.';
+  return head+'Я работаю без генеративной модели в облегчённом режиме. Спроси «Сколько доходов и расходов в этом месяце?», «Сколько клиентов?», «Покажи ближайшие записи», «Покажи возможные долги», «Составь рекламный пост» или «Составь план на неделю».';
+}
+async function aiAssistantAsk(text){
   const q=String(text||'').trim();
-  if(!q) return;
+  if(!q)return;
+  if(q.length>1200){toast('Вопрос слишком длинный — сократи его до 1200 символов.');return;}
   const history=window.__inkosAssistantHistory=window.__inkosAssistantHistory||[];
   history.push({role:'user',text:q});
   aiAssistantPaintMessages();
   const input=$('#aiChatInput');if(input)input.value='';
   const send=$('#aiSendBtn');if(send)send.disabled=true;
-  setTimeout(function(){
-    history.push({role:'assistant',text:aiAssistantAnswer(q)});
+  try{
+    const localOnly=/сколько.*клиент|количеств.*клиент|база клиент|найди клиент|покажи клиента|данные клиента|информация о клиенте|история клиента|неоплач|задолж|давно не писал|не приходил|вернуть старых|покажи ближайшие записи|ближайшие записи|календарь|записи на сегодня|записи на завтра/i.test(q);
+    if(localOnly){
+      history.push({role:'assistant',text:aiAssistantLocalReply(q),provider:'Локальный поиск CRM'});
+      return;
+    }
+    if(!inkosCurrentUser||!inkosSupabase)throw new Error('Сначала войди в личный аккаунт INK.OS.');
+    const {data,error}=await inkosSupabase.functions.invoke('inkos-ai-assistant',{
+      body:{question:q,history:history.slice(-12),context:aiAssistantBuildCloudContext()}
+    });
+    if(error){
+      let message='';
+      try{if(error.context&&typeof error.context.json==='function'){const payload=await error.context.json();message=payload&&payload.error||'';}}catch(_){}
+      throw new Error(message||error.message||'Не удалось соединиться с ИИ-сервисом.');
+    }
+    if(!data||data.error||typeof data.answer!=='string')throw new Error(data&&data.error||'ИИ-сервис не вернул ответ.');
+    history.push({role:'assistant',text:data.answer,provider:data.provider||'ИИ'});
+  }catch(error){
+    console.warn('INK.OS cloud AI unavailable; switching to local assistant:',String(error&&error.message||error).slice(0,180));
+    history.push({role:'assistant',text:aiAssistantLocalReply(q),provider:'Локальный бот · офлайн'});
+  }finally{
     aiAssistantPaintMessages();
     const currentSend=$('#aiSendBtn');if(currentSend)currentSend.disabled=false;
-  },80);
+  }
 }
 function aiAssistantQuick(code){
   const prompts={finance:'Сколько я заработал в этом месяце?',unpaid:'Покажи неоплаченные сеансы',inactive:'Кому из клиентов давно не писал?',week:'Составь план работы на неделю',savings:'Где можно сэкономить?',marketing:'Напиши рекламный пост про реализм',growth:'Проанализируй загруженность и доходность студии',forecast:'Сделай прогноз дохода к концу месяца'};
@@ -5195,7 +5389,7 @@ RENDERERS.assistant=function(){
       '<section class="ai-hero">'+
         '<div class="ai-hero-mark">✦</div>'+
         '<div class="ai-hero-copy"><div class="ai-eyebrow">INK.OS INTELLIGENCE</div><h2>ИИ-помощник</h2><p>Финансы, клиенты, записи и развитие тату-студии — в одном чате. Ответы по данным твоей CRM.</p></div>'+
-        '<div class="ai-local-badge">● БЕСПЛАТНЫЙ РЕЖИМ</div>'+
+        '<div class="ai-local-badge">● GEMINI FREE → GROQ FREE → OFFLINE</div>'+
       '</section>'+
       '<section><div class="ai-quick-title"><strong>Быстрые действия</strong><span>Нажми, чтобы начать</span></div>'+
         '<div class="ai-quick-grid">'+
@@ -5208,15 +5402,243 @@ RENDERERS.assistant=function(){
           '<button class="ai-quick" onclick="aiAssistantQuick(\'growth\')"><span class="ai-q-ic">↗</span><span>Анализ студии</span></button>'+
           '<button class="ai-quick" onclick="aiAssistantQuick(\'forecast\')"><span class="ai-q-ic">⌁</span><span>Прогноз дохода</span></button>'+
         '</div></section>'+
-      '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Данные остаются в этом приложении</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
+      '<section class="ai-chat-shell"><div class="ai-chat-top"><div class="ai-chat-title"><span class="ai-live-dot"></span>Чат с INK.OS</div><div class="ai-chat-meta"><small>Ответы генерирует ИИ-модель</small><button class="ai-reset" type="button" onclick="aiAssistantReset()">Очистить чат</button></div></div>'+
         '<div id="aiMessages" class="ai-messages" aria-live="polite"></div>'+
         '<form id="aiChatForm" class="ai-chat-form"><input id="aiChatInput" class="ai-chat-input" type="text" autocomplete="off" maxlength="600" placeholder="Например: сколько я заработал в сентябре?"><button id="aiSendBtn" class="ai-send" type="submit" aria-label="Отправить сообщение">➤</button></form>'+
       '</section>'+
-      '<div class="ai-note">Бесплатная версия работает локально, без внешнего ИИ API и без отправки данных клиентов на сторонний сервис. Финансовые ответы считаются по внесённым операциям; тексты и рекомендации пока формируются локальными правилами, а не полноценной нейросетью.</div>'+
+      '<div class="ai-note">Ответы генерирует ИИ-модель на сервере. Для анализа передаются вопрос и ограниченная выборка данных CRM. Телефоны, мессенджеры, даты рождения, аллергии, фотографии и личные заметки в контекст не включаются. Подключение DeepSeek требует API-ключа в настройках сервера.</div>'+
     '</div>';
   aiAssistantPaintMessages();
   $('#aiChatForm').onsubmit=function(e){e.preventDefault();aiAssistantAsk($('#aiChatInput').value);};
 };
+
+/* ====================== ACCOUNT AUTH + PRIVATE CLOUD DATA ====================== */
+const INKOS_SUPABASE_URL='https://jgzzdsittnzomedvsspj.supabase.co';
+const INKOS_SUPABASE_KEY='sb_publishable_z40zmd4oAy9jUr3Q4BgDYQ_-IpiIlJe';
+let inkosSupabase=null, inkosCurrentUser=null, inkosActiveUserId=null, inkosStartingUserId=null, inkosStartPromise=null;
+let inkosPendingLegacySnapshot=null, inkosCloudPause=0, inkosCloudTimer=null, inkosCloudSaving=false, inkosCloudDirtyAfterSave=false, inkosLocalRevision=0, inkosAuthMode='login';
+function inkosRenderAuth(mode,message){
+  inkosAuthMode=mode||'login';const gate=document.getElementById('inkosAuthGate');if(!gate)return;gate.classList.remove('hidden');
+  const isSignup=inkosAuthMode==='signup',isLoading=inkosAuthMode==='loading';
+  gate.innerHTML=isLoading?'<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Защищённая загрузка аккаунта…</p><div class="inkos-auth-message show">'+esc(message||'Подключаем личную базу данных.')+'</div></div>'
+  :'<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Личный кабинет тату-мастера<br>У каждого аккаунта — свои клиенты, записи и финансы.</p>'+
+  '<div class="inkos-auth-tabs"><button type="button" class="'+(!isSignup?'active':'')+'" id="inkosLoginTab">Вход</button><button type="button" class="'+(isSignup?'active':'')+'" id="inkosSignupTab">Регистрация</button></div>'+
+  '<form id="inkosAuthForm" novalidate>'+(isSignup?'<div class="inkos-auth-field"><label for="inkosAuthName">Имя</label><input id="inkosAuthName" name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Как к тебе обращаться" required></div>':'')+
+  '<div class="inkos-auth-field"><label for="inkosAuthEmail">Электронная почта</label><input id="inkosAuthEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com" required></div>'+
+  '<div class="inkos-auth-field"><label for="inkosAuthPassword">Пароль</label><input id="inkosAuthPassword" name="password" type="password" autocomplete="'+(isSignup?'new-password':'current-password')+'" minlength="8" maxlength="128" placeholder="'+(isSignup?'Не менее 8 символов':'Твой пароль')+'" required></div>'+
+  (isSignup?'<div class="inkos-auth-field"><label for="inkosAuthPassword2">Повтори пароль</label><input id="inkosAuthPassword2" name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Повтори пароль" required></div>':'')+
+  '<button class="inkos-auth-primary" id="inkosAuthSubmit" type="submit">'+(isSignup?'Создать аккаунт':'Войти в INK.OS')+'</button></form>'+
+  '<button class="inkos-auth-secondary" id="inkosAuthReset" type="button" '+(isSignup?'hidden':'')+'>Не помню пароль</button>'+
+  '<div id="inkosAuthMessage" class="inkos-auth-message '+(message?'show':'')+'">'+esc(message||'')+'</div>'+
+  '<div class="inkos-auth-note"><span>🔒</span><span>Данные разделены на сервере по аккаунтам. Пароль не хранится в открытом виде в INK.OS.</span></div>'+
+  '<div class="inkos-auth-foot">Чтобы перейти к другому профилю на этом устройстве, сначала выйди из текущего аккаунта.</div></div>';
+  if(isLoading)return;document.getElementById('inkosLoginTab').onclick=()=>inkosRenderAuth('login');document.getElementById('inkosSignupTab').onclick=()=>inkosRenderAuth('signup');
+  document.getElementById('inkosAuthForm').addEventListener('submit',inkosSubmitAuth);const reset=document.getElementById('inkosAuthReset');if(reset)reset.onclick=inkosSendPasswordReset;
+}
+function inkosShowAuthMessage(m){const e=document.getElementById('inkosAuthMessage');if(e){e.textContent=m;e.classList.add('show');}}
+async function inkosSubmitAuth(event){
+  event.preventDefault();if(!inkosSupabase){inkosShowAuthMessage('Не удалось загрузить модуль входа. Проверь интернет и перезагрузи страницу.');return;}
+  const form=event.currentTarget,email=String(form.elements.email.value||'').trim().toLowerCase(),password=String(form.elements.password.value||''),isSignup=inkosAuthMode==='signup',
+  displayName=isSignup?String(form.elements.displayName.value||'').trim():'',submit=document.getElementById('inkosAuthSubmit');
+  if(!email||!password){inkosShowAuthMessage('Заполни почту и пароль.');return;}if(isSignup&&password.length<8){inkosShowAuthMessage('Пароль должен содержать не менее 8 символов.');return;}
+  if(isSignup&&password!==String(form.elements.password2.value||'')){inkosShowAuthMessage('Пароли не совпадают.');return;}if(isSignup&&!displayName){inkosShowAuthMessage('Укажи имя.');return;}
+  submit.disabled=true;submit.textContent=isSignup?'Создаём аккаунт…':'Входим…';
+  try{
+    if(isSignup){const {data,error}=await inkosSupabase.auth.signUp({email,password,options:{data:{display_name:displayName}}});if(error)throw error;
+      if(data.session&&data.user)await inkosStartUser(data.user);else inkosRenderAuth('login','Аккаунт зарегистрирован. Если включено подтверждение почты, перейди по ссылке из письма, затем вернись сюда и войди.');
+    }else{const {data,error}=await inkosSupabase.auth.signInWithPassword({email,password});if(error)throw error;if(!data.user)throw new Error('Не удалось определить аккаунт после входа.');await inkosStartUser(data.user);}
+  }catch(error){console.error('INK.OS account auth:',error);inkosShowAuthMessage(inkosReadableAuthError(error));const btn=document.getElementById('inkosAuthSubmit');if(btn){btn.disabled=false;btn.textContent=isSignup?'Создать аккаунт':'Войти в INK.OS';}}
+}
+function inkosReadableAuthError(error){
+  const raw=String(error&&error.message||error||'Неизвестная ошибка');if(/invalid login credentials/i.test(raw))return 'Неверная почта или пароль.';
+  if(/email not confirmed/i.test(raw))return 'Подтверди электронную почту по ссылке в письме.';if(/user already registered/i.test(raw))return 'Этот адрес уже зарегистрирован. Переключись на «Вход».';
+  if(/password should be at least|weak password/i.test(raw))return 'Выбери более надёжный пароль длиной не менее 8 символов.';if(/rate limit|too many requests/i.test(raw))return 'Слишком много попыток. Подожди немного и попробуй снова.';
+  if(/failed to fetch|network|load failed/i.test(raw))return 'Нет соединения с сервером. Проверь интернет и повтори попытку.';return 'Не удалось выполнить операцию: '+raw;
+}
+async function inkosSendPasswordReset(){
+  const email=String(document.getElementById('inkosAuthEmail')?.value||'').trim().toLowerCase();if(!email){inkosShowAuthMessage('Сначала введи электронную почту.');return;}
+  try{const {error}=await inkosSupabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;inkosShowAuthMessage('Если для этой почты есть аккаунт, письмо для сброса пароля отправлено. Проверь входящие и папку «Спам».');}catch(error){inkosShowAuthMessage(inkosReadableAuthError(error));}
+}
+function inkosUserDbName(id){return 'inkos_db_user_'+String(id||'').replace(/[^a-z0-9]/gi,'');}
+function inkosFallbackKeyForUser(id){return 'inkos_fallback_db_'+String(id||'').replace(/[^a-z0-9]/gi,'');}
+function inkosResetMemory(){STORES.forEach(s=>{if(s==='settings')S.settings={};else S[s]=[];});}
+function inkosSnapshotFromState(){const stores={};STORES.forEach(s=>{stores[s]=s==='settings'?{...(S.settings||{}),id:'main'}:(Array.isArray(S[s])?S[s]:[]);});return {schemaVersion:1,stores};}
+function inkosSnapshotHasRecords(snapshot){const st=snapshot&&snapshot.stores?snapshot.stores:snapshot||{};return STORES.some(s=>s!=='settings'&&Array.isArray(st[s])&&st[s].length>0);}
+function inkosLocalDataExists(){return STORES.some(s=>s!=='settings'&&Array.isArray(S[s])&&S[s].length>0);}
+function inkosMarkLocalChange(){if(inkosCloudPause>0||!inkosCurrentUser)return;inkosLocalRevision++;try{localStorage.setItem('inkos_cloud_dirty_'+inkosCurrentUser.id,String(Date.now()));}catch(e){}inkosQueueCloudSave();}
+function inkosQueueCloudSave(){if(inkosCloudPause>0||!inkosCurrentUser||!inkosSupabase)return;clearTimeout(inkosCloudTimer);inkosCloudTimer=setTimeout(()=>inkosWriteCloudSnapshot(false),1100);}
+async function inkosWriteCloudSnapshot(showErrors){
+  if(!inkosCurrentUser||!inkosSupabase||inkosCloudPause>0)return false;if(inkosCloudSaving){inkosCloudDirtyAfterSave=true;return false;}
+  inkosCloudSaving=true;inkosCloudDirtyAfterSave=false;const userId=inkosCurrentUser.id,revision=inkosLocalRevision;
+  try{const snapshot=inkosSnapshotFromState(),size=JSON.stringify(snapshot).length;if(size>7*1024*1024)throw new Error('Объём данных больше 7 МБ. На этом устройстве данные сохранены, но для облачной синхронизации больших фотографий потребуется отдельное хранилище.');
+    const {error}=await inkosSupabase.from('inkos_user_data').upsert({user_id:userId,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;
+    try{localStorage.setItem('inkos_cloud_synced_'+userId,String(Date.now()));if(revision===inkosLocalRevision)localStorage.removeItem('inkos_cloud_dirty_'+userId);}catch(e){}
+    if(showErrors)toast('Данные аккаунта синхронизированы ☁️');return true;
+  }catch(error){console.error('INK.OS cloud sync:',error);if(showErrors||navigator.onLine)toast('Не удалось синхронизировать INK.OS: '+String(error.message||error));return false;}
+  finally{inkosCloudSaving=false;if(inkosCloudDirtyAfterSave){inkosCloudDirtyAfterSave=false;clearTimeout(inkosCloudTimer);inkosCloudTimer=setTimeout(()=>inkosWriteCloudSnapshot(false),400);}}
+}
+async function inkosReplaceStore(store,records){
+  const clean=(Array.isArray(records)?records:[]).filter(x=>x&&typeof x==='object').map(x=>({...x,id:x.id||uid()}));
+  if(!db){if(store==='settings')S.settings=clean[0]||{id:'main',...defaultSettings()};else S[store]=clean;persistLocalFallback();return;}
+  await new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite'),os=tx.objectStore(store);os.clear();clean.forEach(row=>os.put(row));tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Не удалось обновить локальную базу.'));});
+}
+async function inkosApplySnapshot(snapshot){
+  const source=snapshot&&snapshot.stores?snapshot.stores:(snapshot||{});inkosCloudPause++;
+  try{for(const store of STORES){if(store==='settings'){let value=source.settings;if(Array.isArray(value))value=value[0];S.settings=value&&typeof value==='object'?{...value,id:'main'}:{id:'main',...defaultSettings()};await inkosReplaceStore('settings',[S.settings]);}
+    else{S[store]=Array.isArray(source[store])?source[store].filter(x=>x&&typeof x==='object'):[];await inkosReplaceStore(store,S[store]);}}}
+  finally{inkosCloudPause=Math.max(0,inkosCloudPause-1);}
+}
+function inkosReadLegacySnapshot(){
+  return new Promise(async resolve=>{
+    try{const fallback=localStorage.getItem('inkos_fallback_db');if(fallback){const old=JSON.parse(fallback),stores={};STORES.forEach(s=>stores[s]=s==='settings'?(old.settings||{id:'main',...defaultSettings()}):(Array.isArray(old[s])?old[s]:[]));const snap={schemaVersion:1,stores};if(inkosSnapshotHasRecords(snap)){resolve(snap);return;}}}catch(e){}
+    let oldDb=null;try{
+      if(indexedDB.databases){const names=await indexedDB.databases();if(!names.some(x=>x.name==='inkos_db')){resolve(null);return;}}
+      oldDb=await new Promise(done=>{let newlyCreated=false;const req=indexedDB.open('inkos_db');req.onupgradeneeded=()=>{newlyCreated=true;try{req.transaction.abort();}catch(e){}};req.onsuccess=()=>{if(newlyCreated){try{req.result.close();}catch(e){}done(null);}else done(req.result);};req.onerror=()=>done(null);});
+      if(!oldDb){resolve(null);return;}const stores={};
+      for(const store of STORES){if(!oldDb.objectStoreNames.contains(store)){stores[store]=store==='settings'?{id:'main',...defaultSettings()}:[];continue;}
+        const rows=await new Promise((done,reject)=>{const req=oldDb.transaction(store,'readonly').objectStore(store).getAll();req.onsuccess=()=>done(req.result||[]);req.onerror=()=>reject(req.error);});
+        stores[store]=store==='settings'?(rows[0]||{id:'main',...defaultSettings()}):rows;}
+      oldDb.close();const snap={schemaVersion:1,stores};resolve(inkosSnapshotHasRecords(snap)?snap:null);
+    }catch(e){try{oldDb&&oldDb.close();}catch(x){}resolve(null);}
+  });
+}
+function inkosRenderImportChoice(snapshot){
+  inkosPendingLegacySnapshot=snapshot;const count=STORES.filter(s=>s!=='settings'&&Array.isArray((snapshot.stores||{})[s])).reduce((n,s)=>n+((snapshot.stores||{})[s]||[]).length,0);
+  const gate=document.getElementById('inkosAuthGate');gate.classList.remove('hidden');
+  gate.innerHTML='<div class="inkos-auth-card"><div class="inkos-auth-brand">INK<b>.OS</b></div><p class="inkos-auth-sub">Аккаунт '+esc(inkosCurrentUser?.email||'')+' готов к работе.</p>'+
+    '<h2 style="font-size:19px;line-height:1.25;margin:0 0 8px">Что сделать со старыми данными?</h2>'+
+    '<p style="font-size:12px;color:#b7aaa2;line-height:1.55;margin:0 0 14px">На устройстве найдены прежние данные INK.OS ('+count+' записей). Они пока не показаны новому аккаунту. Выбери, переносить ли их в этот профиль.</p>'+
+    '<button class="inkos-auth-primary" id="inkosImportLegacyBtn" type="button">Перенести старые данные в мой аккаунт</button><button class="inkos-auth-secondary" id="inkosStartEmptyBtn" type="button">Начать с чистой базы</button>'+
+    '<div class="inkos-auth-foot">Старые локальные данные не удаляются. Перенос копирует их в аккаунт; после переноса изменения синхронизируются с облаком.</div><div id="inkosAuthMessage" class="inkos-auth-message"></div></div>';
+  document.getElementById('inkosImportLegacyBtn').onclick=()=>inkosChooseLegacyImport(true);document.getElementById('inkosStartEmptyBtn').onclick=()=>inkosChooseLegacyImport(false);
+}
+async function inkosChooseLegacyImport(importLegacy){
+  const message=document.getElementById('inkosAuthMessage'),importBtn=document.getElementById('inkosImportLegacyBtn'),emptyBtn=document.getElementById('inkosStartEmptyBtn');[importBtn,emptyBtn].forEach(b=>{if(b)b.disabled=true;});
+  if(message){message.textContent='Сохраняем личные данные аккаунта…';message.classList.add('show');}
+  try{if(importLegacy&&inkosPendingLegacySnapshot)await inkosApplySnapshot(inkosPendingLegacySnapshot);else{inkosResetMemory();await inkosApplySnapshot({schemaVersion:1,stores:{settings:{id:'main',...defaultSettings()}}});}
+    const ok=await inkosWriteCloudSnapshot(true);if(!ok)throw new Error('Облако не подтвердило сохранение. Проверь соединение и попробуй ещё раз.');inkosPendingLegacySnapshot=null;inkosStartApp();
+  }catch(error){if(message){message.textContent=String(error.message||error);message.classList.add('show');}[importBtn,emptyBtn].forEach(b=>{if(b)b.disabled=false;});}
+}
+async function inkosStartUser(user){
+  if(!user||!user.id)return;if(inkosActiveUserId===user.id&&appBooted)return;if(inkosStartPromise&&inkosStartingUserId===user.id)return inkosStartPromise;inkosStartingUserId=user.id;
+  inkosStartPromise=(async()=>{
+    inkosRenderAuth('loading','Проверяем права доступа и загружаем только данные этого аккаунта.');if(db){try{db.close();}catch(e){}db=null;}
+    inkosCurrentUser=user;inkosActiveUserId=null;DB_NAME=inkosUserDbName(user.id);inkosResetMemory();await inkosInitLocalStore();
+    let cloudRow=null;try{const {data,error}=await inkosSupabase.from('inkos_user_data').select('user_id,data,updated_at').eq('user_id',user.id).maybeSingle();if(error)throw error;cloudRow=data;}
+    catch(error){console.error('INK.OS account data load:',error);inkosRenderAuth('login','Не удалось проверить личную базу в облаке. Данные не открыты. Проверь интернет и войди ещё раз. Причина: '+String(error.message||error));throw error;}
+    if(cloudRow){await inkosApplySnapshot(cloudRow.data||{schemaVersion:1,stores:{}});try{localStorage.setItem('inkos_cloud_synced_'+user.id,String(Date.parse(cloudRow.updated_at)||Date.now()));}catch(e){}}
+    else if(inkosLocalDataExists()){const ok=await inkosWriteCloudSnapshot(false);if(!ok)throw new Error('В этой базе есть локальные изменения, но их не удалось сохранить в облако.');}
+    else{const legacy=await inkosReadLegacySnapshot();if(legacy){inkosRenderImportChoice(legacy);return;}const ok=await inkosWriteCloudSnapshot(false);if(!ok)throw new Error('Не удалось создать личное облачное хранилище. Проверь интернет и попробуй ещё раз.');}
+    inkosStartApp();
+  })().catch(error=>{console.error('INK.OS account bootstrap:',error);if(!inkosPendingLegacySnapshot)inkosRenderAuth('login',String(error.message||error));}).finally(()=>{inkosStartPromise=null;inkosStartingUserId=null;});
+  return inkosStartPromise;
+}
+function inkosStartApp(){
+  inkosActiveUserId=inkosCurrentUser&&inkosCurrentUser.id;inkosPendingLegacySnapshot=null;const gate=document.getElementById('inkosAuthGate');gate.classList.add('hidden');gate.innerHTML='';inkosUpdateAccountButton();
+  if(!appBooted){const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;runSplash();}
+  else{document.getElementById('app').classList.remove('hidden');buildNav();go('dashboard');}
+}
+function inkosUpdateAccountButton(){const button=document.getElementById('accountBtn');if(!button)return;button.classList.toggle('hidden',!inkosCurrentUser);if(inkosCurrentUser){button.title=inkosCurrentUser.email||'Аккаунт';button.setAttribute('aria-label','Аккаунт: '+(inkosCurrentUser.email||''));}}
+
+/* ====================== SAFE JSON BACKUP IMPORT ====================== */
+function inkosPickBackupFile(){
+  if(!inkosCurrentUser||!inkosSupabase){toast('Сначала войди в свой аккаунт INK.OS.');return;}
+  closeSheet();
+  const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.style.display='none';document.body.appendChild(input);
+  input.onchange=async()=>{
+    const file=input.files&&input.files[0];input.remove();if(!file)return;
+    if(file.size>10*1024*1024){alert('Файл больше 10 МБ. Выбери JSON-файл резервной копии размером до 10 МБ.');return;}
+    try{
+      const parsed=JSON.parse(await file.text());
+      const source=parsed&&parsed.stores&&typeof parsed.stores==='object'?parsed.stores:parsed;
+      if(!source||typeof source!=='object'||Array.isArray(source)){alert('Не удалось распознать резервную копию INK.OS.');return;}
+      const recognized=STORES.filter(store=>store==='settings'?(source.settings&&typeof source.settings==='object') : Array.isArray(source[store]));
+      const hasRecords=STORES.some(store=>store!=='settings'&&Array.isArray(source[store])&&source[store].length>0);
+      if(!recognized.length||!hasRecords){alert('В файле не найдены данные INK.OS. Выбери резервную копию JSON из приложения.');return;}
+      const incomingCounts={};STORES.forEach(store=>{incomingCounts[store]=store==='settings'?0:(Array.isArray(source[store])?source[store].length:0);});
+      const labelMap={clients:'Клиенты',events:'События календаря',payments:'Платежи',finance:'Финансовые операции',tattooWork:'Тату-работы',inventory:'Склад',cartridgeUsage:'Расход картриджей',notifications:'Уведомления',consents:'Согласия',auditLog:'Записи журнала'};
+      const preview=Object.keys(labelMap).filter(store=>incomingCounts[store]>0).map(store=>labelMap[store]+': '+incomingCounts[store]).join('\n');
+      const incomingTotal=STORES.reduce((sum,store)=>sum+(store==='settings'?0:incomingCounts[store]),0);
+      if(!confirm('Найдена резервная копия INK.OS: '+file.name+'\n\n'+preview+'\nДругие разделы: '+Math.max(0,incomingTotal-Object.keys(labelMap).reduce((sum,store)=>sum+incomingCounts[store],0))+' записей.\n\nИмпорт объединит данные с текущими. Совпадающие ID обновятся из копии, остальные записи сохранятся. Продолжить?'))return;
+      const mergedStores={};let added=0,updated=0;
+      for(const store of STORES){
+        if(store==='settings'){
+          let val=source.settings;if(Array.isArray(val))val=val[0];
+          mergedStores.settings=val&&typeof val==='object'?{...(S.settings||{}),...val,id:'main'}:{...(S.settings||{id:'main',...defaultSettings()}),id:'main'};
+          continue;
+        }
+        const map=new Map();
+        (Array.isArray(S[store])?S[store]:[]).filter(row=>row&&typeof row==='object').forEach(row=>{const clean={...row,id:row.id||uid()};map.set(String(clean.id),clean);});
+        (Array.isArray(source[store])?source[store]:[]).filter(row=>row&&typeof row==='object').forEach(row=>{const clean={...row,id:row.id||uid()},key=String(clean.id);if(map.has(key))updated++;else added++;map.set(key,clean);});
+        mergedStores[store]=Array.from(map.values());
+      }
+      const finalSnapshot={schemaVersion:1,stores:mergedStores};
+      if(JSON.stringify(finalSnapshot).length>7*1024*1024){alert('После объединения резервная копия превышает лимит облачной синхронизации 7 МБ. Данные не изменены.');return;}
+      await inkosApplySnapshot(finalSnapshot);
+      inkosLocalRevision++;
+      let synced=false;
+      try{synced=await inkosWriteCloudSnapshot(true);}catch(e){console.error('INK.OS backup import sync:',e);}
+      if(synced){
+        toast('Импорт завершён: добавлено '+added+', обновлено '+updated+'. Облако синхронизировано.');
+        inkosStartApp();
+      }else{
+        try{localStorage.setItem('inkos_cloud_dirty_'+inkosCurrentUser.id,String(Date.now()));}catch(e){}
+        inkosQueueCloudSave();
+        toast('Данные импортированы на устройство. Синхронизация с облаком повторится автоматически; пока не выходи из аккаунта.');
+        inkosStartApp();
+      }
+    }catch(error){console.error('INK.OS backup import:',error);alert('Не удалось импортировать резервную копию: '+String(error.message||error));}
+  };
+  input.click();
+}
+
+function inkosAccountMenu(){if(!inkosCurrentUser)return;openSheet('Личный аккаунт','<div style="padding:8px 0 14px"><div class="small dim">Вы вошли как</div><div style="font-weight:800;overflow-wrap:anywhere">'+esc(inkosCurrentUser.email||'')+'</div><p class="small dim" style="margin-top:10px">Клиенты, записи, финансы и настройки синхронизируются только с этим аккаунтом.</p><button class="btn btn-block" style="margin-bottom:10px" type="button" onclick="inkosPickBackupFile()">Импортировать резервную копию JSON</button><button class="btn btn-danger btn-block" type="button" onclick="inkosDoSignOut()">Выйти из аккаунта</button></div>');}
+async function inkosDoSignOut(){try{clearTimeout(inkosCloudTimer);await inkosWriteCloudSnapshot(false);const {error}=await inkosSupabase.auth.signOut();if(error)throw error;closeSheet();inkosHandleSignedOut();}catch(error){toast('Не удалось выйти: '+String(error.message||error));}}
+function inkosHandleSignedOut(){
+  inkosCurrentUser=null;inkosActiveUserId=null;inkosPendingLegacySnapshot=null;if(db){try{db.close();}catch(e){}db=null;}DB_NAME='inkos_db';inkosResetMemory();document.getElementById('app').classList.add('hidden');appBooted=false;
+  const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;inkosUpdateAccountButton();inkosRenderAuth('login','Ты вышел из аккаунта. Для просмотра личных данных войди снова.');
+}
+async function inkosEnsureSupabaseSDK(){
+  if(window.supabase&&typeof window.supabase.createClient==='function')return true;
+  const sources=[
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'
+  ];
+  let lastError=null;
+  for(const src of sources){
+    try{
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        let settled=false;
+        const finish=err=>{
+          if(settled)return;settled=true;clearTimeout(timer);
+          script.onload=script.onerror=null;
+          if(err){script.remove();reject(err);}else resolve();
+        };
+        const timer=setTimeout(()=>finish(new Error('Истекло время загрузки '+new URL(src).hostname)),12000);
+        script.src=src;script.async=true;
+        script.onload=()=>window.supabase&&typeof window.supabase.createClient==='function'?finish():finish(new Error('SDK загружен, но модуль не найден'));
+        script.onerror=()=>finish(new Error('Не удалось загрузить '+new URL(src).hostname));
+        document.head.appendChild(script);
+      });
+      if(window.supabase&&typeof window.supabase.createClient==='function')return true;
+    }catch(error){lastError=error;console.warn('INK.OS: источник SDK недоступен',src,String(error));}
+  }
+  throw new Error('Не удалось загрузить модуль регистрации ни с одного источника. Проверь мобильный интернет и попробуй снова.'+(lastError?' ('+lastError.message+')':''));
+}
+async function inkosAuthInit(){
+  inkosRenderAuth('loading','Подключаем вход. При необходимости проверим резервный источник загрузки.');
+  try{
+    await inkosEnsureSupabaseSDK();
+    inkosSupabase=window.supabase.createClient(INKOS_SUPABASE_URL,INKOS_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    inkosSupabase.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session&&session.user){if(inkosActiveUserId!==session.user.id)inkosStartUser(session.user).catch(()=>{});}else if(event==='SIGNED_OUT')inkosHandleSignedOut();},0);});
+    const {data,error}=await inkosSupabase.auth.getSession();if(error)throw error;
+    if(data&&data.session&&data.session.user)await inkosStartUser(data.session.user);else inkosRenderAuth('login');
+  }catch(error){console.error('INK.OS auth init:',error);inkosRenderAuth('login','Не удалось подключить вход: '+String(error.message||error));}
+}
+window.addEventListener('online',()=>{if(inkosCurrentUser)inkosQueueCloudSave();});
+window.addEventListener('beforeunload',()=>{if(inkosCurrentUser&&inkosCloudTimer)clearTimeout(inkosCloudTimer);});
+inkosAuthInit();
 
 </script>
 </body>
