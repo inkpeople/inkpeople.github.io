@@ -764,7 +764,6 @@ table{border-collapse:separate!important;border-spacing:0!important;font-size:12
 <div id="genericSheetOverlay"><div class="gsheet" id="genericSheetBody"></div></div>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ====================== APP STATE / CONSTANTS ====================== */
 let DB_NAME='inkos_db', DB_VER=4;
@@ -4587,7 +4586,7 @@ function generateAppIcon(){
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   try{
     const swUrl=new URL('sw.js',document.baseURI);
-    swUrl.searchParams.set('build','premium-20261009-v5-ai');
+    swUrl.searchParams.set('build','premium-20261009-v6-mobile');
     navigator.serviceWorker.register(swUrl,{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('INK.OS: service worker не зарегистрирован',err));
   }catch(e){}
 }
@@ -5385,12 +5384,43 @@ function inkosHandleSignedOut(){
   inkosCurrentUser=null;inkosActiveUserId=null;inkosPendingLegacySnapshot=null;if(db){try{db.close();}catch(e){}db=null;}DB_NAME='inkos_db';inkosResetMemory();document.getElementById('app').classList.add('hidden');appBooted=false;
   const splash=document.getElementById('splash');if(splash){splash.style.display='flex';splash.style.opacity='1';}finishSplash._done=false;inkosUpdateAccountButton();inkosRenderAuth('login','Ты вышел из аккаунта. Для просмотра личных данных войди снова.');
 }
+async function inkosEnsureSupabaseSDK(){
+  if(window.supabase&&typeof window.supabase.createClient==='function')return true;
+  const sources=[
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'
+  ];
+  let lastError=null;
+  for(const src of sources){
+    try{
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        let settled=false;
+        const finish=err=>{
+          if(settled)return;settled=true;clearTimeout(timer);
+          script.onload=script.onerror=null;
+          if(err){script.remove();reject(err);}else resolve();
+        };
+        const timer=setTimeout(()=>finish(new Error('Истекло время загрузки '+new URL(src).hostname)),12000);
+        script.src=src;script.async=true;
+        script.onload=()=>window.supabase&&typeof window.supabase.createClient==='function'?finish():finish(new Error('SDK загружен, но модуль не найден'));
+        script.onerror=()=>finish(new Error('Не удалось загрузить '+new URL(src).hostname));
+        document.head.appendChild(script);
+      });
+      if(window.supabase&&typeof window.supabase.createClient==='function')return true;
+    }catch(error){lastError=error;console.warn('INK.OS: источник SDK недоступен',src,String(error));}
+  }
+  throw new Error('Не удалось загрузить модуль регистрации ни с одного источника. Проверь мобильный интернет и попробуй снова.'+(lastError?' ('+lastError.message+')':''));
+}
 async function inkosAuthInit(){
-  inkosRenderAuth('loading','Проверяем сохранённый вход…');if(!window.supabase||typeof window.supabase.createClient!=='function'){inkosRenderAuth('login','Не загрузился модуль регистрации. Проверь соединение и перезагрузи страницу.');return;}
-  try{inkosSupabase=window.supabase.createClient(INKOS_SUPABASE_URL,INKOS_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  inkosRenderAuth('loading','Подключаем вход. При необходимости проверим резервный источник загрузки.');
+  try{
+    await inkosEnsureSupabaseSDK();
+    inkosSupabase=window.supabase.createClient(INKOS_SUPABASE_URL,INKOS_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     inkosSupabase.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session&&session.user){if(inkosActiveUserId!==session.user.id)inkosStartUser(session.user).catch(()=>{});}else if(event==='SIGNED_OUT')inkosHandleSignedOut();},0);});
-    const {data,error}=await inkosSupabase.auth.getSession();if(error)throw error;if(data&&data.session&&data.session.user)await inkosStartUser(data.session.user);else inkosRenderAuth('login');
-  }catch(error){console.error('INK.OS auth init:',error);inkosRenderAuth('login','Не удалось подключиться к сервису входа: '+String(error.message||error));}
+    const {data,error}=await inkosSupabase.auth.getSession();if(error)throw error;
+    if(data&&data.session&&data.session.user)await inkosStartUser(data.session.user);else inkosRenderAuth('login');
+  }catch(error){console.error('INK.OS auth init:',error);inkosRenderAuth('login','Не удалось подключить вход: '+String(error.message||error));}
 }
 window.addEventListener('online',()=>{if(inkosCurrentUser)inkosQueueCloudSave();});
 window.addEventListener('beforeunload',()=>{if(inkosCurrentUser&&inkosCloudTimer)clearTimeout(inkosCloudTimer);});
