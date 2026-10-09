@@ -1,0 +1,21 @@
+{
+  "name": "INK.OS — Tattoo Business Assistant",
+  "short_name": "INK.OS",
+  "description": "Помощник тату-мастера",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050506",
+  "theme_color": "#050506",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
