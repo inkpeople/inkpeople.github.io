@@ -2985,6 +2985,11 @@ function decrementInventoryCartridge(config,size,qty){
 
 /* ====================== FINANCE ====================== */
 let financePeriod='month';
+function financePlural(n,one,few,many){
+  const n10=Math.abs(Number(n))%10, n100=Math.abs(Number(n))%100;
+  const word=(n10===1&&n100!==11)?one:([2,3,4].includes(n10)&&![12,13,14].includes(n100))?few:many;
+  return Number(n)+' '+word;
+}
 const INCOME_CATEGORIES={tattoo:'Татуировки',consult:'Консультации',correction:'Коррекции',training:'Менторство',film:'Продажа заживляющей плёнки'};
 const EXPENSE_CATEGORIES={cartridges:'Картриджи',pigments:'Пигменты',transferPaper:'Трансферная бумага',oilFoam:'Масло/пенка',lidocaine:'Ледокаин',rent:'Аренда',travel:'Guest Spot / поездки',other:'Другое'};
 function periodRangeISO(period,offset){
@@ -3080,7 +3085,7 @@ RENDERERS.finance=function(){
     <div class="fin-card exp">${icon('reports')}<div class="fl">Расходы</div><div class="fv">${finVal(fmtMoney(expense))}</div></div>
   </div>
   ${financePeriod!=='all'?`<div class="fin-forecast" onclick="openForecastSheet()">
-    <div><div class="fl">Ещё заработаю ${fcLabel}</div><div class="fv">+${finVal(fmtMoney(fcExpected))}</div><div class="small dim">${fcList.length?fcList.length+' '+pl(fcList.length,'запись','записи','записей')+' с неоплаченным остатком':'Нет предстоящих записей с остатком'}</div></div>
+    <div><div class="fl">Ещё заработаю ${fcLabel}</div><div class="fv">+${finVal(fmtMoney(fcExpected))}</div><div class="small dim">${fcList.length?fcList.length+' '+financePlural(fcList.length,'запись','записи','записей')+' с неоплаченным остатком':'Нет предстоящих записей с остатком'}</div></div>
     <div class="tot"><div class="fl">Итого за период</div><div class="fv">${finVal(fmtMoney(income+fcExpected))}</div><div class="small dim">с учётом прогноза</div></div>
   </div>`:''}
   <div class="segmented" style="margin-bottom:14px">${['day','week','month','quarter','year','all'].map(p=>`<button class="${financePeriod===p?'active':''}" onclick="setFinPeriod('${p}')">${{day:'День',week:'Неделя',month:'Месяц',quarter:'Квартал',year:'Год',all:'Всё'}[p]}</button>`).join('')}</div>
