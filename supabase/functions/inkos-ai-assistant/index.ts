@@ -140,31 +140,33 @@ Deno.serve(async (req: Request) => {
 
     const prompt = systemPrompt(context) + '\n\nИСТОРИЯ ДИАЛОГА:\n' +
       JSON.stringify(messages.slice(1, -1)).slice(0, 5000) + '\n\nВОПРОС:\n' + question;
-    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY') || '';
-    if (deepseekKey) {
-      try {
-        const answer = await callDeepSeek(deepseekKey, messages);
-        return json({ answer, provider: 'DeepSeek V4 Flash' }, 200, origin);
-      } catch (error) {
-        console.error('DeepSeek request failed:', String(error?.message || error).slice(0, 400));
-        // Continue to the hosted model so a temporary API error does not break the chat.
-      }
+    const deepseekKey = (Deno.env.get('DEEPSEEK_API_KEY') || '').trim();
+    if (!deepseekKey) {
+      return json({
+        error: 'Supabase не передал DEEPSEEK_API_KEY в окружение функции. Проверь секрет в проекте jgzzdsittnzomedvsspj: раздел Edge Functions → Secrets, имя строго DEEPSEEK_API_KEY, затем нажми Save. После сохранения повтори вопрос; повторное развёртывание функции не требуется.',
+        code: 'DEEPSEEK_KEY_MISSING',
+        settingsUrl: 'https://supabase.com/dashboard/project/jgzzdsittnzomedvsspj/functions/secrets',
+      }, 503, origin);
     }
     try {
-      const answer = await callHostedMistral(prompt);
-      return json({
-        answer,
-        provider: 'Supabase AI / Mistral',
-        notice: deepseekKey ? 'DeepSeek временно недоступен; использована резервная модель.' : 'Чтобы использовать DeepSeek, добавь DEEPSEEK_API_KEY в Supabase Secrets.',
-      }, 200, origin);
+      const answer = await callDeepSeek(deepseekKey, messages);
+      return json({ answer, provider: 'DeepSeek V4.1 Flash' }, 200, origin);
     } catch (error) {
-      console.error('Hosted AI request failed:', String(error?.message || error).slice(0, 400));
-      return json({
-        error: deepseekKey
-          ? 'ИИ-модель сейчас недоступна. Проверь ключ DeepSeek и повтори запрос.'
-          : 'Настройка DeepSeek ещё не завершена, а резервная модель недоступна. Добавь DEEPSEEK_API_KEY в Supabase Secrets и повтори запрос.',
-        code: 'AI_NOT_CONFIGURED',
-      }, 503, origin);
+      console.error('DeepSeek request failed:', String(error?.message || error).slice(0, 400));
+      try {
+        const answer = await callHostedMistral(prompt);
+        return json({
+          answer,
+          provider: 'Supabase AI / Mistral',
+          notice: 'DeepSeek не ответил; использована резервная модель.',
+        }, 200, origin);
+      } catch (fallbackError) {
+        console.error('Hosted AI fallback failed:', String(fallbackError?.message || fallbackError).slice(0, 300));
+        return json({
+          error: 'Ключ DEEPSEEK_API_KEY найден, но вызов DeepSeek не удался, а резервная модель недоступна. Проверь, что ключ действующий, API-аккаунт активен и на нём есть баланс.',
+          code: 'AI_PROVIDER_UNAVAILABLE',
+        }, 503, origin);
+      }
     }
   } catch (error) {
     console.error('INK.OS AI request failed:', String(error?.message || error).slice(0, 400));
