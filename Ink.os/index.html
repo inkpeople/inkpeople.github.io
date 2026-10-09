@@ -4841,9 +4841,10 @@ async function pollInkOSReminderDelivery(){
         const client=S.clients.find(c=>String(c.id)===String(row.client_id));
         const when=row.reminder_type==='24h'?'за 24 часа':'за 2 часа';
         const sent=row.status==='sent';
+        const person=client&&client.name?'клиенту '+client.name:'клиенту';
         const text=sent
-          ? 'Клиенту '+(client&&client.name?client.name:'')+' отправлено напоминание '+when+'.'
-          : 'Не удалось отправить напоминание '+when+(client&&client.name?' клиенту '+client.name:'')+'. Проверь журнал отправок.';
+          ? 'Напоминание '+when+' отправлено '+person+'.'
+          : 'Не удалось отправить напоминание '+when+' '+person+'. Проверь журнал отправок.';
         const ref='delivery-'+fingerprint;
         addNotification(text,sent?'reminder_sent':'reminder_failed',ref,{
           eventId:row.event_id,clientId:row.client_id,reminderLogId:row.id,
