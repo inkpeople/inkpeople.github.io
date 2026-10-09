@@ -5421,7 +5421,9 @@ function inkosPickBackupFile(){
         toast('Импорт завершён: добавлено '+added+', обновлено '+updated+'. Облако синхронизировано.');
         inkosStartApp();
       }else{
-        toast('Данные импортированы на устройство, но облачная синхронизация не подтверждена. Не выходи из аккаунта; проверь интернет и повтори синхронизацию.');
+        try{localStorage.setItem('inkos_cloud_dirty_'+inkosCurrentUser.id,String(Date.now()));}catch(e){}
+        inkosQueueCloudSave();
+        toast('Данные импортированы на устройство. Синхронизация с облаком повторится автоматически; пока не выходи из аккаунта.');
         inkosStartApp();
       }
     }catch(error){console.error('INK.OS backup import:',error);alert('Не удалось импортировать резервную копию: '+String(error.message||error));}
