@@ -23,21 +23,8 @@ h1{font-size:31px;line-height:1.08;letter-spacing:-1px;margin:8px 0 10px}h2{font
 .exercise-guide-photo-fallback{display:none}
 .guide-art{display:none !important}
 
-/* Safe premium visual refresh — preserve the existing working app structure */
-:root{--bg:#050b0a;--panel:#0c1513;--panel2:#111f1b;--line:#24312d;--text:#f4f8f6;--muted:#8fa39a;--green:#a0ff43;--lime:#c4ff70;--red:#ff5664;--amber:#ffc84b}
-body{background:radial-gradient(ellipse at 100% 0%,#173b2b 0,transparent 32%),#050b0a;letter-spacing:-.12px}
-#app{max-width:600px;padding:calc(13px + env(safe-area-inset-top)) 15px calc(100px + env(safe-area-inset-bottom))}
-.top{margin:4px 0 18px}.logo{font-size:25px;font-style:italic;letter-spacing:-1.2px}.avatar{border-radius:50%;border-color:#3c5e4d}
-h1{font-size:32px;line-height:1.05;margin:12px 0}.section{margin:26px 0}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
-.hero{border-radius:24px;padding:20px;border-color:#315340;background:radial-gradient(circle at 100% 0%,#264a30 0,transparent 48%),linear-gradient(145deg,#12241b,#09110e 80%);box-shadow:0 12px 34px #0004}.hero:after{color:#a0ff4314}
-.btn{background:linear-gradient(100deg,#a0ff43,#c4ff70);border-radius:13px;padding:15px 14px;box-shadow:0 7px 22px #a0ff4314;font-size:12px;letter-spacing:.2px}.btn.secondary{background:#14231b;border-color:#34543d;color:#a0ff43}
-.week{gap:7px}.week button{border-radius:13px;padding:12px 4px;border-color:#243b2f;background:#0b1511}.week button.active{background:#183923;color:#a0ff43;border-color:#78c65a;box-shadow:inset 0 0 0 1px #a0ff4344}
-.day{border-radius:16px;background:linear-gradient(145deg,#111e18,#09120e);border-color:#263b30}.day .icon{border-radius:12px;background:#183923;color:#a0ff43}
-.exercise{border-radius:20px;background:linear-gradient(145deg,#111e18,#09120e);padding:13px;margin:12px 0;border-color:#2b4335;box-shadow:0 8px 24px #0003}.exhead{align-items:center}.exhead .num{background:#183923;color:#a0ff43;border:1px solid #2f6140;border-radius:10px;min-width:34px;padding:7px 5px}
-.exercise-guide-photo{height:clamp(165px,48vw,220px);object-fit:contain;background:#050b0a;border-color:#263d30}
-.card{background:linear-gradient(145deg,#101c17,#09110e);border:1px solid #24352e;border-radius:18px;padding:15px}
-.bottom{background:#07100ef2;border-color:#24352e;padding-top:12px}.bottom button{font-size:10px}
-@media(max-width:370px){#app{padding-left:11px;padding-right:11px}.hero{padding:16px}.day{padding:10px}}
+/* Premium styling refresh */
+:root{--bg:#050b0a;--panel:#0c1513;--panel2:#111f1b;--line:#24312d;--text:#f4f8f6;--muted:#8fa39a;--green:#a0ff43;--lime:#c4ff70;--red:#ff5664;--amber:#ffc84b}body{background:radial-gradient(ellipse at 100% 0%,#173b2b 0,transparent 32%),#050b0a}#app{max-width:600px;padding:calc(13px + env(safe-area-inset-top)) 15px calc(100px + env(safe-area-inset-bottom))}.top{margin:4px 0 18px}.logo{font-size:25px;font-style:italic}.avatar{border-radius:50%;border-color:#3c5e4d}.hero{border-radius:24px;padding:20px;border-color:#315340;background:radial-gradient(circle at 100% 0%,#264a30 0,transparent 48%),linear-gradient(145deg,#12241b,#09110e 80%)}.hero:after{color:#a0ff4314}.btn{background:linear-gradient(100deg,#a0ff43,#c4ff70);border-radius:13px;padding:15px 14px}.btn.secondary{background:#14231b;border-color:#34543d;color:#a0ff43}.week button{border-radius:13px;padding:12px 4px;background:#0b1511}.week button.active{background:#183923;color:#a0ff43;border-color:#78c65a}.day{border-radius:16px;background:linear-gradient(145deg,#111e18,#09120e);border-color:#263b30}.day .icon{border-radius:12px;background:#183923;color:#a0ff43}.exercise{border-radius:20px;background:linear-gradient(145deg,#111e18,#09120e);padding:13px;margin:12px 0;border-color:#2b4335}.exercise-guide-photo{height:clamp(165px,48vw,220px);object-fit:contain;background:#050b0a;border-color:#263d30}.bottom{background:#07100ef2;border-color:#24352e}
 </style></head><body><main id="app">
 <div class="top"><div><div class="eyebrow">TRAINING SYSTEM / PERSONAL</div><div class="logo">FIT<span style="color:var(--green)">/</span><b>FORGE</b></div></div><div class="avatar">✦</div></div>
 <section id="home">
