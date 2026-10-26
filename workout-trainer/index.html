@@ -18,6 +18,9 @@ h1{font-size:31px;line-height:1.08;letter-spacing:-1px;margin:8px 0 10px}h2{font
 .guide-panel ol{margin:6px 0 10px;padding-left:20px;color:#d6e4da;font-size:13px;line-height:1.55}
 .guide-panel p{margin:5px 0;color:#c2d2c7;font-size:12px;line-height:1.5}
 .guide-muscles{display:inline-block;padding:5px 8px;border-radius:8px;background:#173c29;color:#b8ff77;font-size:11px;margin-top:4px}
+
+.exercise-guide-photo{display:block;width:100%;max-height:260px;object-fit:contain;background:#07110e;border:1px solid #244b36;border-radius:12px;margin:0 0 12px}
+.exercise-guide-photo-fallback{display:none}
 </style></head><body><main id="app">
 <div class="top"><div><div class="eyebrow">TRAINING SYSTEM / PERSONAL</div><div class="logo">FIT<span style="color:var(--green)">/</span><b>FORGE</b></div></div><div class="avatar">✦</div></div>
 <section id="home">
@@ -49,6 +52,33 @@ function setWeek(n){week=n;document.querySelectorAll('#weeks button').forEach((b
 function showTab(tab){['home','workout','progress','settings'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==tab));document.querySelectorAll('.bottom button').forEach(b=>b.classList.remove('active'));let nav=document.getElementById('nav'+(tab==='workout'?'workout':tab));if(nav)nav.classList.add('active');if(tab==='progress')renderHistory();if(tab==='workout')renderExercises();window.scrollTo(0,0)}
 function startWorkout(p){activePlan=p;document.getElementById('workTitle').textContent=plans[p].title;document.getElementById('workLabel').textContent='СИЛОВАЯ '+p;document.getElementById('workSubtitle').textContent=plans[p].subtitle+' · '+['15–20','12–15','6–10','15–20'][week-1]+' повторений';showTab('workout')}
 function renderExercises(){if(!document.getElementById('exerciseList'))return;let target=[18,13,8,18][week-1];document.getElementById('exerciseList').innerHTML=plans[activePlan].ex.map((ex,i)=>{let sets=week===1?2:ex[1];return '<article class="exercise"><div class="exhead"><div class="num">'+String(i+1).padStart(2,'0')+'</div><div class="exname">'+ex[0]+'<div class="exmeta">'+sets+' подхода · отдых '+ex[2]+' сек</div></div></div><button class="guide-toggle" onclick="toggleGuide(\'guide-'+activePlan+'-'+i+'\',this)">▶ Как выполнять упражнение <span>＋</span></button><div id="guide-'+activePlan+'-'+i+'" class="guide-panel hidden">'+guideMarkup(activePlan,i,ex[0])+'</div><div class="sethead"><span>№</span><span>Вес, кг</span><span>Повторы</span><span>✓</span></div>'+Array.from({length:sets},(_,j)=>{let key=week+'-'+activePlan+'-'+i+'-'+j,sv=data.sets[key]||{};return '<div class="setrow"><span>'+(j+1)+'</span><input aria-label="Вес" type="number" step=".5" placeholder="0" value="'+(sv.w??'')+'" onchange="saveSet(\''+key+'\',\'w\',this.value)"><input aria-label="Повторы" type="number" placeholder="'+target+'" value="'+(sv.r??'')+'" onchange="saveSet(\''+key+'\',\'r\',this.value)"><button class="done '+(sv.done?'on':'')+'" onclick="markDone(\''+key+'\',this)">'+(sv.done?'✓':'○')+'</button></div>'}).join('')+'<div class="rest"><span>Отдых между подходами</span><button onclick="startTimer('+ex[2]+')">⏱ '+ex[2]+' сек</button></div></article>'}).join('')}
+
+
+function exercisePhoto(name){
+ const n=name.toLowerCase();
+ const base='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+ const map=[
+  [/жим от груди|жим на наклонном/, 'Machine_Bench_Press'],
+  [/вертикальная тяга/, 'Wide-Grip_Lat_Pulldown'],
+  [/горизонтальная тяга/, 'Seated_Cable_Rows'],
+  [/жим ногами/, 'Leg_Press'],
+  [/сгибание ног/, 'Lying_Leg_Curls'],
+  [/разгибание ног/, 'Leg_Extensions'],
+  [/ягодичный мост/, 'Barbell_Glute_Bridge'],
+  [/сгибание рук на скамье скотта/, 'Preacher_Curl'],
+  [/сгибание рук/, 'Dumbbell_Bicep_Curl'],
+  [/разгибание рук/, 'Triceps_Pushdown'],
+  [/отведение плеча|подъём гантелей через стороны/, 'Side_Lateral_Raise'],
+  [/скручив/, 'Cable_Crunch'],
+  [/гиперэкстензия/, 'Hyperextensions_Back_Extensions'],
+  [/обратная бабочка|задняя дельта/, 'Reverse_Flyes'],
+  [/отведение бедра/, 'Hip_Abductor'],
+  [/жим плечами/, 'Seated_Dumbbell_Shoulder_Press'],
+  [/pallof/, 'Pallof_Press']
+ ];
+ for(const [re,id] of map) if(re.test(n)) return base+id+'/0.jpg';
+ return base+'Machine_Bench_Press/0.jpg';
+}
 
 function toggleGuide(id,btn){const panel=document.getElementById(id);panel.classList.toggle('hidden');btn.querySelector('span').textContent=panel.classList.contains('hidden')?'＋':'−';if(!panel.classList.contains('hidden'))panel.scrollIntoView({behavior:'smooth',block:'nearest'})}
 function guideInfo(name,plan,index){
@@ -86,7 +116,7 @@ function guideMarkup(plan,index,name){
  else if(n.includes('отведение бедра')) scene='<path d="M70 120V72H105M215 120V72H250" stroke="#91a79a" stroke-width="7" fill="none"/><circle cx="160" cy="32" r="10" fill="#6ef0a6"/><path d="M160 42V78M160 52L140 67M160 52L180 67M160 78L125 102L103 100M160 78L195 102L217 100" stroke="#6ef0a6" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M103 100L82 100M217 100L238 100" stroke="#b8ff77" stroke-width="4"/><path d="M20 126H300" stroke="#315b43" stroke-width="5"/>';
  else if(n.includes('сгибание рук')) scene='<circle cx="155" cy="32" r="10" fill="#6ef0a6"/><path d="M155 42V83M155 54L132 68L150 87M155 54L180 68L164 45M155 83L140 120M155 83L173 120" stroke="#6ef0a6" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M150 87L164 45" stroke="#b8ff77" stroke-width="5"/><path d="M20 126H300" stroke="#315b43" stroke-width="5"/>';
  else scene='<path d="M40 120H280" stroke="#315b43" stroke-width="6"/><circle cx="145" cy="35" r="10" fill="#6ef0a6"/><path d="M145 45L150 78L132 104M150 78L175 101M150 56L120 70L105 54M150 56L180 70L205 54" stroke="#6ef0a6" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M105 54L85 40M205 54L225 40" stroke="#b8ff77" stroke-width="4"/>';
- return '<svg class="guide-art" viewBox="0 0 320 150" role="img" aria-label="Иллюстрация упражнения: '+name+'"><defs><linearGradient id="bg'+plan+index+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10271b"/><stop offset="1" stop-color="#07110e"/></linearGradient></defs><rect x="0" y="0" width="320" height="150" rx="12" fill="url(#bg'+plan+index+')"/><text x="14" y="18" fill="#91a79a" font-size="9">ТЕХНИКА · СХЕМА ДВИЖЕНИЯ</text>'+scene+'<text x="160" y="143" text-anchor="middle" fill="#b8ff77" font-size="9">КОНТРОЛИРУЙ ДВИЖЕНИЕ</text></svg><div class="guide-muscles">'+g.muscles+'</div><h4>Как выполнять</h4><ol>'+g.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol><h4>Важно</h4><p>'+g.avoid+'</p><p>Темп: примерно 2 секунды на усилие и 2–3 секунды на возврат. Выбирай вес, с которым техника остаётся чистой.</p>';
+ return '<img class="exercise-guide-photo" src="'+exercisePhoto(name)+'" alt="Иллюстрация: '+name+'" loading="lazy" onerror="this.onerror=null;this.src=\'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bench_Press/0.jpg\';">'+ '<svg class="guide-art" viewBox="0 0 320 150" role="img" aria-label="Иллюстрация упражнения: '+name+'"><defs><linearGradient id="bg'+plan+index+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10271b"/><stop offset="1" stop-color="#07110e"/></linearGradient></defs><rect x="0" y="0" width="320" height="150" rx="12" fill="url(#bg'+plan+index+')"/><text x="14" y="18" fill="#91a79a" font-size="9">ТЕХНИКА · СХЕМА ДВИЖЕНИЯ</text>'+scene+'<text x="160" y="143" text-anchor="middle" fill="#b8ff77" font-size="9">КОНТРОЛИРУЙ ДВИЖЕНИЕ</text></svg><div class="guide-muscles">'+g.muscles+'</div><h4>Как выполнять</h4><ol>'+g.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol><h4>Важно</h4><p>'+g.avoid+'</p><p>Темп: примерно 2 секунды на усилие и 2–3 секунды на возврат. Выбирай вес, с которым техника остаётся чистой.</p>';
 }
 function saveSet(k,f,v){data.sets[k]=data.sets[k]||{};data.sets[k][f]=v;persist()}
 function markDone(k,el){data.sets[k]=data.sets[k]||{};data.sets[k].done=!data.sets[k].done;el.classList.toggle('on',data.sets[k].done);el.textContent=data.sets[k].done?'✓':'○';persist();if(data.sets[k].done)startTimer(plans[activePlan].ex[Number(k.split('-')[2])][2])}
