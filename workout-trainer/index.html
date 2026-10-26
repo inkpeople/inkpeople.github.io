@@ -57,7 +57,7 @@ function renderExercises(){if(!document.getElementById('exerciseList'))return;le
 
 function exercisePhoto(name){
  const n=name.toLowerCase();
- const base='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/images/';
+ const base='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
  const map=[
   [/жим от груди|жим на наклонном/, 'Machine_Bench_Press'],
   [/вертикальная тяга/, 'Wide-Grip_Lat_Pulldown'],
@@ -73,8 +73,8 @@ function exercisePhoto(name){
   [/скручив/, 'Cable_Crunch'],
   [/гиперэкстензия/, 'Hyperextensions_Back_Extensions'],
   [/обратная бабочка|задняя дельта/, 'Reverse_Flyes'],
-  [/отведение бедра/, 'Hip_Abductor'],
-  [/жим плечами/, 'Seated_Dumbbell_Shoulder_Press'],
+  [/отведение бедра/, 'Lying_Glute'],
+  [/жим плечами/, 'Seated_Dumbbell_Press'],
   [/pallof/, 'Pallof_Press']
  ];
  for(const [re,id] of map) if(re.test(n)) return base+id+'/0.jpg';
