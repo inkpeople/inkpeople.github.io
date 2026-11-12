@@ -21,12 +21,12 @@
 <button class="tile" onclick="show('care')"><span class="ico">🩹</span><b>Заживление</b><span>Уход за татуировкой</span></button>
 </div>
 <div class="sectionhead"><h2>Моя запись</h2><button class="link" onclick="show('booking')">Новая запись →</button></div>
-<div class="card"><div class="muted">АКТИВНЫХ ЗАПИСЕЙ ПОКА НЕТ</div><p style="margin:8px 0 0">После подтверждения мастером здесь появятся дата, время и детали вашего сеанса.</p></div>
+<div class="card" id="myAppointments"><div class="muted">ЗАГРУЗКА ЗАПИСЕЙ…</div></div>
 </section>
 <section id="booking" class="hidden"><div class="eyebrow">НОВАЯ ЗАПИСЬ</div><h1>Расскажите о своей идее</h1><div class="card">
 <label class="field"><span>Как к вам обращаться</span><input id="name" placeholder="Ваше имя"></label>
 <label class="field"><span>Контакт для связи</span><input id="contact" placeholder="@username или телефон"></label>
-<label class="field"><span>Что планируете?</span><select id="kind"><option>Новая татуировка</option><optionПродолжение существующей работы</option><option>Консультация и разработка эскиза</option><option>Коррекция</option></select></label>
+<label class="field"><span>Что планируете?</span><select id="kind"><option>Новая татуировка</option><option>Продолжение существующей работы</option><option>Консультация и разработка эскиза</option><option>Коррекция</option></select></label>
 <label class="field"><span>Зона и размер</span><input id="zone" placeholder="Например: предплечье, 15 см"></label>
 <label class="field"><span>Расскажите об идее</span><textarea id="idea" placeholder="Стиль, сюжет, пожелания..."></textarea></label>
 <div class="field"><span>Предпочтительная дата</span><input id="date" type="date"></div>
@@ -45,6 +45,11 @@ function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.cla
 function pickSlot(el){document.querySelectorAll('.slot').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
 function demo(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3600)}
 function previewFiles(){const f=document.getElementById('files').files;document.getElementById('preview').textContent='Выбрано изображений: '+f.length+' (предпросмотр локальный)'}
-function submitBooking(){const name=document.getElementById('name').value.trim();const contact=document.getElementById('contact').value.trim();if(!name||!contact){demo('Заполните имя и контакт для связи.');return}demo('Заявка подготовлена. Отправка мастеру появится после подключения backend.')}
-document.getElementById('date').min=new Date().toISOString().slice(0,10);
+const API_URL='https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-manager-api';
+async function api(options={}){if(!tg?.initData)throw new Error('Откройте кабинет через Telegram, чтобы подтвердить профиль.');const res=await fetch(API_URL,{...options,headers:{'Content-Type':'application/json','x-telegram-init-data':tg.initData,...(options.headers||{})}});const data=await res.json();if(!res.ok)throw new Error(data.error||'Ошибка сервера');return data}
+async function submitBooking(){const name=document.getElementById('name').value.trim();const contact=document.getElementById('contact').value.trim();const date=document.getElementById('date').value;const time=document.querySelector('.slot.active')?.textContent.trim();if(!name||!contact||!date||!time){demo('Заполните имя, контакт, дату и время.');return}const button=document.querySelector('#booking .primary');button.disabled=true;button.textContent='Отправляем…';try{await api({method:'POST',body:JSON.stringify({action:'create_booking',client_name:name,client_contact:contact,project_type:document.getElementById('kind').value,body_placement:document.getElementById('zone').value,idea:document.getElementById('idea').value,requested_date:date,requested_time:time})});demo('Заявка отправлена мастеру! Ожидайте подтверждения.');show('home');await loadAppointments()}catch(e){demo(e.message.includes('NOT_CONFIGURED')?'Сервер ожидает безопасной настройки Telegram-ключа. Попробуйте позже.':e.message)}finally{button.disabled=false;button.textContent='Отправить заявку мастеру'}}
+async function loadAppointments(){const box=document.getElementById('myAppointments');try{const data=await api();const rows=data.appointments||[];box.innerHTML=rows.length?rows.map(a=>'<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>'+escapeHtml(a.project_type||'Тату-проект')+'</b><div class="muted">'+escapeHtml(a.requested_date)+' · '+escapeHtml(String(a.requested_time).slice(0,5))+'</div><span class="badge">'+statusLabel(a.status)+'</span></div>').join(''):'<div class="muted">АКТИВНЫХ ЗАПИСЕЙ ПОКА НЕТ</div><p style="margin:8px 0 0">После отправки заявки она появится здесь, а после подтверждения мастером обновится её статус.</p>'}catch(e){box.innerHTML='<div class="muted">Не удалось загрузить записи.</div><p style="margin:8px 0 0;font-size:12px">Откройте приложение из Telegram. Если ошибка повторяется, сервер ещё настраивается.</p>'}}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function statusLabel(s){return ({pending:'Ожидает подтверждения',confirmed:'Подтверждена',declined:'Отклонена',cancelled:'Отменена',completed:'Завершена'})[s]||s}
+document.getElementById('date').min=new Date().toISOString().slice(0,10);loadAppointments();
 </script></body></html>
