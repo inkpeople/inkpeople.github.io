@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="50">
+<meta charset="utf-8"><meta name="tm-version" content="51">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -233,7 +233,7 @@ async function loadFinance(){
 }
 
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b){page=b.dataset.page;render()}});
-document.body.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){page=go.dataset.go;render();return}const actionEl=e.target.closest('[data-action]');const a=actionEl?actionEl.dataset.action:null;if(a==='add'){addBooking();return}if(a==='calc'||a==='stock'||a==='forms'||a==='ai'){page='tools';render();detail(a);return}});
+document.body.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){page=go.dataset.go;render();return}const actionEl=e.target.closest('[data-action]');const a=actionEl?actionEl.dataset.action:null;if(a==='add'){addBooking();return}if(a==='calc'||a==='stock'||a==='forms'||a==='ai'||a==='tasks'){page='tools';render();detail(a);return}});
 document.body.addEventListener('click',async e=>{
  if(e.target.id==='taskAdd'){const title=$('#taskTitle').value.trim();if(!title){toast('Укажи название задачи');return}const button=e.target;button.disabled=true;try{await api('',{method:'POST',body:JSON.stringify({action:'create_task',title,description:$('#taskDescription').value,due_date:$('#taskDate').value,due_time:$('#taskTime').value,priority:$('#taskPriority').value,client_id:$('#taskClient').value||null})});await syncAppointments();detail('tasks');toast('Задача добавлена')}catch(err){toast('Не удалось добавить задачу: '+err.message)}finally{button.disabled=false}return}
  const doneTask=e.target.closest('[data-task-done],[data-task-reopen]');if(doneTask){const id=doneTask.dataset.taskDone||doneTask.dataset.taskReopen,status=doneTask.dataset.taskDone?'completed':'pending';try{await api('',{method:'POST',body:JSON.stringify({action:'update_task',id,status})});await syncAppointments();detail('tasks');toast(status==='completed'?'Задача выполнена':'Задача возвращена в работу')}catch(err){toast('Не удалось обновить задачу: '+err.message)}return}
