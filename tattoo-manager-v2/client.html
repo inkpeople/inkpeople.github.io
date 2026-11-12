@@ -7,6 +7,40 @@
 <style>
 :root{--bg:#100f16;--panel:#1b1924;--panel2:#242130;--line:#34303f;--text:#f7f4fb;--muted:#a9a3b5;--pink:#ef6bb5;--violet:#9b83ff;--green:#70d6a0}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#382442 0,transparent 42%),var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:92px}.wrap{max-width:620px;margin:auto;padding:18px 16px 28px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}.brand{font-weight:900;letter-spacing:1.7px;font-size:14px}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:2px;margin-top:3px}.avatar{width:42px;height:42px;border-radius:15px;background:linear-gradient(135deg,var(--violet),var(--pink));display:grid;place-items:center;font-weight:900}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--pink);font-weight:800}.hero h1{font-size:29px;line-height:1.08;margin:8px 0}.hero p{color:var(--muted);margin:0 0 20px}.card{background:linear-gradient(145deg,#211e2b,#191722);border:1px solid var(--line);border-radius:21px;padding:17px;margin:14px 0;box-shadow:0 12px 32px #0002}.master{display:flex;gap:13px;align-items:center}.masterpic{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,#6e4b82,#e77cb7);display:grid;place-items:center;font-size:22px}.muted{color:var(--muted);font-size:12px}.master h3{margin:0 0 4px;font-size:17px}.badge{display:inline-block;border:1px solid #4d765f;color:var(--green);border-radius:30px;padding:4px 9px;font-size:10px;margin-top:7px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:24px 2px 10px}.sectionhead h2{font-size:17px;margin:0}.link{color:var(--pink);font-size:12px;background:none;border:0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tile{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:14px;text-align:left;color:var(--text);min-height:104px}.ico{font-size:22px}.tile b{display:block;margin:8px 0 2px}.tile span:last-child{font-size:11px;color:var(--muted)}button{font:inherit;cursor:pointer}.primary{width:100%;border:0;border-radius:14px;padding:14px;background:linear-gradient(100deg,#a17cff,#ed69b2);color:white;font-weight:850;margin-top:12px}.secondary{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:11px 13px;border-radius:12px}.field{display:block;margin:12px 0}.field span{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:#12111a;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px;font:inherit;outline:none}.field textarea{min-height:82px;resize:vertical}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{padding:11px 5px;border:1px solid var(--line);border-radius:11px;background:#14121c;color:var(--text)}.slot.active{border-color:var(--pink);background:#382337}.hidden{display:none!important}.notice{background:#292239;border:1px solid #55406b;padding:12px;border-radius:13px;color:#d8cbe9;font-size:11px;margin-top:12px}.upload{border:1px dashed #6b5b7b;border-radius:15px;padding:18px;text-align:center;color:var(--muted);font-size:12px}.bottom{position:fixed;bottom:0;left:0;right:0;background:#15131df2;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:9px 8px calc(9px + env(safe-area-inset-bottom));z-index:5}.nav{width:min(620px,100%);display:flex;justify-content:space-around}.nav button{background:none;border:0;color:var(--muted);font-size:10px;display:grid;gap:3px;justify-items:center}.nav button strong{font-size:19px;font-weight:500}.nav button.active{color:var(--pink)}.toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:#292536;border:1px solid var(--line);padding:12px 17px;border-radius:12px;display:none;z-index:9;font-size:12px}
+
+/* TATTOO MANAGER · CLIENT BLACK / RED DESIGN SYSTEM */
+:root{color-scheme:dark;--bg:#090909;--panel:#141414;--panel2:#1c1c1c;--line:#292929;--text:#f5f5f5;--muted:#929292;--pink:#e0202b;--violet:#a90f1b;--green:#65c58a}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.wrap{max-width:640px;padding:calc(16px + env(safe-area-inset-top)) 16px 30px}
+.top{padding:5px 0 16px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+.brand{color:#f5f5f5;font-size:14px;letter-spacing:1.8px}.brand small{color:var(--muted);font-size:9px;letter-spacing:1.7px}
+.avatar,.masterpic{background:var(--accent);border-radius:12px;color:#fff}
+.eyebrow{color:var(--pink);font-size:10px;letter-spacing:2px}
+.hero h1{font-size:clamp(28px,7vw,36px);letter-spacing:-1.4px;font-weight:800}
+.hero p,.muted{color:var(--muted)}
+.card,.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px #0003}
+.card{padding:17px;margin:14px 0}
+.master h3{color:#f5f5f5}.badge{border:1px solid #315b3e;color:#8fe0a9;border-radius:7px}
+.sectionhead{margin:24px 2px 11px}.sectionhead h2{font-size:17px}
+.tile{border-radius:12px;min-height:100px;padding:14px;color:var(--text);transition:border-color .18s,transform .18s}
+.tile:active{transform:scale(.985);border-color:var(--pink)}
+.ico{color:var(--pink)}.tile span:last-child{color:var(--muted)}
+.link{color:var(--pink)}
+.primary{width:100%;border:1px solid var(--pink);border-radius:10px;padding:14px;background:var(--pink);color:#fff;font-weight:800;margin-top:12px;box-shadow:0 5px 16px #e0202b20}
+.primary:disabled{opacity:.55}
+.secondary{border:1px solid #383838;background:var(--panel2);color:var(--text);padding:11px 13px;border-radius:10px}
+.field input,.field select,.field textarea{background:#101010;color:var(--text);border:1px solid #343434;border-radius:10px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--pink);box-shadow:0 0 0 2px #e0202b20}
+.slots{gap:8px}.slot{border:1px solid #383838;border-radius:10px;background:#111;color:var(--text);min-height:44px}
+.slot.active{border-color:var(--pink);background:#2a1517;color:#fff}
+.notice{background:#201516;border:1px solid #512326;border-radius:10px;color:#e7b9bb;line-height:1.5}
+.upload{border:1px dashed #5b3739;border-radius:12px}
+.bottom{background:#101010f2;border-color:var(--line);backdrop-filter:blur(18px);padding:9px 8px calc(9px + env(safe-area-inset-bottom))}
+.nav button{color:#858585;min-width:48px}.nav button.active{color:var(--pink)}
+.toast{background:#1c1c1c;border:1px solid #5b2529;color:#fff;border-radius:10px;box-shadow:0 10px 30px #0008}
+@media(max-width:380px){.wrap{padding-left:12px;padding-right:12px}.nav button{font-size:9px}}
+
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
@@ -40,7 +74,7 @@
 </main>
 <div class="bottom"><nav class="nav"><button class="active" data-page="home" onclick="show('home',this)"><strong>⌂</strong>Главная</button><button data-page="booking" onclick="show('booking',this)"><strong>＋</strong>Запись</button><button data-page="refs" onclick="show('refs',this)"><strong>▧</strong>Референсы</button><button data-page="care" onclick="show('care',this)"><strong>♡</strong>Уход</button><button data-page="profile" onclick="show('profile',this)"><strong>☷</strong>Профиль</button></nav></div><div id="toast" class="toast"></div>
 <script>
-const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#100f16');tg.setBackgroundColor('#100f16')}catch(e){}}
+const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#090909');tg.setBackgroundColor('#090909')}catch(e){}}
 function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));window.scrollTo(0,0)}
 function pickSlot(el){document.querySelectorAll('.slot').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
 function demo(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3600)}
