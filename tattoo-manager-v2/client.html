@@ -112,6 +112,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #refs .reference-preview-item span{display:block;padding:5px 6px;font-size:10px;color:#aab1b1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #refs .preview-count{margin-top:10px;color:#929999;font-size:11px}
 @media(max-width:360px){#refs .reference-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* FIX: reference panel spacing and label/input collisions */
+#refs .card{display:flex;flex-direction:column;gap:14px;overflow:hidden}
+#refs .card>p{margin:0 0 2px;line-height:1.6;overflow-wrap:anywhere}
+#refs .upload{position:relative;display:flex;flex:0 0 auto;box-sizing:border-box;width:100%;min-width:0;min-height:124px;margin:0;padding:22px 14px;gap:9px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}
+#refs .upload b{display:block;max-width:100%;margin:0;font-size:13px;line-height:1.4;font-weight:700}
+#refs .upload small{display:block;max-width:100%;line-height:1.5;overflow-wrap:anywhere}
+#refs .upload input{display:none!important}
+#refs .field{display:block;position:relative;width:100%;min-width:0;margin:0;padding:0}
+#refs .field span{display:block;position:static;width:100%;margin:0 0 8px;padding:0;color:#aab1b1;font-size:12px;line-height:1.4;white-space:normal}
+#refs .field textarea{display:block;position:relative;width:100%;min-width:0;min-height:112px;margin:0;padding:13px 14px;line-height:1.5;box-sizing:border-box;overflow:auto}
+#refs .primary{display:block;position:relative;width:100%;margin:0;white-space:normal;line-height:1.4}
+#refs #preview{width:100%;min-width:0}
+
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
