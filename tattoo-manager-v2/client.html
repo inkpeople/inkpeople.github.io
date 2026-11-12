@@ -126,6 +126,29 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #refs .primary{display:block;position:relative;width:100%;margin:0;white-space:normal;line-height:1.4}
 #refs #preview{width:100%;min-width:0}
 
+
+/* Compact independent scrolling aftercare panel */
+#care .care-intro{margin:0 0 10px;color:#929999;font-size:11px;line-height:1.45}
+#care .care-scroll{height: min(48vh, 390px);min-height:220px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:0 5px 8px 0;scrollbar-width:thin;scrollbar-color:#6b3439 #171919}
+#care .care-scroll::-webkit-scrollbar{width:5px}
+#care .care-scroll::-webkit-scrollbar-track{background:#171919;border-radius:8px}
+#care .care-scroll::-webkit-scrollbar-thumb{background:#6b3439;border-radius:8px}
+#care .care-warning{padding:11px 12px;margin:0 0 10px;border:1px solid #583034;border-radius:11px;background:#1d1516;color:#d8bfc1;font-size:11px;line-height:1.5}
+#care .care-slides{display:flex;flex-direction:column;gap:9px;margin:0 0 10px}
+#care .care-slide{position:relative;overflow:hidden;padding:13px 12px 12px;border:1px solid #303636;border-radius:12px;background:linear-gradient(145deg,#171a1a,#101212);box-shadow:0 6px 16px #0003}
+#care .care-slide:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#df2632}
+#care .care-slide-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#care .care-number{display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:#301719;border:1px solid #633035;color:#ff7a82;font-size:11px;font-weight:850}
+#care .care-tag{font-size:8px;letter-spacing:.13em;color:#e56a72;font-weight:800}
+#care .care-slide h2{font-size:15px;line-height:1.2;letter-spacing:-.025em;margin:0 0 8px;color:#f3f4f4}
+#care .care-slide ul{margin:0;padding-left:17px}
+#care .care-slide li{padding:0 0 6px 1px;color:#c2c8c8;font-size:11px;line-height:1.5}
+#care .care-slide li:last-child{padding-bottom:0}
+#care .care-slide li::marker{color:#e04a54}
+#care .care-tip{margin-top:9px;padding:8px 9px;border-radius:8px;background:#211719;border:1px solid #45272b;color:#e2bfc1;font-size:10px;line-height:1.45}
+#care .care-danger{border-color:#6a3438;background:#211617;color:#e9c4c5}
+#care>.primary{margin-top:11px}
+@media(max-height:650px){#care .care-scroll{height:42vh;min-height:190px}}
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
@@ -156,16 +179,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <section id="forms" class="hidden"><div class="eyebrow">ПОДГОТОВКА К СЕАНСУ</div><h1>Анкета клиента</h1><div class="card"><div class="notice">В рабочей версии анкета будет доступна перед записью. Сейчас не вводите реальные медицинские сведения.</div><label class="field"><span>Есть ли важные особенности, о которых мастеру нужно знать?</span><textarea placeholder="Демонстрационное поле"></textarea></label><label class="field"><span>Разрешение на фото готовой работы</span><select><option>Обсудить с мастером</option><option>Разрешаю</option><option>Не разрешаю</option></select></label><label class="field"><span>Подтверждение ознакомления</span><select><option>Не подтверждено</option><option>Ознакомлен(а)</option></select></label><button class="primary" onclick="demo('Анкеты и электронные согласия подключим после настройки защищённого хранения и проверки юридических требований.')">Сохранить черновик</button></div></section>
 <section id="care" class="hidden">
 <div class="eyebrow">ПОСЛЕ СЕАНСА</div><h1>Уход за свежей татуировкой</h1>
-<p class="care-intro">Сохрани инструкцию, чтобы ничего не забыть. Листай карточки сверху вниз.</p>
-<div class="care-warning"><b>Важно про способ ухода</b><br>Эта инструкция — для традиционного способа с обычным компрессом. Если мастер наклеил специальную самоклеящуюся заживляющую плёнку, следуй отдельной инструкции мастера и производителя.</div>
+<p class="care-intro">Инструкция по этапам. Прокручивай блок вниз — остальная страница останется на месте.</p>
+<div class="care-scroll" aria-label="Инструкция по уходу за татуировкой">
+<div class="care-warning"><b>Традиционный способ ухода с обычным компрессом.</b><br>Если мастер наклеил специальную самоклеящуюся заживляющую плёнку, следуй отдельной инструкции мастера и производителя.</div>
 <div class="care-slides">
 <article class="care-slide"><div class="care-slide-top"><span class="care-number">01</span><span class="care-tag">СРАЗУ ПОСЛЕ СЕАНСА</span></div><h2>Сними компресс и промой</h2><ul><li>Сними компресс в срок, который указал мастер. Сначала тщательно вымой руки.</li><li>Аккуратно промой татуировку тёплой проточной водой с мягким мылом без отдушек. Удали остатки лимфы и загрязнений, не три кожу и не используй мочалку.</li><li>Промокни чистым одноразовым бумажным полотенцем или салфеткой.</li></ul><div class="care-tip">Дай коже высохнуть на воздухе примерно 20–30 минут.</div></article>
-<article class="care-slide"><div class="care-slide-top"><span class="care-number">02</span><span class="care-tag">СРЕДСТВО ДЛЯ УХОДА</span></div><h2>Нанеси тонкий слой крема</h2><ul><li>Нанеси небольшое количество средства, рекомендованного мастером.</li><li>Распредели его тонким слоем по всей поверхности татуировки. Кожа не должна быть липкой или покрытой толстым слоем.</li><li>Выбирай профессиональный крем для татуировок или другое согласованное средство.</li></ul><div class="care-tip">Бепантен и другие аптечные средства используй только после согласования с мастером или медицинским специалистом.</div></article>
+<article class="care-slide"><div class="care-slide-top"><span class="care-number">02</span><span class="care-tag">СРЕДСТВО ДЛЯ УХОДА</span></div><h2>Нанеси тонкий слой крема</h2><ul><li>Нанеси небольшое количество средства, рекомендованного мастером.</li><li>Распредели его тонким слоем. Кожа не должна быть липкой или покрытой толстым слоем.</li><li>Выбирай профессиональный крем для татуировок или другое согласованное средство.</li></ul><div class="care-tip">Бепантен и другие аптечные средства используй после согласования с мастером или медицинским специалистом.</div></article>
 <article class="care-slide"><div class="care-slide-top"><span class="care-number">03</span><span class="care-tag">ПЕРВЫЕ 3–4 ДНЯ</span></div><h2>Меняй обычный компресс</h2><ul><li>Если мастер назначил повторное закрытие обычным компрессом, меняй его по согласованной схеме — ориентир в этой инструкции каждые 4–5 часов.</li><li>Каждый раз вымой руки, сними старый компресс, промой татуировку, промокни насухо и накрой чистым новым материалом.</li><li>Не используй старый компресс повторно и не закрывай влажную или загрязнённую кожу.</li></ul><div class="care-tip">Через 3–4 дня от обычного компресса можно отказаться, если заживление идёт спокойно и мастер не дал других указаний.</div></article>
 <article class="care-slide"><div class="care-slide-top"><span class="care-number">04</span><span class="care-tag">ДАЛЬНЕЙШЕЕ ЗАЖИВЛЕНИЕ</span></div><h2>Не мешай коже восстановиться</h2><ul><li>Поддерживай кожу чистой и увлажнённой, наноси тонкий слой подходящего крема по мере необходимости.</li><li>Не отдирай корочки и отслаивающуюся кожу.</li><li>Не скрабируй, не распаривай и не чеши татуировку.</li><li>Избегай трения и тесной или грязной одежды.</li></ul></article>
 <article class="care-slide"><div class="care-slide-top"><span class="care-number">05</span><span class="care-tag">ВОДА И СОЛНЦЕ</span></div><h2>Ограничь купание и загар</h2><ul><li><b>Душ:</b> обычно разрешён с первого дня. Используй тёплую воду, не направляй сильную струю на татуировку и не три её.</li><li><b>Ванна, баня, сауна, бассейн и водоёмы:</b> не ранее чем через 2 недели и только после полного заживления кожи. Если есть корочки, шелушение или мокнутие — подожди дольше.</li><li><b>Солнце и солярий:</b> избегай до полного заживления. После заживления защищай татуировку одеждой и SPF 50+.</li></ul></article>
 </div>
 <div class="care-warning care-danger"><b>Когда нужно обратиться за медицинской помощью</b><br>Если боль усиливается, покраснение распространяется, появился выраженный отёк, гной, красные полосы или повысилась температура — обратись за медицинской помощью. Если не уверен, как менять компресс, уточни схему у мастера.</div>
+</div>
 <button class="primary" onclick="demo(&quot;Если сомневаешься в уходе, напиши мастеру и уточни схему именно для своей татуировки.&quot;)">Задать вопрос по уходу</button>
 </section>
 <section id="profile" class="hidden"><div class="eyebrow">ЛИЧНЫЕ ДАННЫЕ</div><h1>Мой профиль</h1><div class="card"><div class="master"><div class="avatar">К</div><div><b id="profileName">Загрузка профиля…</b><div class="muted" id="profileMeta">Профиль привязан к Telegram</div></div></div><div class="notice">Ваш профиль привязан к Telegram. Записи и история будут отображаться в этом личном кабинете.</div></div></section>
