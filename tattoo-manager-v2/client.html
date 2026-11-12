@@ -41,6 +41,53 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 .toast{background:#1c1c1c;border:1px solid #5b2529;color:#fff;border-radius:10px;box-shadow:0 10px 30px #0008}
 @media(max-width:380px){.wrap{padding-left:12px;padding-right:12px}.nav button{font-size:9px}}
 
+
+/* TATTOO MANAGER · PREMIUM GRAPHITE / CRIMSON SYSTEM */
+:root{
+ --bg:#080909;--panel:#121414;--panel2:#191c1c;--line:#282d2d;
+ --text:#f3f4f4;--muted:#929999;--pink:#df2632;--violet:#b91f29;--green:#72c995;
+ color-scheme:dark
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg)!important;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+.wrap{max-width:650px;padding:calc(20px + env(safe-area-inset-top)) 16px calc(108px + env(safe-area-inset-bottom))}
+.top{margin-bottom:27px}
+.brand{color:#f1f2f2;font-size:12px;letter-spacing:.2em;font-weight:850}
+.brand small{color:#858d8d;letter-spacing:.13em;font-size:9px}
+.avatar,.masterpic{background:#242929!important;border:1px solid #343b3b;color:#f4f5f5;border-radius:14px}
+.eyebrow{color:#e0444d;letter-spacing:.2em;font-size:9px}
+.hero h1{font-size:clamp(28px,7vw,36px);line-height:1.08;letter-spacing:-.055em;font-weight:780}
+.hero p,.muted{color:#929999}
+.card,.tile{background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:0 10px 28px #0004}
+.card{padding:17px;margin:14px 0}
+.master h3{color:#f3f4f4;font-size:15px;font-weight:720}
+.badge{background:#14231a;border:1px solid #284b35;color:#83d5a1;border-radius:7px;padding:4px 8px}
+.sectionhead{margin:25px 2px 12px}
+.sectionhead h2{font-size:16px;font-weight:720;letter-spacing:-.02em}
+.tile{border-radius:14px;min-height:102px;padding:15px;transition:background .18s,border-color .18s,transform .18s}
+.tile:active{transform:scale(.985);background:#1a1e1e;border-color:#703137}
+.ico{color:#e0444d;font-size:20px}
+.tile b{font-size:13px;font-weight:700}
+.tile span:last-child{color:#929999;font-size:10px}
+.link{color:#ef626a}
+.primary{width:100%;border:1px solid #df2632;border-radius:10px;padding:13px 15px;background:#df2632;color:#fff;font-size:13px;font-weight:730;margin-top:12px;box-shadow:0 5px 16px #df26321c;transition:background .18s,transform .18s}
+.primary:active{background:#b91f29;transform:translateY(1px)}
+.primary:disabled{opacity:.55}
+.secondary{border:1px solid #343a3a;background:#1a1d1d;color:#e8eaea;padding:10px 13px;border-radius:10px;font-size:12px}
+.field input,.field select,.field textarea{background:#101212;color:#f3f4f4;border:1px solid #303636;border-radius:10px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#a9363d;box-shadow:0 0 0 3px #df26321c}
+.slots{gap:8px}.slot{border:1px solid #343a3a;border-radius:10px;background:#151818;color:#f3f4f4;min-height:45px}
+.slot.active{border-color:#df2632;background:#2a1719;color:#fff}
+.notice{background:#1d1718;border:1px solid #49272b;border-radius:10px;color:#dfb7ba;line-height:1.5}
+.upload{border:1px dashed #555f5f;border-radius:12px;background:#111414}
+.bottom{background:#101313f5;border-color:#292f2f;box-shadow:0 -8px 28px #0005;backdrop-filter:blur(18px);padding:10px 8px calc(10px + env(safe-area-inset-bottom))}
+.nav button{color:#788080;min-width:48px;font-size:9px}
+.nav button.active{color:#f05b64}
+.toast{background:#191d1d;border:1px solid #583035;color:#f5f5f5;border-radius:11px;box-shadow:0 12px 32px #0009}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #df2632;outline-offset:2px}
+@media(max-width:380px){.wrap{padding-left:12px;padding-right:12px}.nav button{font-size:9px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
