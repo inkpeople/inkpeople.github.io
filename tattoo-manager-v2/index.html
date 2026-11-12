@@ -58,6 +58,66 @@ select,textarea,input{accent-color:var(--accent)}
 @media(max-width:380px){.app{padding-left:12px;padding-right:12px}.nav button{min-width:44px;font-size:9px}.nav button span{font-size:18px}.stat{padding:12px}.stat strong{font-size:22px}}
 @media(min-width:600px){.app{padding-left:22px;padding-right:22px}}
 
+
+/* TATTOO MANAGER · PREMIUM GRAPHITE / CRIMSON SYSTEM */
+:root{
+ --bg:#080909;--panel:#121414;--panel2:#191c1c;--line:#282d2d;
+ --text:#f3f4f4;--muted:#929999;--accent:#df2632;--accent2:#b91f29;
+ --pink:#df2632;--violet:#b91f29;--green:#72c995;--yellow:#d7ae62;--red:#df2632;
+ color-scheme:dark
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:var(--bg)!important;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+.app{max-width:780px;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.top{margin-bottom:26px}
+.brand{color:#f1f2f2;font-size:12px;letter-spacing:.2em;font-weight:850}
+.brand small{color:#858d8d;letter-spacing:.13em;font-size:9px}
+.avatar{background:#242929!important;border:1px solid #343b3b;color:#f4f5f5;border-radius:14px}
+h1{font-size:clamp(27px,6vw,34px);font-weight:780;letter-spacing:-.055em;line-height:1.08}
+.eyebrow{color:#e0444d;letter-spacing:.2em;font-size:9px}
+.muted,.date{color:var(--muted)}
+.headrow{margin:25px 0 15px}
+.stats{gap:10px;margin:20px 0}
+.stat,.panel,.tile{background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:0 10px 28px #0004}
+.stat{padding:16px;min-height:100px}
+.stat label{color:#929999;font-size:11px;letter-spacing:.02em}
+.stat strong{font-size:27px;font-weight:760;letter-spacing:-.04em;color:#f5f6f6}
+.stat em{font-size:10px;color:#929999}
+.panel{padding:17px;margin:13px 0}
+.panelhead{margin-bottom:13px}
+.panelhead b{font-size:14px;font-weight:720;letter-spacing:-.015em}
+.appointment,.listitem{border-color:#252a2a}
+.appointment{gap:13px;padding:14px 0}
+.time{color:#f06a71;font-size:13px;font-variant-numeric:tabular-nums}
+.apptmain b,.listitem b{font-weight:680;font-size:13px}
+.apptmain small{font-size:11px;line-height:1.5;color:#929999}
+.tag{background:#2a1719;color:#f19aa0;border:1px solid #51272b;border-radius:7px;font-size:9px;letter-spacing:.02em}
+.tag.green{background:#14231a;color:#83d5a1;border-color:#284b35}
+.tag.yellow{background:#282115;color:#d7ae62;border-color:#4b3b22}
+.quick{gap:10px}
+.tile{padding:16px;min-height:102px;border-radius:14px;transition:background .18s,border-color .18s,transform .18s}
+.tile:active{transform:scale(.985);background:#1a1e1e}
+.tile span{color:var(--accent);font-size:19px}
+.tile b{font-size:13px;font-weight:700;letter-spacing:-.01em}
+.tile small{font-size:10px;color:#8e9696}
+.primary{background:var(--accent);border:1px solid var(--accent);border-radius:10px;color:#fff;padding:12px 16px;font-size:13px;font-weight:720;box-shadow:0 5px 16px #df26321c;transition:background .18s,transform .18s}
+.primary:active{background:var(--accent2);transform:translateY(1px)}
+.secondary{background:#1a1d1d;border:1px solid #343a3a;border-radius:10px;padding:10px 13px;color:#e8eaea;font-size:12px}
+.link{color:#ef626a}
+.field{background:#101212;border:1px solid #303636;border-radius:10px;color:#f3f4f4;padding:13px;font-size:13px}
+.field::placeholder{color:#687070}
+.field:focus{border-color:#a9363d;box-shadow:0 0 0 3px #df26321c}
+.nav{background:#101313f5;border-color:#292f2f;box-shadow:0 -8px 28px #0005;padding:10px 6px calc(10px + env(safe-area-inset-bottom))}
+.nav button{color:#788080;font-size:9px;letter-spacing:.01em;min-width:52px}
+.nav button span{font-size:18px}
+.nav button.active{color:#f05b64}
+.empty{color:#858e8e}
+.bar{background:#292f2f}.bar i{background:var(--accent)}
+.toast{background:#191d1d;border:1px solid #583035;color:#f5f5f5;border-radius:11px;box-shadow:0 12px 32px #0009}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #df2632;outline-offset:2px}
+@media(max-width:380px){.app{padding-left:12px;padding-right:12px}.nav button{min-width:43px;font-size:9px}.stat{padding:13px}.stat strong{font-size:23px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
 </style></head><body>
 <div class="app">
 <header class="top"><div class="brand">TATTOO MANAGER<small id="connectionLabel">ПАНЕЛЬ МАСТЕРА · ПОДКЛЮЧЕНИЕ</small></div><div class="avatar">R</div></header>
