@@ -425,7 +425,7 @@ function masterName(m){return m.artist_name||m.studio_name||'Мастер';}
 function masterCard(m,mode){
  const title=esc(masterName(m)),city=esc(m.city||'Город не указан'),studio=esc(m.studio_name||''),nickname=m.username?'@'+esc(m.username):'',contactName=m.matched_contact_name?'<div class="muted" style="font-size:10px;margin-top:3px">В телефонной книге: '+esc(m.matched_contact_name)+'</div>':'';
  let action='';
- if(mode==='friend')action='<button class="secondary" data-friend-action="remove" data-friendship-id="'+esc(m.friendship_id)+'">Удалить из друзей</button>';
+ if(mode==='friend')action='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="primary" data-chat-open="'+esc(m.id)+'" data-chat-friendship="'+esc(m.friendship_id)+'" data-chat-name="'+title+'">Написать</button><button class="secondary" data-friend-action="remove" data-friendship-id="'+esc(m.friendship_id)+'">Удалить</button></div>';
  if(mode==='incoming')action='<div class="row"><button class="primary" data-friend-action="accept" data-friendship-id="'+esc(m.friendship_id)+'">Принять</button><button class="secondary" data-friend-action="reject" data-friendship-id="'+esc(m.friendship_id)+'">Отклонить</button></div>';
  if(mode==='outgoing')action='<span class="tag yellow">Заявка отправлена</span>';
  if(mode==='search'){
