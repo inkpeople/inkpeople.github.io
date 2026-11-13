@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="73">
+<meta charset="utf-8"><meta name="tm-version" content="74">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09090c"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -265,6 +265,9 @@ body{background:radial-gradient(ellipse at 86% -8%,#39205d 0,transparent 38%),ra
 .nav button.active,.nav button.active strong,.nav button.active .icon{color:#e12635!important}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--violet)!important}
 .ai-compose button,.ai-client-compose button{background:linear-gradient(105deg,#8b5cf6,#e12635)!important;color:#fff!important}
+
+/* MASTER FRIEND CHAT */
+#masterChatMessages{overscroll-behavior:contain}#masterChatInput{background:#17171f!important;border:1px solid #3a3548!important;color:#fff!important}#masterChatInput:focus{border-color:#8b5cf6!important;box-shadow:0 0 0 2px #8b5cf633}
 </style><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 </head><body><div id="tmSplash" role="status" aria-label="Загрузка TATTOO MANAGER AI"><div class="tm-splash-content"><div class="tm-splash-mark">TM</div><div class="tm-splash-title">TATTOO MANAGER</div><div class="tm-splash-ai">A I</div><div class="tm-splash-caption">Управление тату-бизнесом нового поколения</div><div class="tm-splash-loader"><i></i></div></div></div><script>window.setTimeout(()=>document.getElementById('tmSplash')?.classList.add('hide'),1750);</script>
 <div class="app">
@@ -286,7 +289,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </nav><div class="toast" id="toast"></div>
 <script>
 (()=>{const tg=(window.Telegram&&window.Telegram.WebApp)?window.Telegram.WebApp:null;if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#090909');tg.setBackgroundColor('#090909')}catch(e){}}
-const $=s=>document.querySelector(s), view=$('#view');let page='home';
+const $=s=>document.querySelector(s), view=$('#view');let page='home';let masterChatPoll=null;let activeMasterChat=null;
 const today=new Date();const localISO=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};const fmt=today.toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});
 function minutesClock(value){const total=Math.max(0,Math.round(Number(value)||0));return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')}
 let bookings=[];let pendingBookingClientId=null;let calendarEvents=readLocal('tm_calendar_events',[]);let calendarCursor=new Date();let selectedCalendarDate=localISO(new Date());let serverConnected=false;let masterStudio=null;let masterReferralLink='';const API='https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-manager-api';
@@ -472,7 +475,7 @@ async function openMasterProfile(studioId){
   const m=d.master||{},name=masterName(m),fields=[['Имя мастера',m.artist_name],['Имя в Telegram',m.full_name],['Студия',m.studio_name],['Город',m.city],['Telegram',m.username?'@'+m.username:'']];
   const info=fields.filter(x=>String(x[1]||'').trim()).map(x=>'<div class="listitem"><span class="muted">'+esc(x[0])+'</span><b style="text-align:right;overflow-wrap:anywhere">'+esc(x[1])+'</b></div>').join('');
   let relation='';
-  if(m.friendship_status==='accepted')relation='<div class="tag green">Уже в друзьях</div>';
+  if(m.friendship_status==='accepted')relation='<div class="tag green">Уже в друзьях</div><button class="primary" data-chat-open="'+esc(m.id)+'" data-chat-friendship="'+esc(m.friendship_id)+'" data-chat-name="'+esc(name)+'" style="width:100%;margin-top:10px">Открыть чат</button>';
   else if(m.friendship_status==='pending'&&String(m.requested_by_studio_id)===String(masterStudio?.id))relation='<div class="tag yellow">Заявка отправлена</div>';
   else if(m.friendship_status==='pending')relation='<button class="primary" data-friend-action="accept" data-friendship-id="'+esc(m.friendship_id)+'" style="width:100%">Принять заявку</button>';
   else relation='<button class="primary" data-friend-action="send" data-studio-id="'+esc(m.id)+'" style="width:100%">Добавить в друзья</button>';
@@ -483,9 +486,57 @@ async function openMasterProfile(studioId){
    '<button class="secondary" data-go="masters" style="width:100%">← Назад к мастерам</button>';
  }catch(err){view.innerHTML=heading('СООБЩЕСТВО','Профиль мастера','Не удалось загрузить данные')+'<section class="panel"><div class="notice">'+esc(err.message)+'</div><button class="secondary" data-go="masters" style="width:100%;margin-top:12px">← Назад к мастерам</button></section>';}
 }
+function stopMasterChatPolling(){if(masterChatPoll){clearInterval(masterChatPoll);masterChatPoll=null;}}
+function masterChatDisplayName(m){return m.artist_name||m.studio_name||'Мастер';}
+async function refreshMasterChats(){
+ const box=$('#masterChats');if(!box)return;
+ try{
+  const d=await api('',{method:'POST',body:JSON.stringify({action:'list_master_chats'})});
+  const chats=d.chats||[],count=$('#masterChatsCount');if(count)count.textContent=String(chats.length);
+  box.innerHTML=chats.length?chats.map(x=>{
+   const name=masterChatDisplayName(x),last=x.last_message;
+   const preview=last?(String(last.sender_studio_id)===String(masterStudio?.id)?'Вы: ':'')+String(last.body||'').slice(0,76):'Начните переписку';
+   const unread=Number(x.unread_count)||0;
+   return '<div class="listitem" style="align-items:center;gap:10px"><div style="min-width:0;flex:1"><b>'+esc(name)+'</b><div class="muted" style="font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(preview)+'</div>'+(last?'<div class="muted" style="font-size:10px;margin-top:3px">'+new Date(last.created_at).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</div>':'')+'</div>'+(unread?'<span class="tag" style="background:#e12635;color:#fff">'+unread+'</span>':'')+'<button class="primary" data-chat-open="'+esc(x.id)+'" data-chat-friendship="'+esc(x.friendship_id)+'" data-chat-name="'+esc(name)+'">Чат</button></div>';
+  }).join(''):'<div class="empty">Добавь мастера в друзья, чтобы начать переписку.</div>';
+ }catch(err){box.innerHTML='<div class="empty">Не удалось загрузить чаты: '+esc(err.message)+'</div>';}
+}
+async function loadMasterChat(){
+ const box=$('#masterChatMessages');if(!box||!activeMasterChat)return;
+ try{
+  const d=await api('',{method:'POST',body:JSON.stringify({action:'get_master_chat',friendship_id:activeMasterChat.friendshipId})});
+  const rows=d.messages||[];
+  box.innerHTML=rows.length?rows.map(m=>{
+   const mine=String(m.sender_studio_id)===String(masterStudio?.id);
+   return '<div style="display:flex;justify-content:'+(mine?'flex-end':'flex-start')+';margin:8px 0"><div style="max-width:86%;padding:10px 12px;border-radius:14px;background:'+(mine?'linear-gradient(120deg,#8b5cf6,#b51d2b)':'#24242d')+';border:1px solid '+(mine?'#a78bfa66':'#393943')+';color:#fff;overflow-wrap:anywhere"><div style="font-size:13px;line-height:1.45">'+esc(m.body).replace(/\n/g,'<br>')+'</div><div style="font-size:10px;opacity:.7;text-align:right;margin-top:5px">'+new Date(m.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</div></div></div>';
+  }).join(''):'<div class="empty">Пока сообщений нет. Напиши первым!</div>';
+  box.scrollTop=box.scrollHeight;
+  await refreshMasterChats();
+ }catch(err){if(box)box.innerHTML='<div class="empty">Не удалось загрузить переписку: '+esc(err.message)+'</div>';}
+}
+async function openMasterChat(studioId,friendshipId,name){
+ stopMasterChatPolling();
+ activeMasterChat={studioId:String(studioId),friendshipId:String(friendshipId),name:String(name||'Мастер')};
+ view.innerHTML=heading('СООБЩЕСТВО','Чат с мастером',activeMasterChat.name)+
+ '<button class="secondary" id="masterChatBack" style="width:100%;margin-bottom:12px">← Назад к друзьям</button>'+
+ '<section class="panel" style="padding:12px"><div id="masterChatMessages" style="height:min(52vh,520px);min-height:240px;overflow-y:auto;padding:4px 2px;scroll-behavior:smooth"><div class="empty">Загрузка переписки…</div></div>'+
+ '<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:8px"><textarea class="field" id="masterChatInput" maxlength="4000" rows="3" placeholder="Напиши сообщение…" style="width:100%;resize:vertical;margin:0"></textarea><div class="row" style="align-items:center;margin-top:8px"><span class="muted" style="font-size:10px;flex:1">До 4000 символов</span><button class="primary" id="masterChatSend">Отправить</button></div></div></section>';
+ await loadMasterChat();
+ masterChatPoll=setInterval(()=>{if($('#masterChatMessages'))loadMasterChat();else stopMasterChatPolling();},5000);
+}
+async function sendMasterChatMessage(){
+ const input=$('#masterChatInput'),button=$('#masterChatSend'),body=input?.value.trim()||'';
+ if(!body||!activeMasterChat)return;
+ button.disabled=true;
+ try{await api('',{method:'POST',body:JSON.stringify({action:'send_master_message',friendship_id:activeMasterChat.friendshipId,body})});input.value='';await loadMasterChat();}
+ catch(err){toast('Не удалось отправить сообщение: '+err.message);}
+ finally{if(button)button.disabled=false;if(input)input.focus();}
+}
 function mastersPage(){
+ stopMasterChatPolling();activeMasterChat=null;
  view.innerHTML=heading('СООБЩЕСТВО','Мастера','Находи коллег и добавляй их в друзья')+
  '<section class="panel"><b>Найти мастера</b><p class="muted" style="font-size:12px;margin:7px 0 10px">Выбери коллег из телефонной книги — приложение покажет тех, кто уже зарегистрирован.</p><button class="primary" id="findMastersFromContacts" style="width:100%">📱 Выбрать контакты телефона</button><div id="masterContactsStatus" class="muted" style="font-size:11px;margin-top:8px">Контакты не загружаются автоматически. Ты сам выбираешь, какие показать приложению.</div><div class="row" style="margin-top:13px"><input class="field" id="masterSearchQuery" placeholder="Или имя, город, @username" style="margin:0"><button class="primary" id="searchMasters">Найти</button></div><div id="masterSearchResults" class="muted" style="font-size:12px;margin-top:8px">Введи имя мастера или выбери контакты.</div></section>'+
+ '<section class="panel"><div class="panelhead"><b>Чаты с друзьями</b><span class="tag" id="masterChatsCount">0</span></div><div id="masterChats"><div class="empty">Загрузка…</div></div></section>'+
  '<section class="panel"><div class="panelhead"><b>Входящие заявки</b><span class="tag" id="masterIncomingCount">0</span></div><div id="masterIncoming"><div class="empty">Загрузка…</div></div></section>'+
  '<section class="panel"><div class="panelhead"><b>Исходящие заявки</b><span class="tag" id="masterOutgoingCount">0</span></div><div id="masterOutgoing"><div class="empty">Загрузка…</div></div></section>'+
  '<section class="panel"><div class="panelhead"><b>Мои друзья</b><span class="tag" id="masterFriendsCount">0</span></div><div id="masterFriends"><div class="empty">Загрузка…</div></div></section>';
@@ -496,9 +547,10 @@ async function refreshMasterCommunity(){
   const d=await api('',{method:'POST',body:JSON.stringify({action:'list_master_friends'})});
   const groups=[['masterIncoming',d.incoming||[],'incoming'],['masterOutgoing',d.outgoing||[],'outgoing'],['masterFriends',d.friends||[],'friend']];
   for(const [id,rows,mode] of groups){const box=document.getElementById(id);if(box)box.innerHTML=rows.length?rows.map(x=>masterCard(x,mode)).join(''):'<div class="empty">Пока нет записей</div>';}
+  refreshMasterChats();
   const counts=[['masterIncomingCount',d.incoming?.length||0],['masterOutgoingCount',d.outgoing?.length||0],['masterFriendsCount',d.friends?.length||0]];
   for(const [id,n] of counts){const el=document.getElementById(id);if(el)el.textContent=String(n);}
- }catch(err){['masterIncoming','masterOutgoing','masterFriends'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="empty">Не удалось загрузить: '+esc(err.message)+'</div>';});}
+ }catch(err){refreshMasterChats();['masterIncoming','masterOutgoing','masterFriends'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="empty">Не удалось загрузить: '+esc(err.message)+'</div>';});}
 }
 async function searchMasterDirectory(){
  const input=$('#masterSearchQuery'),box=$('#masterSearchResults'),query=input?.value.trim()||'';
@@ -685,6 +737,9 @@ $('#nav').addEventListener('click',e=>{const more=e.target.closest('[data-more-t
 document.body.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){page=go.dataset.go;render();return}const actionEl=e.target.closest('[data-action]');const a=actionEl?actionEl.dataset.action:null;if(a==='add'){addBooking();return}if(a==='calc'||a==='stock'||a==='forms'||a==='ai'||a==='tasks'){page='tools';render();detail(a);return}});
 document.body.addEventListener('change',e=>{if(e.target&&e.target.id==='masterPortfolioFile'){const file=e.target.files&&e.target.files[0];if(file)uploadMasterPortfolio(file);}});
 document.body.addEventListener('click',async e=>{
+ if(e.target.closest('[data-chat-open]')){const b=e.target.closest('[data-chat-open]');openMasterChat(b.dataset.chatOpen,b.dataset.chatFriendship,b.dataset.chatName);return;}
+ if(e.target.id==='masterChatBack'){stopMasterChatPolling();activeMasterChat=null;mastersPage();return;}
+ if(e.target.id==='masterChatSend'){sendMasterChatMessage();return;}
  if(e.target.id==='searchMasters'){searchMasterDirectory();return}
  if(e.target.id==='findMastersFromContacts'){findMastersFromContacts();return}
  const portfolioDelete=e.target.closest('[data-portfolio-delete]');
@@ -768,7 +823,7 @@ if(e.target.id==='saveClient'){const name=$('#cn').value.trim();if(!name){toast(
 if(e.target.id==='calculate'){const total=Math.max(0,+$('#size').value)*(+$('#rate').value)*(+$('#complex').value);$('#calcResult').textContent='Ориентир: '+Math.round(total).toLocaleString('ru-RU')+' ₽'}
 });
 document.body.addEventListener('change',e=>{if(e.target.id==='invCategory'){const n=$('#invName'),h=$('#invNameHint'),w=$('#invBrandWrap');if(e.target.value==='Иглы / картриджи'){if(w)w.style.display='block';if(n)n.placeholder='Например, 5 RM 0.30';if(h)h.textContent='Вводи конфигурацию: 5 RM 0.30, 7 RL 0.35, 9 RS 0.30, 13 M1 и т.д. Фирма будет отдельной частью названия.'}else{if(w)w.style.display='none';if(n)n.placeholder='Например, Бандажный бинт';if(h)h.textContent='Укажи название расходного материала.'}}if(e.target.id==='bookingClient'){const c=clients.find(x=>String(x.id)===String(e.target.value));if(c){$('#bn').value=c.name||'';$('#bc').value=c.phone||''}}if(e.target.id==='clientPhotoFile'){const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('Выбери изображение');return}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas'),scale=Math.min(1,640/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);const preview=$('#clientPhotoPreview');if(preview)preview.innerHTML='<img src="'+canvas.toDataURL('image/jpeg',.78)+'" alt="" style="width:100%;height:100%;object-fit:cover">'};img.src=reader.result};reader.readAsDataURL(file)}});
-document.body.addEventListener('keydown',e=>{if(e.target.id==='masterSearchQuery'&&e.key==='Enter'){e.preventDefault();searchMasterDirectory()}});
+document.body.addEventListener('keydown',e=>{if(e.target.id==='masterSearchQuery'&&e.key==='Enter'){e.preventDefault();searchMasterDirectory()}if(e.target.id==='masterChatInput'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMasterChatMessage()}});
 document.body.addEventListener('input',e=>{if(e.target.id==='search'){$('#clientList').innerHTML=clientRows(clients.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(e.target.value.toLowerCase())))}})
 try{render();if(tg&&tg.initData)syncAppointments()}catch(err){console.error('TATTOO MANAGER startup error',err);const startupError=String(err&&err.message||err||'Неизвестная ошибка').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));view.innerHTML='<section class="panel" style="margin-top:30px;padding:22px"><div class="eyebrow">ОШИБКА ЗАПУСКА</div><h1 style="font-size:22px;margin:12px 0">Не удалось открыть кабинет</h1><p class="muted">Причина ошибки: <b>'+startupError+'</b></p><p class="muted">Сделай скриншот этого сообщения и отправь его для точного исправления.</p><button class="primary" onclick="location.reload()">Перезапустить приложение</button></section>'}
 })();
