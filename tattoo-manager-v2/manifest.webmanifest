@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "TATTOO MANAGER",
+  "short_name": "Tattoo Manager",
+  "description": "Управление тату-бизнесом",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090b0c",
+  "theme_color": "#090b0c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
