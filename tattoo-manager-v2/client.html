@@ -332,7 +332,7 @@ async function sendClientAI(){
   const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'Не удалось получить ответ');
   if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);clientAIAddMessage('assistant',data.answer);clientAIHistory.push({role:'user',content:message},{role:'assistant',content:data.answer});clientAIHistory=clientAIHistory.slice(-8);
  }catch(e){if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);clientAIAddMessage('assistant',e.message||'Ошибка подключения. Попробуйте ещё раз.');}
- finally{input.disabled=false;button.disabled=false;input.focus();}
+ finally{input.disabled=false;button.disabled=false;}
 }
 
 async function compressReference(file){const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});return await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas'),scale=Math.min(1,1800/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);let quality=.82,out=canvas.toDataURL('image/jpeg',quality);while(out.length>5500000&&quality>.42){quality-=.08;out=canvas.toDataURL('image/jpeg',quality)}if(out.length>5500000)reject(new Error('Не удалось уменьшить изображение'));else resolve(out)};img.onerror=()=>reject(new Error('Не удалось прочитать изображение'));img.src=dataUrl})}
