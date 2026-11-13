@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="63">
+<meta charset="utf-8"><meta name="tm-version" content="64">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -184,7 +184,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .appointment .booking-work{display:block;margin-top:7px}
 .appointment .booking-pending-actions{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(76px,1fr)!important;grid-auto-flow:row;align-items:stretch;gap:8px;width:100%;min-width:0;margin-top:9px;box-sizing:border-box}
 .appointment .booking-pending-actions button{display:block!important;width:100%;min-width:0;max-width:100%;min-height:40px;flex:none!important;margin:0;padding:9px 8px;box-sizing:border-box;white-space:nowrap!important;overflow-wrap:normal;word-break:normal;line-height:1.25;font-size:11px}
-</style></head><body>
+
+/* TATTOO MANAGER AI · NEON INTRO */
+#tmSplash{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#29113f 0%,#100b19 38%,#070709 78%);opacity:1;visibility:visible;transition:opacity .55s ease,visibility .55s ease}
+#tmSplash.hide{opacity:0;visibility:hidden;pointer-events:none}
+#tmSplash:before,#tmSplash:after{content:"";position:absolute;width:min(82vw,390px);aspect-ratio:1;border:1px solid #a855f733;border-radius:50%;box-shadow:0 0 45px #9d4edd18,inset 0 0 45px #9d4edd12;animation:tmOrbit 12s linear infinite}
+#tmSplash:after{width:min(65vw,300px);border-color:#d946ef35;animation-direction:reverse;animation-duration:9s}
+.tm-splash-content{position:relative;z-index:1;text-align:center;padding:24px;animation:tmRise .9s ease both}
+.tm-splash-mark{width:76px;height:76px;margin:0 auto 25px;border:1px solid #bd6cff88;border-radius:23px;display:grid;place-items:center;background:linear-gradient(145deg,#27143a,#100d18);color:#e9c8ff;font-size:30px;font-weight:900;letter-spacing:-.08em;box-shadow:0 0 22px #a855f766,0 0 70px #9333ea35,inset 0 0 20px #a855f722}
+.tm-splash-title{font-size:clamp(19px,5vw,24px);font-weight:850;letter-spacing:.19em;color:#fff;text-shadow:0 0 22px #c084fc88}
+.tm-splash-ai{margin-top:7px;font-size:10px;font-weight:800;letter-spacing:.48em;color:#d8b4fe}
+.tm-splash-caption{margin-top:17px;color:#a7a0b2;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.tm-splash-loader{width:108px;height:2px;margin:28px auto 0;background:#ffffff18;overflow:hidden;border-radius:4px}
+.tm-splash-loader i{display:block;width:38%;height:100%;border-radius:4px;background:linear-gradient(90deg,#9333ea,#e879f9);box-shadow:0 0 12px #c084fc;animation:tmLoad 1.35s ease-in-out infinite}
+@keyframes tmLoad{0%{transform:translateX(-110%)}100%{transform:translateX(290%)}}
+@keyframes tmOrbit{to{transform:rotate(360deg)}}
+@keyframes tmRise{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#tmSplash:before,#tmSplash:after,.tm-splash-content,.tm-splash-loader i{animation:none}}
+</style></head><body><div id="tmSplash" role="status" aria-label="Загрузка TATTOO MANAGER AI"><div class="tm-splash-content"><div class="tm-splash-mark">TM</div><div class="tm-splash-title">TATTOO MANAGER</div><div class="tm-splash-ai">A I</div><div class="tm-splash-caption">Управление тату-бизнесом нового поколения</div><div class="tm-splash-loader"><i></i></div></div></div><script>window.setTimeout(()=>document.getElementById('tmSplash')?.classList.add('hide'),1750);</script>
 <div class="app">
 <header class="top"><div class="brand">TATTOO MANAGER<small id="connectionLabel">ПАНЕЛЬ МАСТЕРА · ПОДКЛЮЧЕНИЕ</small></div><div class="avatar">R</div></header>
 <main id="view"></main>
