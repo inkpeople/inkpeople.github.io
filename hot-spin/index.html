@@ -38,28 +38,30 @@ body{position:relative;overflow-x:hidden;background-color:#08060b}
 .ambient .symbol{font-size:var(--size,34px);font-weight:900;color:#ff65b8;opacity:0;text-shadow:0 0 18px #f02b91a8,2px 2px 0 #32102d}
 .ambient .word{font-size:var(--size,17px);font-weight:1000;letter-spacing:3px;color:#ff69bd;opacity:0;text-transform:uppercase;-webkit-text-stroke:.35px #ffd2e9;text-shadow:3px 3px 0 #74104d,0 0 18px #f02b91b0;transform:rotate(var(--rot,-8deg))}
 .ambient .tag{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:var(--size,26px);letter-spacing:1px;color:#c6a0ff;-webkit-text-stroke:1px #45134f;text-shadow:3px 3px 0 #f02b91,0 0 18px #b64cff;opacity:0}
+.ambient .wall-tag{position:absolute;display:block;white-space:nowrap;pointer-events:none;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-weight:1000;line-height:.9;letter-spacing:2px;font-size:clamp(42px,10vw,104px);color:#ff4eaa;-webkit-text-stroke:1.5px #ffc0df;text-shadow:5px 5px 0 #641044,9px 9px 0 #a52c78,0 0 28px #f02b91;opacity:.23;filter:drop-shadow(0 0 14px #d82c91);animation:graffitiPulse 9s ease-in-out infinite alternate}
+.ambient .wall-one{top:9%;left:-2%;transform:rotate(-11deg)}
+.ambient .wall-two{top:32%;right:-5%;font-size:clamp(38px,8vw,82px);color:#c69aff;-webkit-text-stroke:1px #f0d9ff;text-shadow:5px 5px 0 #43114e,9px 9px 0 #7925a0,0 0 28px #a84dff;transform:rotate(8deg);animation-delay:-3s}
+.ambient .wall-three{top:57%;left:-4%;font-size:clamp(37px,8.5vw,88px);transform:rotate(-7deg);animation-delay:-5s}
+.ambient .wall-four{top:77%;right:-4%;font-size:clamp(40px,9vw,92px);color:#d6aaff;-webkit-text-stroke:1px #f5dcff;text-shadow:5px 5px 0 #42104d,9px 9px 0 #8124a5,0 0 28px #a84dff;transform:rotate(7deg);animation-delay:-2s}
+.ambient .wall-five{top:91%;left:12%;font-size:clamp(36px,7vw,72px);transform:rotate(-5deg);animation-delay:-7s}
+@keyframes graffitiPulse{0%{opacity:.16;filter:drop-shadow(0 0 8px #d82c91)}100%{opacity:.3;filter:drop-shadow(0 0 22px #d82c91)}}
 .ambient .dance-shadow{position:absolute;top:27%;left:50%;width:min(62vw,360px);height:440px;opacity:.13;filter:blur(1px);transform:translateX(-50%);background:radial-gradient(ellipse at 34% 12%,#ff73bd 0 5%,transparent 5.8%),radial-gradient(ellipse at 65% 18%,#b77aff 0 5%,transparent 5.8%),radial-gradient(ellipse at 39% 38%,#ff5aa8 0 12%,transparent 12.8%),radial-gradient(ellipse at 61% 43%,#a86bff 0 13%,transparent 13.8%),linear-gradient(115deg,transparent 28%,#ff5aa8 29% 38%,transparent 39%),linear-gradient(65deg,transparent 53%,#a86bff 54% 63%,transparent 64%);mask-image:radial-gradient(ellipse at center,#000 15%,transparent 72%);animation:closeDance 8s ease-in-out infinite alternate}
 @keyframes streetGlow{0%{transform:translate3d(-3%,1%,0) scale(.94) rotate(-5deg)}100%{transform:translate3d(4%,2%,0) scale(1.07) rotate(7deg)}}
 @keyframes halftoneDrift{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(2%,-2%,0) rotate(8deg)}}
 @keyframes closeDance{0%{transform:translateX(-50%) rotate(-3deg) scale(.96)}100%{transform:translateX(-50%) rotate(3deg) scale(1.04)}}
 @keyframes streetFloat{0%{opacity:0;transform:translate3d(0,0,0) rotate(var(--rot,-8deg)) scale(.8)}14%{opacity:.17}52%{opacity:.2;transform:translate3d(var(--drift,22px),-58vh,0) rotate(calc(var(--rot,-8deg) + 8deg)) scale(1)}88%{opacity:.08}100%{opacity:0;transform:translate3d(calc(var(--drift,22px) * -1),-125vh,0) rotate(calc(var(--rot,-8deg) + 18deg)) scale(.9)}}
 main{position:relative;z-index:1}
-@media(prefers-reduced-motion:reduce){.ambient::before,.ambient::after,.ambient span,.ambient .dance-shadow{animation:none}.ambient span{opacity:.025}}
+@media(prefers-reduced-motion:reduce){.ambient::before,.ambient::after,.ambient span,.ambient .dance-shadow,.ambient .wall-tag{animation:none}.ambient span{opacity:.025}.ambient .wall-tag{opacity:.2}}
 .poseHelp{width:29px;height:29px;border-radius:50%;border:1px solid #b54b88;background:#32152a;color:#ff9bd0;font-size:15px;font-weight:900;line-height:1;cursor:pointer;align-self:center}.poseInfo{position:fixed;inset:0;z-index:8;background:#08060de8;display:grid;place-items:center;padding:22px}.poseInfoBox{width:min(100%,460px);max-height:80vh;overflow:auto;background:#211823;border:1px solid #a12b70;border-radius:22px;padding:22px;box-shadow:0 20px 60px #0009}.poseInfoBox h3{margin:0 34px 12px 0;color:#ff79c2;font-size:21px}.poseInfoBox p{color:#eee;line-height:1.55;margin:0 0 18px}.poseInfoBox button{border:1px solid #85436b;background:#35172b;color:#fff;border-radius:14px;padding:11px 18px}</style>
 </head>
 <body>
 <div class="ambient" aria-hidden="true">
 <span class="dance-shadow"></span>
-<span class="tag" style="--x:7%;--size:34px;--duration:23s;--delay:-4s;--rot:-18deg">TOUCH ME</span>
-<span class="tag" style="--x:74%;--size:31px;--duration:26s;--delay:-12s;--rot:8deg">AFTER DARK</span>
-<span class="tag" style="--x:88%;--size:29px;--duration:22s;--delay:-8s;--rot:16deg">WANT YOU</span>
-<span class="word" style="--x:13%;--size:19px;--duration:25s;--delay:-17s;--drift:22px;--rot:-12deg">NO RULES</span>
-<span class="tag" style="--x:68%;--size:31px;--duration:24s;--delay:-2s">BAD HABIT</span>
-<span class="tag" style="--x:39%;--size:27px;--duration:29s;--delay:-20s;--rot:-6deg">KISS ME</span>
-<span class="tag" style="--x:28%;--size:32px;--duration:20s;--delay:-10s">BITE HERE</span>
-<span class="word" style="--x:91%;--size:16px;--duration:24s;--delay:-15s;--rot:10deg">18+ ONLY</span>
-<span class="tag" style="--x:53%;--size:30px;--duration:26s;--delay:-6s">NO LIMITS</span>
-<span class="tag" style="--x:3%;--size:28px;--duration:22s;--delay:-14s;--rot:7deg">DESIRE</span>
+<div class="wall-tag wall-one">ЖЕЛАНИЕ</div>
+<div class="wall-tag wall-two">AFTER DARK</div>
+<div class="wall-tag wall-three">БЕЗ ПРАВИЛ</div>
+<div class="wall-tag wall-four">TOUCH ME</div>
+<div class="wall-tag wall-five">DESIRE</div>
 </div>
 
 <div class="gate" id="ageGate"><div class="gatebox"><div class="brand">HOT SPIN</div><h2>Только 18+</h2><p>Игра предназначена исключительно для совершеннолетних. Все сценарии предполагают добровольное согласие и уважение личных границ.</p><button id="ageYes">Мне есть 18 лет — войти</button></div></div>
