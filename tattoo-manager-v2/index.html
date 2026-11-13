@@ -364,7 +364,7 @@ async function sendMasterAI(){
   if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);
   masterAIAddMessage('assistant',data.answer);masterAIHistory.push({role:'user',content:message},{role:'assistant',content:data.answer});masterAIHistory=masterAIHistory.slice(-8);
  }catch(e){if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);masterAIAddMessage('assistant',e.message||'Ошибка подключения. Попробуй ещё раз.');}
- finally{button.disabled=false;input.disabled=false;input.focus();}
+ finally{button.disabled=false;input.disabled=false;}
 }
 
 function finance(){view.innerHTML=heading('УПРАВЛЕНИЕ ДЕНЬГАМИ','Финансы','Доходы, расходы, прибыль и рассрочки')+'<div id="financeDetail"></div>';loadFinance()}
