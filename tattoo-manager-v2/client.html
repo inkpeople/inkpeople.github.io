@@ -200,6 +200,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #booking .slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
 #booking .slot{min-width:0;width:100%;padding-left:2px;padding-right:2px;}
 @media(min-width:440px){#booking .slots{grid-template-columns:repeat(4,minmax(0,1fr));}}
+
+/* Booking form: hard containment for native date control on mobile */
+#booking .card{box-sizing:border-box;overflow:hidden;}
+#booking .booking-date-field{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow:hidden;}
+#booking .booking-date-field #date{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:12px 8px!important;}
+#booking #slots{display:grid;box-sizing:border-box;width:100%;max-width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+#booking #slots .slot{box-sizing:border-box;min-width:0;width:100%;max-width:100%;padding-left:2px;padding-right:2px;}
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
