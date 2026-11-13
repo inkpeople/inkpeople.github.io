@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="59">
+<meta charset="utf-8"><meta name="tm-version" content="60">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -231,7 +231,7 @@ function projectsPage(){
  const rows=[...projects].sort((a,b)=>(order[a.status]??9)-(order[b.status]??9)||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
  view.innerHTML=heading('РАБОЧИЕ ПРОЕКТЫ','Тату-проекты','Эскизы, стоимость и ход работы')+
  '<section class="panel"><div class="panelhead"><b>Все проекты · '+projects.length+'</b><button class="primary" id="newProject">＋ Создать</button></div>'+
- (rows.length?rows.map(p=>'<button class="client-row" style="width:100%;text-align:left" data-project-open="'+esc(p.id)+'"><span class="client-photo">'+(p.images&&p.images[0]?'<img src="'+esc(p.images[0].url)+'" alt="" style="width:100%;height:100%;object-fit:cover">':'✦')+'</span><span class="client-row-main"><b>'+esc(p.title)+'</b><small>'+esc(p.client_name||'Без клиента')+' · '+esc(p.body_placement||'Место не указано')+'</small><small>'+(p.price!==''&&p.price!=null?money(Number(p.price)):'Стоимость не указана')+'</small></span><span class="tag '+(p.status==='completed'?'green':p.status==='cancelled'?'':'yellow')+'">'+projectStatusLabel(p.status)+'</span></button>').join(''):'<div class="empty">Пока нет проектов. Создай первый проект клиента.</div>')+'</section>';
+ (rows.length?rows.map(p=>{const client=clients.find(c=>String(c.id)===String(p.client_id));const photo=client?.photo||client?.gallery?.[0]?.url||'';const percent=Math.max(0,Math.min(100,Number(p.completion_percent)||0));return '<button class="client-row project-card" style="width:100%;text-align:left;align-items:flex-start" data-project-open="'+esc(p.id)+'"><span class="client-photo">'+(photo?'<img src="'+esc(photo)+'" alt="" style="width:100%;height:100%;object-fit:cover">':(client?esc((client.name||'К').trim().slice(0,1).toUpperCase()):'✦'))+'</span><span class="client-row-main"><b>'+esc(p.title)+'</b><small class="project-client-name">'+esc(p.client_name||'Без клиента')+' · '+esc(p.body_placement||'Место не указано')+'</small><div style="height:7px;background:#302b3a;border-radius:99px;overflow:hidden;margin:10px 0 5px"><div style="height:100%;width:'+percent+'%;background:linear-gradient(90deg,#9333ea,#d946ef);border-radius:99px"></div></div><small style="color:#d8b4fe;font-weight:700">Готовность '+percent+'%</small><small>'+(p.price!==''&&p.price!=null?money(Number(p.price)):'Стоимость не указана')+'</small></span><span class="tag '+(p.status==='completed'?'green':p.status==='cancelled'?'':'yellow')+'">'+projectStatusLabel(p.status)+'</span></button>'}).join(''):'<div class="empty">Пока нет проектов. Создай первый проект клиента.</div>')+'</section>';
 }
 function projectForm(id){
  const p=id?projects.find(x=>String(x.id)===String(id)):null;if(id&&!p){toast('Проект не найден');page='projects';render();return}
@@ -241,6 +241,7 @@ function projectForm(id){
  '<section class="panel"><label>Название проекта *</label><input class="field" id="projectTitle" maxlength="180" placeholder="Например, рукав в японском стиле" value="'+esc(p?.title||'')+'">'+
  '<label>Клиент</label><select class="field" id="projectClient"><option value="">Без привязки</option>'+options+'</select>'+
  '<div class="formgrid"><div><label>Место на теле</label><input class="field" id="projectPlacement" maxlength="160" placeholder="Предплечье, спина…" value="'+esc(p?.body_placement||'')+'"></div><div><label>Стоимость, ₽</label><input class="field" id="projectPrice" type="number" min="0" step="1" placeholder="0" value="'+esc(p?.price??'')+'"></div></div>'+
+ '<label>Готовность проекта: <b id="projectPercentLabel">'+(Number(p?.completion_percent)||0)+'%</b></label><input class="field" id="projectPercent" type="range" min="0" max="100" step="5" value="'+(Number(p?.completion_percent)||0)+'" style="accent-color:#a855f7;padding:0;height:30px"><small class="muted">Укажи, насколько проект уже выполнен.</small>'+
  '<label>Статус проекта</label><select class="field" id="projectStatus">'+statuses.map(st=>'<option value="'+st+'" '+((p?.status||'new')===st?'selected':'')+'>'+projectStatusLabel(st)+'</option>').join('')+'</select>'+
  '<label>Идея и описание</label><textarea class="field" id="projectDescription" rows="5" maxlength="8000" placeholder="Идея, стиль, детали композиции, пожелания клиента…">'+esc(p?.description||'')+'</textarea>'+
  '<label>Эскизы и фотографии</label><input class="field" id="projectImages" type="file" accept="image/jpeg,image/png,image/webp" multiple>'+
@@ -281,6 +282,7 @@ $('#nav').addEventListener('click',e=>{const more=e.target.closest('[data-more-t
 document.body.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){page=go.dataset.go;render();return}const actionEl=e.target.closest('[data-action]');const a=actionEl?actionEl.dataset.action:null;if(a==='add'){addBooking();return}if(a==='calc'||a==='stock'||a==='forms'||a==='ai'||a==='tasks'){page='tools';render();detail(a);return}});
 document.body.addEventListener('click',async e=>{
  if(e.target.id==='newProject'){projectForm();return}
+ if(e.target.id==='projectPercent'){const label=$('#projectPercentLabel');if(label)label.textContent=e.target.value+'%';}
  const projectOpen=e.target.closest('[data-project-open]');if(projectOpen){projectForm(projectOpen.dataset.projectOpen);return}
  if(e.target.id==='saveProject'){
   const button=e.target,id=button.dataset.id||null,title=$('#projectTitle').value.trim(),files=[...($('#projectImages').files||[])];
@@ -288,7 +290,7 @@ document.body.addEventListener('click',async e=>{
   if(files.some(f=>f.size>8388608||!['image/jpeg','image/png','image/webp'].includes(f.type))){toast('Каждое изображение должно быть JPG, PNG или WEBP до 8 МБ');return}
   button.disabled=true;
   try{
-   const payload={action:id?'update_project':'create_project',id,title,client_id:$('#projectClient').value||null,body_placement:$('#projectPlacement').value,price:$('#projectPrice').value, status:$('#projectStatus').value,description:$('#projectDescription').value};
+   const payload={action:id?'update_project':'create_project',id,title,client_id:$('#projectClient').value||null,body_placement:$('#projectPlacement').value,price:$('#projectPrice').value, status:$('#projectStatus').value,completion_percent:Number($('#projectPercent').value)||0,description:$('#projectDescription').value};
    const saved=await api('',{method:'POST',body:JSON.stringify(payload)}),projectId=id||saved.project.id;
    for(const file of files){const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});await api('',{method:'POST',body:JSON.stringify({action:'upload_project_image',id:projectId,mime_type:file.type,image_base64:dataUrl})});}
    await syncAppointments();page='projects';render();toast(id?'Проект обновлён':'Проект создан');
