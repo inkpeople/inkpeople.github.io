@@ -177,7 +177,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #care .care-film .care-slide li::marker{color:#a78bfa}
 
 /* Client AI assistant */
-.ai-client{margin-top:14px;padding:16px;border:1px solid #49365a;border-radius:22px;background:linear-gradient(145deg,#21182d,#17151f 70%)}.ai-client-head{display:flex;align-items:center;gap:12px}.ai-client-orb{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#9b83ff,#ef6bb5);display:grid;place-items:center;font-size:22px}.ai-client-status{font-size:9px;letter-spacing:1.6px;color:#d7b5ff}.ai-client-chat{min-height:170px;margin:18px 0 12px;display:flex;flex-direction:column;gap:10px}.ai-client-msg{padding:13px 14px;border-radius:15px;background:#2a2434;font-size:13px;line-height:1.55;color:#f4edf9}.ai-client-msg small{display:block;color:#c4a8df;font-size:9px;letter-spacing:1px;margin-bottom:6px}.ai-client-chips{display:flex;gap:8px;flex-wrap:wrap}.ai-client-chip{position:relative;z-index:1;pointer-events:auto;touch-action:manipulation;border:1px solid #5a466b;background:#2a2036;color:#ead8fa;border-radius:99px;padding:9px 11px;font-size:11px}.ai-client-compose{display:flex;gap:8px;margin-top:14px}.ai-client-compose input{flex:1;min-width:0;background:#14111a;border:1px solid #51415e;border-radius:12px;padding:12px;color:#fff}.ai-client-compose button{border:0;border-radius:12px;background:#7955a6;color:#fff;padding:0 15px}.ai-client-note{font-size:10px;line-height:1.5;color:#aaa0b6;margin-top:10px}
+.ai-client{margin-top:14px;padding:16px;border:1px solid #49365a;border-radius:22px;background:linear-gradient(145deg,#21182d,#17151f 70%)}.ai-client-head{display:flex;align-items:center;gap:12px}.ai-client-orb{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#9b83ff,#ef6bb5);display:grid;place-items:center;font-size:22px}.ai-client-status{font-size:9px;letter-spacing:1.6px;color:#d7b5ff}.ai-client-chat{min-height:170px;margin:18px 0 12px;display:flex;flex-direction:column;gap:10px}.ai-client-msg{padding:13px 14px;border-radius:15px;background:#2a2434;font-size:13px;line-height:1.55;color:#f4edf9}.ai-client-msg small{display:block;color:#c4a8df;font-size:9px;letter-spacing:1px;margin-bottom:6px}
+.ai-client-msg-body{min-width:0;line-height:1.6;overflow-wrap:anywhere}
+.ai-client-msg-body p{margin:0 0 9px}.ai-client-msg-body p:last-child{margin-bottom:0}
+.ai-client-msg-body h3,.ai-client-msg-body h4{display:block;clear:both;margin:13px 0 7px;color:#fff;font-weight:800;line-height:1.35}
+.ai-client-msg-body h3{font-size:15px}.ai-client-msg-body h4{font-size:13px}
+.ai-client-msg-body ul,.ai-client-msg-body ol{margin:5px 0 12px;padding-left:22px}
+.ai-client-msg-body li{padding-left:3px;margin:5px 0;line-height:1.55}
+.ai-client-msg-body li::marker{color:#c084fc}
+.ai-client-msg-body strong{font-weight:800;color:#fff}
+.ai-client-msg-body code{background:#15111d;border:1px solid #51415e;border-radius:5px;padding:1px 4px;font-size:.92em}
+.ai-client-msg-body .ai-table{display:table;width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 15px;font-size:12px;line-height:1.45;table-layout:auto;border:1px solid #51415e;border-radius:10px;overflow:hidden}
+.ai-client-msg-body .ai-table th,.ai-client-msg-body .ai-table td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid #51415e;border-right:1px solid #51415e;overflow-wrap:anywhere}
+.ai-client-msg-body .ai-table th{background:#302333;color:#fff;font-weight:800}
+.ai-client-msg-body .ai-table td{background:#211b2a;color:#eee8f2}
+.ai-client-msg-body .ai-table tr:last-child td{border-bottom:0}
+.ai-client-msg-body .ai-table th:last-child,.ai-client-msg-body .ai-table td:last-child{border-right:0}
+@media(max-width:420px){.ai-client-msg-body .ai-table{font-size:11px}.ai-client-msg-body .ai-table th,.ai-client-msg-body .ai-table td{padding:7px 5px}}
+.ai-client-chips{display:flex;gap:8px;flex-wrap:wrap}.ai-client-chip{position:relative;z-index:1;pointer-events:auto;touch-action:manipulation;border:1px solid #5a466b;background:#2a2036;color:#ead8fa;border-radius:99px;padding:9px 11px;font-size:11px}.ai-client-compose{display:flex;gap:8px;margin-top:14px}.ai-client-compose input{flex:1;min-width:0;background:#14111a;border:1px solid #51415e;border-radius:12px;padding:12px;color:#fff}.ai-client-compose button{border:0;border-radius:12px;background:#7955a6;color:#fff;padding:0 15px}.ai-client-note{font-size:10px;line-height:1.5;color:#aaa0b6;margin-top:10px}
 </style></head>
 <body><main class="wrap">
 <header class="top"><div class="brand">TATTOO MANAGER<small>ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА</small></div><div class="avatar" id="avatar">К</div></header>
@@ -253,9 +270,42 @@ function previewFiles(){const input=document.getElementById('files');const box=d
 const API_URL='https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-manager-api';
 async function api(options={}){if(!tg?.initData)throw new Error('Откройте кабинет через Telegram, чтобы подтвердить профиль.');const res=await fetch(API_URL,{...options,headers:{'Content-Type':'application/json','x-telegram-init-data':tg.initData,'x-tm-role':'client',...(options.headers||{})}});const data=await res.json();if(!res.ok)throw new Error(data.error||'Ошибка сервера');return data}
 let clientAIHistory=[];
+function clientAIInlineFormat(parent,text){
+ const source=String(text??'');
+ const pattern=/\\?\*\*(.+?)\\?\*\*|\\?__(.+?)\\?__|\\?\x60([^\x60]+)\\?\x60/g;
+ let last=0,match;
+ while((match=pattern.exec(source))!==null){
+  if(match.index>last)parent.appendChild(document.createTextNode(source.slice(last,match.index).replace(/\\([*_])/g,'$1')));
+  if(match[1]!==undefined||match[2]!==undefined){const strong=document.createElement('strong');strong.textContent=(match[1]??match[2]).replace(/\\([*_])/g,'$1');parent.appendChild(strong);}
+  else{const code=document.createElement('code');code.textContent=match[3];parent.appendChild(code);}
+  last=pattern.lastIndex;
+ }
+ if(last<source.length)parent.appendChild(document.createTextNode(source.slice(last).replace(/\\([*_])/g,'$1')));
+}
+function clientAITableCells(line){return line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(cell=>cell.trim());}
+function clientAIIsTableSeparator(line){const cells=clientAITableCells(line);return cells.length>1&&cells.every(cell=>/^:?-{3,}:?$/.test(cell));}
+function clientAIFormatAnswer(parent,raw){
+ const lines=String(raw??'').replace(/\r\n?/g,'\n').split('\n');let paragraph=[],list=null;
+ const flushParagraph=()=>{if(!paragraph.length)return;const p=document.createElement('p');clientAIInlineFormat(p,paragraph.join(' '));parent.appendChild(p);paragraph=[];};
+ const closeList=()=>{if(list){parent.appendChild(list);list=null;}};
+ const addTable=rows=>{const table=document.createElement('table');table.className='ai-table';const thead=document.createElement('thead'),tbody=document.createElement('tbody');rows[0].forEach(value=>{const th=document.createElement('th');clientAIInlineFormat(th,value);thead.appendChild(th);});rows.slice(1).forEach(row=>{const tr=document.createElement('tr');for(let i=0;i<rows[0].length;i++){const td=document.createElement('td');clientAIInlineFormat(td,row[i]??'');tr.appendChild(td);}tbody.appendChild(tr);});table.append(thead,tbody);parent.appendChild(table);};
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i].trim();if(!line){flushParagraph();closeList();continue;}
+  if(line.includes('|')&&i+1<lines.length&&clientAIIsTableSeparator(lines[i+1].trim())){flushParagraph();closeList();const rows=[clientAITableCells(line)];i+=2;while(i<lines.length&&lines[i].trim().includes('|')&&lines[i].trim()){rows.push(clientAITableCells(lines[i]));i++;}i--;addTable(rows);continue;}
+  if(/^([-*_]\s*){3,}$/.test(line)){flushParagraph();closeList();continue;}
+  const heading=line.match(/^#{1,4}\s+(.+)$/);if(heading){flushParagraph();closeList();const h=document.createElement(heading[0].startsWith('# ')?'h3':'h4');clientAIInlineFormat(h,heading[1].replace(/\s*#+$/,''));parent.appendChild(h);continue;}
+  const boldHeading=line.match(/^\\?\*\*(.+?)\\?\*\*$/);if(boldHeading&&line.length<100){flushParagraph();closeList();const h=document.createElement('h4');clientAIInlineFormat(h,boldHeading[1]);parent.appendChild(h);continue;}
+  const bullet=line.match(/^[-*+]\s+(.+)$/),numbered=line.match(/^\d+[.)]\s+(.+)$/);
+  if(bullet||numbered){flushParagraph();const tag=numbered?'ol':'ul';if(!list||list.tagName.toLowerCase()!==tag){closeList();list=document.createElement(tag);}const li=document.createElement('li');clientAIInlineFormat(li,(bullet||numbered)[1]);list.appendChild(li);continue;}
+  closeList();paragraph.push(line.replace(/^>\s?/,''));
+ }
+ flushParagraph();closeList();
+}
 function clientAIAddMessage(role,text){
  const chat=document.getElementById('clientAiChat');if(!chat)return;
- const el=document.createElement('div');el.className='ai-client-msg';const label=document.createElement('small');label.textContent=role==='user'?'ВЫ':'ВАШ ПОМОЩНИК';const body=document.createElement('div');body.textContent=text;el.appendChild(label);el.appendChild(body);chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
+ const el=document.createElement('div');el.className='ai-client-msg';const label=document.createElement('small');label.textContent=role==='user'?'ВЫ':'ВАШ ПОМОЩНИК';const body=document.createElement('div');body.className='ai-client-msg-body';
+ if(role==='assistant'&&String(text)!=='Готовлю ответ…')clientAIFormatAnswer(body,text);else body.textContent=text;
+ el.appendChild(label);el.appendChild(body);chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
 }
 function askClientAI(text){const input=document.getElementById('clientAiInput');if(input){input.value=text;sendClientAI();}}
 document.querySelectorAll('[data-client-ai-prompt]').forEach(function(chip){chip.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();askClientAI(chip.getAttribute('data-client-ai-prompt'));});});
