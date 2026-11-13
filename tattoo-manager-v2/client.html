@@ -316,7 +316,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </div>
 <button class="primary" onclick="demo(&quot;Если сомневаешься в уходе, напиши мастеру и уточни схему именно для своей татуировки.&quot;)">Задать вопрос по уходу</button>
 </section>
-<section id="ai" class="hidden"><div class="eyebrow">ВАШ ЦИФРОВОЙ ПОМОЩНИК</div><h1>ИИ-помощник</h1><p class="muted">Помощь с идеей, подготовкой, записью и уходом за татуировкой.</p><div class="ai-client"><div class="ai-client-head"><div class="ai-client-orb">✦</div><div><div class="ai-client-status">TATTOO MANAGER AI · CLIENT</div><b style="font-size:17px">Помощник клиента</b><div class="muted" style="font-size:11px">Помогает с вашей татуировкой и личными записями</div></div></div><div class="ai-client-chat" id="clientAiChat"><div class="ai-client-msg"><small>ВАШ ПОМОЩНИК</small>Здравствуйте! Я помогу с подготовкой к сеансу, идеей, выбором места нанесения, общими рекомендациями по уходу и информацией о ваших записях. Я вижу только ваши личные данные.</div></div><div class="ai-client-chips"><button type="button" class="ai-client-chip" data-client-ai-prompt="Как подготовиться к сеансу?">Как подготовиться?</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Помоги развить идею татуировки">Помощь с идеей</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Дай общие рекомендации по уходу за тату">Уход за тату</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Расскажи о моей ближайшей записи">Моя запись</button></div><div class="ai-client-compose"><input id="clientAiInput" placeholder="Задайте вопрос…"><button type="button" id="clientAiSend">➤</button></div><div class="ai-client-note">ИИ получает только данные вашего профиля, записей и проектов. Данные других клиентов и финансы мастера недоступны.</div></div></section>
+<section id="ai" class="hidden"><div class="eyebrow">ВАШ ЦИФРОВОЙ ПОМОЩНИК</div><h1>ИИ-помощник</h1><p class="muted">Помощь с идеей, подготовкой, записью и уходом за татуировкой.</p><div class="ai-client"><div class="ai-client-head"><div class="ai-client-orb">✦</div><div><div class="ai-client-status">TATTOO MANAGER AI · CLIENT</div><b style="font-size:17px">Помощник клиента</b><div class="muted" style="font-size:11px">Помогает с татуировкой и может управлять вашими личными записями после подтверждения</div></div></div><div class="ai-client-chat" id="clientAiChat"><div class="ai-client-msg"><small>ВАШ ПОМОЩНИК</small>Здравствуйте! Я помогу с подготовкой к сеансу, идеей, выбором места нанесения, общими рекомендациями по уходу и информацией о ваших записях. Я вижу только ваши личные данные. Действия выполняются после вашего подтверждения.</div></div><div class="ai-client-chips"><button type="button" class="ai-client-chip" data-client-ai-prompt="Как подготовиться к сеансу?">Как подготовиться?</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Помоги развить идею татуировки">Помощь с идеей</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Дай общие рекомендации по уходу за тату">Уход за тату</button><button type="button" class="ai-client-chip" data-client-ai-prompt="Расскажи о моей ближайшей записи">Моя запись</button></div><div class="ai-client-compose"><input id="clientAiInput" placeholder="Задайте вопрос…"><button type="button" id="clientAiSend">➤</button></div><div class="ai-client-note">ИИ получает только данные вашего профиля, записей и проектов. Данные других клиентов и финансы мастера недоступны. Любое действие требует подтверждения.</div></div></section>
 <section id="profile" class="hidden"><div class="eyebrow">ЛИЧНЫЕ ДАННЫЕ</div><h1>Мой профиль</h1><div class="card"><div class="master"><div class="avatar">К</div><div><b id="profileName">Загрузка профиля…</b><div class="muted" id="profileMeta">Профиль привязан к Telegram</div></div></div><div class="notice">Ваш профиль привязан к Telegram. Записи и история будут отображаться в этом личном кабинете.</div></div></section>
 </main>
 <div class="bottom"><nav class="nav"><button class="active" data-page="home" onclick="show('home',this)"><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></strong>Главная</button><button data-page="booking" onclick="show('booking',this)"><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></strong>Запись</button><button data-page="refs" onclick="show('refs',this)"><strong><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 3-4 5 6"/></svg></strong>Референсы</button><button data-page="care" onclick="show('care',this)"><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.5-8 11-8 11Z"/><path d="M9 12h6"/></svg></strong>Уход</button><button data-page="profile" onclick="show('profile',this)"><strong><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg></strong>Профиль</button></nav></div><div id="toast" class="toast"></div>
@@ -377,6 +377,26 @@ function clientAIAddMessage(role,text){
  if(role==='assistant'&&String(text)!=='Готовлю ответ…')clientAIFormatAnswer(body,text);else body.textContent=text;
  el.appendChild(label);el.appendChild(body);chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
 }
+
+function clientAIAddAction(action){
+ if(!action||!action.requiresConfirmation)return;
+ const chat=document.getElementById('clientAiChat');if(!chat)return;
+ const card=document.createElement('div');card.className='ai-client-msg';card.style.border='1px solid var(--line)';card.style.marginTop='8px';
+ const title=document.createElement('b');title.textContent='Подтвердите действие';title.style.display='block';title.style.marginBottom='8px';
+ const summary=document.createElement('div');summary.textContent=action.label||'Выполнить действие';summary.style.marginBottom='10px';
+ const row=document.createElement('div');row.style.display='flex';row.style.gap='8px';
+ const yes=document.createElement('button');yes.type='button';yes.className='primary';yes.textContent='Подтвердить';
+ const no=document.createElement('button');no.type='button';no.className='secondary';no.textContent='Отмена';
+ const result=document.createElement('div');result.style.marginTop='8px';result.style.fontSize='12px';
+ no.addEventListener('click',()=>{card.remove();});
+ yes.addEventListener('click',async()=>{
+  yes.disabled=true;no.disabled=true;result.textContent='Выполняю…';
+  try{await api({method:'POST',body:JSON.stringify({action:action.action,...action.payload})});result.textContent='Готово. Изменение сохранено.';await loadAppointments();}
+  catch(e){result.textContent='Не удалось выполнить: '+(e.message||'ошибка');yes.disabled=false;no.disabled=false;}
+ });
+ row.append(yes,no);card.append(title,summary,row,result);chat.appendChild(card);chat.scrollTop=chat.scrollHeight;
+}
+
 function askClientAI(text){const input=document.getElementById('clientAiInput');if(input){input.value=text;sendClientAI();}}
 document.querySelectorAll('[data-client-ai-prompt]').forEach(function(chip){chip.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();askClientAI(chip.getAttribute('data-client-ai-prompt'));});});
 document.getElementById('clientAiSend')?.addEventListener('click',function(e){e.preventDefault();sendClientAI();});
@@ -389,7 +409,7 @@ async function sendClientAI(){
  try{
   const response=await fetch('https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-manager-ai',{method:'POST',headers:{'Content-Type':'application/json','x-telegram-init-data':tg.initData,'x-tm-role':'client'},body:JSON.stringify({message,history:prior})});
   const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'Не удалось получить ответ');
-  if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);clientAIAddMessage('assistant',data.answer);clientAIHistory.push({role:'user',content:message},{role:'assistant',content:data.answer});clientAIHistory=clientAIHistory.slice(-8);
+  if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);clientAIAddMessage('assistant',data.answer);if(data.action)clientAIAddAction(data.action);clientAIHistory.push({role:'user',content:message},{role:'assistant',content:data.answer});clientAIHistory=clientAIHistory.slice(-8);
  }catch(e){if(chat&&chat.lastElementChild)chat.removeChild(chat.lastElementChild);clientAIAddMessage('assistant',e.message||'Ошибка подключения. Попробуйте ещё раз.');}
  finally{input.disabled=false;button.disabled=false;}
 }
