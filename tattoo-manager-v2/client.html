@@ -236,6 +236,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <button class="tile" onclick="show('refs')"><span class="ico icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 3-4 5 6"/></svg></span><b>Мои референсы</b><span>Отправить идеи мастеру</span></button>
 <button class="tile" onclick="show('forms')"><span class="ico icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7zM15 3v5h4M10 12h6M10 16h6"/></svg></span><b>Анкета и согласия</b><span>Подготовка к сеансу</span></button>
 <button class="tile" onclick="show('ai')"><span class="ico icon" aria-hidden="true">✦</span><b>ИИ-помощник</b><span>Ответы и помощь 24/7</span></button>
+<button class="tile" onclick="show('instructions')"><span class="ico icon" aria-hidden="true">ⓘ</span><b>Инструкция</b><span>Как пользоваться кабинетом</span></button>
 <button class="tile" onclick="show('care')"><span class="ico icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.5-8 11-8 11Z"/><path d="M9 12h6"/></svg></span><b>Заживление</b><span>Уход за татуировкой</span></button>
 </div>
 <div class="sectionhead"><h2>Моя запись</h2><button class="link" onclick="show('booking')">Новая запись →</button></div>
@@ -243,6 +244,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="sectionhead"><h2>Мои готовые татуировки</h2></div>
 <div class="card" id="myTattooGallery"><div class="muted">ЗАГРУЗКА ФОТОГРАФИЙ…</div></div>
 </section>
+<section id="instructions" class="hidden"><div class="eyebrow">СПРАВКА</div><h1>Инструкция клиента</h1><p class="muted">Как пользоваться личным кабинетом и управлять своей тату-записью.</p>
+<div class="card"><h3>1. Выбор мастера</h3><p class="muted">На главной странице проверьте выбранного мастера. Если мастер ещё не выбран, выберите его при создании заявки на запись.</p></div>
+<div class="card"><h3>2. Как записаться</h3><p class="muted">Откройте «Записаться», заполните имя и контакт, выберите услугу, укажите зону и размер татуировки, опишите идею, выберите предпочтительную дату и время и отправьте заявку. Отправка заявки ещё не означает, что запись подтверждена. Дождитесь ответа мастера.</p></div>
+<div class="card"><h3>3. Мои записи</h3><p class="muted">На главной странице в блоке «Моя запись» смотрите дату, время и статус. Если мастер предложил другое время, внимательно проверьте предложение и подтвердите его либо свяжитесь с мастером.</p></div>
+<div class="card"><h3>4. Перенос и отмена</h3><p class="muted">Если планы изменились, используйте доступные действия в карточке записи. Количество переносов ограничено. После исчерпания лимита приложение покажет дальнейшие варианты, связанные с повторной бронью или отменой. Перед отменой внимательно прочитайте предупреждение об условиях предоплаты.</p></div>
+<div class="card"><h3>5. Референсы</h3><p class="muted">В разделе «Мои референсы» добавляйте изображения и комментарии к ним. Выбирайте примеры, которые помогают объяснить идею, стиль, композицию или отдельные детали будущей татуировки.</p></div>
+<div class="card"><h3>6. Анкета и согласия</h3><p class="muted">Заполните доступные поля анкеты и ознакомьтесь с документами до сеанса. Указывайте достоверную информацию и задавайте мастеру вопросы, если что-то непонятно.</p></div>
+<div class="card"><h3>7. Заживление</h3><p class="muted">После сеанса откройте раздел «Заживление» и следуйте инструкции, которую мастер дал именно для вашей татуировки и использованной повязки. Если появились тревожные симптомы или сомнения, свяжитесь с мастером; при признаках инфекции обратитесь за медицинской помощью.</p></div>
+<div class="card"><h3>8. ИИ-помощник</h3><p class="muted">Задавайте вопросы об идее, подготовке к сеансу, выборе места и общих рекомендациях по уходу. ИИ-помощник не заменяет личную консультацию мастера и медицинского специалиста.</p></div>
+<div class="card"><h3>9. Профиль</h3><p class="muted">Проверьте имя и контактные данные, чтобы мастер мог связаться с вами по заявке и уточнить детали.</p></div>
+<div class="notice">Если не получается отправить заявку, загрузить изображение или подтвердить предложенное время, обновите страницу и повторите действие. Если проблема осталась — напишите мастеру напрямую.</div>
+<button class="primary" onclick="show('home')">Вернуться на главную</button></section>
 <section id="booking" class="hidden"><div class="eyebrow">НОВАЯ ЗАПИСЬ</div><h1>Расскажите о своей идее</h1><div class="card">
 <label class="field"><span>Мастер</span><select id="masterSelect"><option value="">Загрузка мастеров…</option></select></label><label class="field"><span>Как к вам обращаться</span><input id="name" placeholder="Ваше имя"></label>
 <label class="field"><span>Контакт для связи</span><input id="contact" placeholder="@username или телефон"></label>
