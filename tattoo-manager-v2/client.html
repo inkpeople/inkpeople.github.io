@@ -296,7 +296,7 @@ function clientAINormalizeAnswer(raw){
  return text;
 }
 function clientAIFormatAnswer(parent,raw){
- const lines=clientAINormalizeAnswer(raw).split('\\n');let paragraph=[],list=null;
+ const lines=clientAINormalizeAnswer(raw).split('\n');let paragraph=[],list=null;
  const flushParagraph=()=>{if(!paragraph.length)return;const p=document.createElement('p');clientAIInlineFormat(p,paragraph.join(' '));parent.appendChild(p);paragraph=[];};
  const closeList=()=>{if(list){parent.appendChild(list);list=null;}};
  const addTable=rows=>{const table=document.createElement('table');table.className='ai-table';const thead=document.createElement('thead'),tbody=document.createElement('tbody');rows[0].forEach(value=>{const th=document.createElement('th');clientAIInlineFormat(th,value);thead.appendChild(th);});rows.slice(1).forEach(row=>{const tr=document.createElement('tr');for(let i=0;i<rows[0].length;i++){const td=document.createElement('td');clientAIInlineFormat(td,row[i]??'');tr.appendChild(td);}tbody.appendChild(tr);});table.append(thead,tbody);parent.appendChild(table);};
