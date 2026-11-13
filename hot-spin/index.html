@@ -18,7 +18,7 @@ h1{font-size:clamp(42px,11vw,68px);line-height:.95;letter-spacing:-3px;margin:24
 .reelRow{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:15px 13px;border-bottom:1px solid #493345;align-items:center}
 .reelRow:last-child{border-bottom:0}
 .reelLabel{grid-column:1;color:#ff69b9;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
-.reelValue{grid-column:1;grid-row:2;font-size:clamp(19px,5.5vw,27px);font-weight:800;line-height:1.15;overflow-wrap:anywhere;height:2.3em;min-height:2.3em;max-height:2.3em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;align-items:center}
+.reelValue{grid-column:1;grid-row:2;font-size:clamp(19px,5.5vw,27px);font-weight:800;line-height:1.15;overflow-wrap:anywhere;word-break:normal;min-height:3.45em;height:auto;max-height:none;display:block;overflow:visible;align-self:center}
 .reelTools{grid-column:2;grid-row:1 / span 2;display:flex;gap:5px}
 .reelTools .icon{width:39px;height:39px;font-size:19px}
 .reelValue.rolling{animation:reelSpinDown .11s linear infinite;filter:blur(1.5px);opacity:.72}
