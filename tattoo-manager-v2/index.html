@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="68">
+<meta charset="utf-8"><meta name="tm-version" content="69">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -238,6 +238,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .calendar-connect-arrow{font-size:20px;color:var(--muted);transition:transform .18s}
 .calendar-connect-compact[open] .calendar-connect-arrow{transform:rotate(180deg)}
 .calendar-connect-body{padding:2px 0 12px}
+/* Explicitly collapse calendar panels in Telegram WebView and mobile browsers */
+details.calendar-connect-compact:not([open])>.calendar-connect-body{display:none!important}
 .calendar-connect-body .field{margin-bottom:7px}
 .calendar-connect-body p{margin-top:4px}
 </style></head><body><div id="tmSplash" role="status" aria-label="Загрузка TATTOO MANAGER AI"><div class="tm-splash-content"><div class="tm-splash-mark">TM</div><div class="tm-splash-title">TATTOO MANAGER</div><div class="tm-splash-ai">A I</div><div class="tm-splash-caption">Управление тату-бизнесом нового поколения</div><div class="tm-splash-loader"><i></i></div></div></div><script>window.setTimeout(()=>document.getElementById('tmSplash')?.classList.add('hide'),1750);</script>
