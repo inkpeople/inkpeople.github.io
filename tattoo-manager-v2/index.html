@@ -270,6 +270,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* MASTER FRIEND CHAT */
 #masterChatMessages{overscroll-behavior:contain}#masterChatInput{background:#17171f!important;border:1px solid #3a3548!important;color:#fff!important}#masterChatInput:focus{border-color:#8b5cf6!important;box-shadow:0 0 0 2px #8b5cf633}
 </style><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tattoo Manager">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body><div id="tmSplash" role="status" aria-label="Загрузка TATTOO MANAGER AI"><div class="tm-splash-content"><div class="tm-splash-mark">TM</div><div class="tm-splash-title">TATTOO MANAGER</div><div class="tm-splash-ai">A I</div><div class="tm-splash-caption">Управление тату-бизнесом нового поколения</div><div class="tm-splash-loader"><i></i></div></div></div><script>window.setTimeout(()=>document.getElementById('tmSplash')?.classList.add('hide'),1750);</script>
 <div class="app">
 <header class="top"><div class="brand">TATTOO MANAGER<small id="connectionLabel">ПАНЕЛЬ МАСТЕРА · ПОДКЛЮЧЕНИЕ</small></div><div class="avatar" id="masterHeaderIdentity">Мастер</div></header>
@@ -841,5 +847,52 @@ document.body.addEventListener('change',e=>{if(e.target.id==='invCategory'){cons
 document.body.addEventListener('keydown',e=>{if(e.target.id==='masterSearchQuery'&&e.key==='Enter'){e.preventDefault();searchMasterDirectory()}if(e.target.id==='masterChatInput'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMasterChatMessage()}});
 document.body.addEventListener('input',e=>{if(e.target.id==='search'){$('#clientList').innerHTML=clientRows(clients.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(e.target.value.toLowerCase())))}})
 try{render();if(tg&&tg.initData)syncAppointments()}catch(err){console.error('TATTOO MANAGER startup error',err);const startupError=String(err&&err.message||err||'Неизвестная ошибка').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));view.innerHTML='<section class="panel" style="margin-top:30px;padding:22px"><div class="eyebrow">ОШИБКА ЗАПУСКА</div><h1 style="font-size:22px;margin:12px 0">Не удалось открыть кабинет</h1><p class="muted">Причина ошибки: <b>'+startupError+'</b></p><p class="muted">Сделай скриншот этого сообщения и отправь его для точного исправления.</p><button class="primary" onclick="location.reload()">Перезапустить приложение</button></section>'}
+})();
+</script><script>
+(()=>{
+  if(window.__tmPwaInstallInit)return;
+  window.__tmPwaInstallInit=true;
+  const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  if("serviceWorker" in navigator && location.protocol==="https:"){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA service worker:",err)));
+  }
+  let installPrompt=null;
+  window.addEventListener("beforeinstallprompt",event=>{
+    event.preventDefault();
+    installPrompt=event;
+    const btn=document.getElementById("tmInstallApp");
+    if(btn)btn.textContent="Установить приложение";
+  });
+  window.addEventListener("appinstalled",()=>{
+    installPrompt=null;
+    document.getElementById("tmInstallApp")?.remove();
+  });
+  if(isStandalone())return;
+  const btn=document.createElement("button");
+  btn.id="tmInstallApp";
+  btn.type="button";
+  btn.textContent="Установить приложение";
+  btn.style.cssText="position:fixed;right:14px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:20;background:#df2632;color:#fff;border:1px solid #f05b64;border-radius:999px;padding:11px 15px;font:700 12px system-ui;box-shadow:0 8px 24px #0009";
+  btn.addEventListener("click",async()=>{
+    const tg=window.Telegram?.WebApp;
+    const inTelegram=!!(tg&&tg.initData);
+    if(installPrompt){
+      installPrompt.prompt();
+      try{await installPrompt.userChoice;}catch(_){}
+      installPrompt=null;
+      btn.textContent="Установить приложение";
+      return;
+    }
+    if(inTelegram){
+      alert("Чтобы установить приложение на главный экран, откройте TATTOO MANAGER в обычном браузере телефона.");
+      try{tg.openLink(location.href);}catch(_){}
+      return;
+    }
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    alert(isIOS
+      ?"Чтобы добавить приложение: нажмите «Поделиться» в Safari, затем «На экран Домой» и подтвердите добавление."
+      :"Чтобы установить приложение: откройте меню браузера ⋮ и выберите «Установить приложение» или «Добавить на главный экран».");
+  });
+  document.body.appendChild(btn);
 })();
 </script></body></html>
