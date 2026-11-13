@@ -271,6 +271,7 @@ function masterAIAddMessage(role,text){
  el.appendChild(label);el.appendChild(body);chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
 }
 function askMasterAI(text){const input=document.getElementById('masterAiInput');if(input){input.value=text;sendMasterAI();}}
+window.askMasterAI=askMasterAI;window.sendMasterAI=sendMasterAI;
 async function sendMasterAI(){
  const input=document.getElementById('masterAiInput'),button=document.getElementById('masterAiSend');
  if(!input||!button||button.disabled)return;
