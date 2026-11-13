@@ -157,7 +157,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 
 /* AI assistant interface */
-.ai-shell{background:linear-gradient(145deg,#191323,#111018 65%);border:1px solid #3a2b4d;border-radius:22px;padding:16px;margin-top:14px}.ai-brand{display:flex;align-items:center;gap:12px}.ai-orb{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#a855f7,#ec4899);display:grid;place-items:center;font-size:21px;box-shadow:0 8px 28px #a855f733}.ai-status{font-size:10px;color:#c4b5fd;letter-spacing:.12em}.ai-chat{min-height:190px;max-height:360px;overflow:auto;margin:18px 0 12px;display:flex;flex-direction:column;gap:12px}.ai-message{max-width:94%;padding:13px 14px;border-radius:16px;background:#24202e;color:#eee8f7;font-size:13px;line-height:1.55}.ai-message.user{align-self:flex-end;background:#38234d}.ai-message small{display:block;color:#b9a6d0;font-size:10px;margin-bottom:5px}.ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ai-chip{border:1px solid #514064;background:#211a2b;color:#e9d5ff;border-radius:999px;padding:9px 11px;font-size:11px}.ai-compose{display:flex;gap:8px}.ai-compose input{flex:1;min-width:0;background:#0e0c13;border:1px solid #443650;border-radius:13px;padding:12px;color:#fff}.ai-compose button{border:0;border-radius:13px;padding:0 16px;background:#7541a0;color:#fff}.ai-note{font-size:11px;color:#9f96aa;line-height:1.45;margin-top:10px}
+.ai-shell{background:linear-gradient(145deg,#191323,#111018 65%);border:1px solid #3a2b4d;border-radius:22px;padding:16px;margin-top:14px}.ai-brand{display:flex;align-items:center;gap:12px}.ai-orb{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#a855f7,#ec4899);display:grid;place-items:center;font-size:21px;box-shadow:0 8px 28px #a855f733}.ai-status{font-size:10px;color:#c4b5fd;letter-spacing:.12em}.ai-chat{min-height:190px;max-height:360px;overflow:auto;margin:18px 0 12px;display:flex;flex-direction:column;gap:12px}.ai-message{max-width:94%;padding:13px 14px;border-radius:16px;background:#24202e;color:#eee8f7;font-size:13px;line-height:1.55}.ai-message.user{align-self:flex-end;background:#38234d}.ai-message small{display:block;color:#b9a6d0;font-size:10px;margin-bottom:7px}.ai-message-body{overflow-wrap:anywhere}.ai-message-body p{margin:0 0 11px}.ai-message-body p:last-child{margin-bottom:0}.ai-message-body strong{font-weight:800;color:#fff}.ai-message-body h3{font-size:15px;line-height:1.35;margin:15px 0 8px;color:#fff;font-weight:800}.ai-message-body h4{font-size:13px;line-height:1.4;margin:12px 0 6px;color:#f1e8ff;font-weight:800}.ai-message-body ul,.ai-message-body ol{margin:5px 0 12px;padding-left:23px}.ai-message-body li{padding-left:3px;margin:5px 0;line-height:1.55}.ai-message-body li::marker{color:#c084fc}.ai-message-body code{background:#15111d;border:1px solid #40334d;border-radius:5px;padding:1px 4px;font-size:.92em}.ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ai-chip{border:1px solid #514064;background:#211a2b;color:#e9d5ff;border-radius:999px;padding:9px 11px;font-size:11px}.ai-compose{display:flex;gap:8px}.ai-compose input{flex:1;min-width:0;background:#0e0c13;border:1px solid #443650;border-radius:13px;padding:12px;color:#fff}.ai-compose button{border:0;border-radius:13px;padding:0 16px;background:#7541a0;color:#fff}.ai-note{font-size:11px;color:#9f96aa;line-height:1.45;margin-top:10px}
 </style></head><body>
 <div class="app">
 <header class="top"><div class="brand">TATTOO MANAGER<small id="connectionLabel">ПАНЕЛЬ МАСТЕРА · ПОДКЛЮЧЕНИЕ</small></div><div class="avatar">R</div></header>
@@ -263,11 +263,52 @@ if(type==='forms'){box.innerHTML='<section class="panel"><b>Документы �
 if(type==='ai'){box.innerHTML='<section class="ai-shell"><div class="ai-brand"><div class="ai-orb">✦</div><div><div class="ai-status">TATTOO MANAGER AI · MASTER</div><b style="font-size:18px">ИИ-помощник мастера</b><div class="muted" style="font-size:11px;margin-top:3px">Подключён к данным твоего кабинета · режим чтения</div></div></div><div class="ai-chat" id="masterAiChat"><div class="ai-message"><small>ВАШ ПОМОЩНИК</small>Привет! Я подключён к данным твоего кабинета. Могу анализировать клиентов, календарь, проекты, финансы, склад и задачи. Пока я только читаю данные: ничего не создаю, не меняю и не удаляю.</div></div><div class="ai-suggestions"><button type="button" class="ai-chip" onclick="askMasterAI(\'Анализ клиентов\')">Анализ клиентов</button><button type="button" class="ai-chip" onclick="askMasterAI(\'Составь план на сегодня по моему календарю и задачам\')">План на сегодня</button><button type="button" class="ai-chip" onclick="askMasterAI(\'Подготовь краткий отчёт по финансам\')">Отчёт по финансам</button><button type="button" class="ai-chip" onclick="askMasterAI(\'Предложи 5 идей для Threads для привлечения клиентов на тату\')">Идеи для Threads</button></div><div class="ai-compose"><input id="masterAiInput" class="field" placeholder="Напиши вопрос помощнику…" onkeydown="if(event.key===\'Enter\')sendMasterAI()"><button type="button" id="masterAiSend" onclick="sendMasterAI()">➤</button></div><div class="ai-note">Данные кабинета передаются Groq для формирования ответа. API-ключ хранится только на сервере. ИИ работает в режиме чтения — изменения пока недоступны.</div></section>'}}
 
 let masterAIHistory=[];
+function aiInlineFormat(parent,text){
+ const pattern=/\\*\\*(.+?)\\*\\*|__(.+?)__|`([^`]+)`/g;
+ let last=0,match;
+ while((match=pattern.exec(text))!==null){
+  if(match.index>last)parent.appendChild(document.createTextNode(text.slice(last,match.index)));
+  if(match[1]!==undefined||match[2]!==undefined){
+   const strong=document.createElement('strong');strong.textContent=match[1]??match[2];parent.appendChild(strong);
+  }else{
+   const code=document.createElement('code');code.textContent=match[3];parent.appendChild(code);
+  }
+  last=pattern.lastIndex;
+ }
+ if(last<text.length)parent.appendChild(document.createTextNode(text.slice(last)));
+}
+function aiFormatAnswer(parent,raw){
+ const lines=String(raw??'').replace(/\\r\\n?/g,'\\n').split('\\n');
+ let paragraph=[],list=null;
+ const flushParagraph=()=>{
+  if(!paragraph.length)return;
+  const p=document.createElement('p');aiInlineFormat(p,paragraph.join(' '));parent.appendChild(p);paragraph=[];
+ };
+ const closeList=()=>{if(list){parent.appendChild(list);list=null;}};
+ for(const original of lines){
+  const line=original.trim();
+  if(!line){flushParagraph();closeList();continue;}
+  if(/^([-*_]\\s*){3,}$/.test(line)){flushParagraph();closeList();continue;}
+  const heading=line.match(/^#{1,4}\\s+(.+)$/);
+  if(heading){flushParagraph();closeList();const h=document.createElement(heading[0].startsWith('# ')?'h3':'h4');aiInlineFormat(h,heading[1].replace(/\\s*#+$/,''));parent.appendChild(h);continue;}
+  const bullet=line.match(/^[-*+]\\s+(.+)$/);
+  const numbered=line.match(/^\\d+[.)]\\s+(.+)$/);
+  if(bullet||numbered){
+   flushParagraph();const tag=numbered?'ol':'ul';
+   if(!list||list.tagName.toLowerCase()!==tag){closeList();list=document.createElement(tag);}
+   const li=document.createElement('li');aiInlineFormat(li,(bullet||numbered)[1]);list.appendChild(li);continue;
+  }
+  closeList();
+  paragraph.push(line.replace(/^>\\s?/,''));
+ }
+ flushParagraph();closeList();
+}
 function masterAIAddMessage(role,text){
  const chat=document.getElementById('masterAiChat');if(!chat)return;
  const el=document.createElement('div');el.className='ai-message'+(role==='user'?' user':'');
  const label=document.createElement('small');label.textContent=role==='user'?'ВЫ':'ВАШ ПОМОЩНИК';
- const body=document.createElement('div');body.textContent=text;
+ const body=document.createElement('div');body.className='ai-message-body';
+ if(role==='assistant'&&String(text)!=='Думаю…')aiFormatAnswer(body,text);else body.textContent=text;
  el.appendChild(label);el.appendChild(body);chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
 }
 function askMasterAI(text){const input=document.getElementById('masterAiInput');if(input){input.value=text;sendMasterAI();}}
