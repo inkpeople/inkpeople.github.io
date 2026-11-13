@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09070c"><title>HOT SPIN 18+</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#09070c;--panel:#1a171f;--line:#39313d;--pink:#f02b91;--pink2:#a20b69;--muted:#a49ba9;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#40102d 0,transparent 38%),radial-gradient(ellipse at 0% 60%,#250d22 0,transparent 35%),var(--bg);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:620px;margin:auto;padding:24px 18px calc(36px + env(safe-area-inset-bottom))}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px;margin:8px 2px 24px}.brand{font-weight:900;letter-spacing:3px;color:#ff55b2}
+h1{font-size:clamp(42px,11vw,68px);line-height:.95;letter-spacing:-3px;margin:24px 0 10px;font-weight:950}.hot{color:#ff399f}.sub{color:var(--muted);font-size:15px;margin:0 0 22px}
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 26px}.pill{border:1px solid var(--line);border-radius:30px;padding:10px 14px;color:#eee;background:#151219;font-size:14px}
+.card{background:linear-gradient(145deg,#211d26,#151219);border:1px solid #39323d;border-radius:28px;padding:21px 18px;margin:14px 0;box-shadow:0 12px 30px #0003}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a99eac;font-size:12px;letter-spacing:2px;text-transform:uppercase}.tools{display:flex;gap:8px}.icon{width:46px;height:46px;border-radius:50%;border:1px solid #514755;background:#29232e;color:white;font-size:22px;cursor:pointer}.value{font-size:clamp(23px,6vw,30px);font-weight:750;min-height:74px;display:flex;align-items:center;padding-right:4px;line-height:1.15;overflow-wrap:anywhere}.value.spinning{filter:blur(1.5px);opacity:.65}
+button{font:inherit}.spin{width:100%;border:1px solid #ff64b8;border-radius:100px;padding:21px 16px;margin:18px 0 10px;background:linear-gradient(100deg,#9d0c68,#f02b91,#bd167b);color:white;font-weight:850;font-size:24px;box-shadow:0 12px 32px #d3137845;cursor:pointer}.spin:disabled{opacity:.65}.secondary{border:1px solid var(--line);background:#17131b;color:#f6eaf2;border-radius:18px;padding:12px 16px;cursor:pointer}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.result{border:1px solid #7b2859;background:#241321;border-radius:22px;padding:18px;margin-top:16px}.result h2{font-size:13px;letter-spacing:2px;color:#ff66b7;margin:0 0 10px}.result p{margin:7px 0;color:#eee}.note{color:var(--muted);font-size:12px;line-height:1.5;margin:18px 4px}.locked{color:#ff69b9}.gate{position:fixed;inset:0;background:#09070cf5;z-index:5;display:grid;place-items:center;padding:24px}.gatebox{max-width:420px;text-align:center;background:#1b1620;border:1px solid #493044;border-radius:28px;padding:28px}.gate h2{font-size:30px;margin:0 0 8px}.gate p{color:var(--muted);line-height:1.5}.gate button{background:var(--pink);color:white;border:0;border-radius:30px;padding:15px 24px;font-weight:800;width:100%;margin-top:10px}.hidden{display:none!important}
+@media(prefers-reduced-motion:no-preference){.spin{transition:transform .2s}.spin:active{transform:scale(.98)}.card{transition:border-color .2s}}
+</style>
+</head>
+<body>
+<div class="gate" id="ageGate"><div class="gatebox"><div class="brand">HOT SPIN</div><h2>Только 18+</h2><p>Игра предназначена исключительно для совершеннолетних. Все сценарии предполагают добровольное согласие и уважение личных границ.</p><button id="ageYes">Мне есть 18 лет — войти</button></div></div>
+<main>
+<div class="top"><span class="brand">HOT SPIN</span><span>ИГРА ДЛЯ ДВОИХ · 18+</span></div>
+<h1>ЧТО <span class="hot">ВЫПАДЕТ</span><br>СЕГОДНЯ?</h1><p class="sub">Три барабана. Тысячи идей. Ваши правила.</p>
+<div class="pills"><span class="pill">🎲 <b id="total">250 000</b> сочетаний</span><span class="pill">♥ <b id="favCount">0</b> избранных</span></div>
+<section id="drums"></section>
+<button class="spin" id="spin">✦ КРУТИТЬ ✦</button>
+<div class="actions"><button class="secondary" id="save">♡ В избранное</button><button class="secondary" id="again">↻ Новая комбинация</button></div>
+<section class="result" aria-live="polite"><h2>ВАША КОМБИНАЦИЯ</h2><div id="summary"><p>Нажмите «Крутить», чтобы получить сочетание.</p></div></section>
+<p class="note">Любой участник может отказаться от задания или заменить результат. Обсудите границы заранее. Никакого давления — только взаимное желание и комфорт.</p>
+</main>
+<script>
+(()=>{
+const tg=window.Telegram?.WebApp;try{tg?.ready();tg?.expand();}catch(e){}
+const data={
+"ПОЗА":[
+"Лицом к лицу","На боку, в объятиях","«Ложки»","Сидя лицом друг к другу","Один партнёр сверху","Стоя лицом друг к другу","У стены с опорой","На краю кровати","Полулёжа на подушках","В объятиях на боку",
+"Сидя рядом","Лёжа рядом, лицом друг к другу","На коленях на мягкой поверхности","Стоя у кровати","В кресле лицом друг к другу","Полусидя с подушками","Лёжа, обнявшись","Сидя в объятиях","На боку, спиной к партнёру","Стоя в тесных объятиях",
+"На кровати с опорой на подушки","Лёжа поперёк кровати","Сидя на краю дивана","В объятиях у стены","Полулёжа лицом к партнёру","На боку с переплетёнными ногами","Сидя рядом, обнявшись","Стоя, обнявшись","Лёжа лицом к лицу","В кресле, обнявшись",
+"На мягком ковре с подушками","На боку с опорой на локоть","Полусидя рядом","Сидя лицом к лицу на диване","Лёжа под лёгким пледом","Стоя у окна, обнявшись","На кровати, опираясь на подушки","В объятиях сидя","На боку, лицом к партнёру","Полулёжа на диване",
+"Сидя спиной к груди партнёра","Стоя, держась за руки","Лёжа рядом, переплетя руки","На коленях лицом друг к другу","Сидя на подушках","В объятиях на краю кровати","Лёжа, голова к плечу партнёра","Стоя в медленных объятиях","На боку под одним пледом","Любимая поза партнёров"
+],
+"РОЛЕВАЯ ИГРА":[
+"Незнакомцы в баре","Первое свидание","Гости в отеле","Соседи, которые давно флиртуют","Массажист и клиент","Шеф и новый сотрудник","Два путешественника","Случайная встреча в поезде","Знакомство на вечеринке","Тайное свидание",
+"Детектив и загадочный свидетель","Фотограф и модель","Актёр и режиссёр","Бариста и постоянный гость","Пилот и пассажир","Танцоры после репетиции","Два соперника на свидании","Пара на первом отпуске","Случайная встреча в лифте","Письма от тайного поклонника",
+"Встреча после долгой разлуки","Свидание вслепую","Владелец гостиницы и постоялец","Секретные поклонники","Два героя романтического фильма","Преподаватель танцев и ученик","Музыкант и слушатель","Капитан и путешественник","Свидание в книжном магазине","Пара на роскошном балу",
+"Соседи по купе","Знакомство на пляже","Два коллеги после работы","Свидание в пустом ресторане","Тайная встреча в саду","Пара на маскараде","Путешественники в незнакомом городе","Встреча в художественной галерее","Владелец кафе и гость","Пара на съёмочной площадке",
+"Свидание в дождливый вечер","Два незнакомца в аэропорту","Поклонник и звезда","Пара на романтическом квесте","Встреча в загородном доме","Сценарий из любимого фильма","Два участника игры-знакомства","Романтические каникулы","Встреча спустя десять лет","Вы сами придумываете роли"
+],
+"ПИКАНТНЫЙ ЭЛЕМЕНТ":[
+"Завязанные глаза (только по согласию)","Чувственный массаж","Шёпот на ушко","Медленная прелюдия","Игра в комплименты","Приглушённый свет и музыка","Неожиданный поцелуй","Сегодня инициативу выбирает партнёр","Романтический сюрприз","Игра на доверие",
+"Поцелуи в неожиданных местах","Танец только для партнёра","Записка с желанием","Медленные прикосновения рук","Аромат любимых духов","Плед и свечи","Пять минут нежных объятий","Скажите друг другу фантазию","Выберите музыку по очереди","Поцелуй длительностью в минуту",
+"Свидание без телефонов","Комплимент шёпотом","Лёгкое перо по коже","Массаж плеч и шеи","Игра «угадай прикосновение»","Обмен тайными желаниями","Партнёр выбирает темп","Смена обстановки","Романтический душ (если удобно)","Любимая песня для двоих",
+"Сюрприз под подушкой","Нежный поцелуй с закрытыми глазами","Игра «три желания»","Объятия под любимую музыку","Скажите, что вас привлекает друг в друге","Медленный танец","Тёплое полотенце после душа","Взаимный массаж рук","Вечер при свечах","Поцелуи без спешки",
+"Игра «да / нет / может быть»","Выберите приятный аромат","Партнёр готовит атмосферу","Пять минут только объятий","Шёпотом расскажите мечту","Повторите ваше первое свидание","Сюрпризный плейлист","Взаимный выбор ласкового обращения","Скажите одно смелое желание","Пауза для объятий и воды",
+"Выберите темп вместе","Попросите о том, что нравится","Смена ролей в инициативе","Массаж стоп по желанию","Тёплая ванна для двоих","Поиграйте в вопросы о желаниях","Один выбирает музыку, другой свет","Секретный комплимент","Поцелуй в ладонь","Нежное прикосновение к волосам",
+"Взаимное угадывание желаний","Обмен тремя фантазиями","Выберите любимое бельё","Красивый наряд для свидания","Медленное сближение","Скажите стоп-слово и проверьте границы","Игра с повязкой на глаза","Партнёр выбирает романтическую песню","Обнимитесь под одним пледом","Сделайте друг другу комплимент",
+"Сюрпризный поцелуй","Пять минут тишины и близости","Выберите приятную температуру комнаты","Игра «что тебе нравится?»","Партнёр задаёт нежный ритм","Обмен маленькими секретами","Прикосновения кончиками пальцев","Нежный поцелуй в шею","Взаимный массаж спины","Скажите друг другу «мне нравится…»",
+"Выберите новое место для поцелуя","Медленный танец с закрытыми глазами","Сделайте паузу и спросите о комфорте","Тёплый напиток и долгие объятия","Романтическая записка","По очереди загадайте желание","Игра «повтори за мной»","Выберите любимую позу для объятий","Партнёр планирует следующие десять минут","Вместе придумайте финал вечера",
+"Обмен взглядами без слов","Нежное поглаживание ладоней","Скажите, чего хочется сегодня","Включите атмосферный плейлист","Пять поцелуев в разные места","Обнимитесь и выберите продолжение вместе","Сюрпризный массаж","Нежность без спешки","Попросите разрешения на новый шаг","Придумайте собственный элемент"
+]};
+const keys=Object.keys(data), state={}, root=document.getElementById('drums');
+keys.forEach((k,i)=>state[k]={value:data[k][Math.floor(Math.random()*data[k].length)],locked:false});
+function render(){root.innerHTML='';keys.forEach((k,i)=>{const c=document.createElement('article');c.className='card';c.innerHTML='<div class="cardhead"><span>0'+(i+1)+' &nbsp;'+k+'</span><span class="tools"><button class="icon reroll" aria-label="Изменить вариант">↻</button><button class="icon lock" aria-label="Зафиксировать вариант">'+(state[k].locked?'🔒':'♧')+'</button></span></div><div class="value">'+state[k].value+'</div>';c.querySelector('.reroll').addEventListener('click',()=>{if(!state[k].locked){state[k].value=pick(k);render();showSummary();}});c.querySelector('.lock').addEventListener('click',()=>{state[k].locked=!state[k].locked;render();});root.appendChild(c);});}
+function pick(k){const a=data[k];return a[Math.floor(Math.random()*a.length)];}
+function showSummary(){document.getElementById('summary').innerHTML=keys.map(k=>'<p><b>'+k+':</b> '+state[k].value+'</p>').join('');}
+function spin(){const btn=document.getElementById('spin');btn.disabled=true;let ticks=0;const timer=setInterval(()=>{keys.forEach(k=>{if(!state[k].locked)state[k].value=pick(k)});render();ticks++;if(ticks>=12){clearInterval(timer);btn.disabled=false;showSummary();}},90);}
+document.getElementById('spin').addEventListener('click',spin);
+document.getElementById('again').addEventListener('click',()=>{keys.forEach(k=>{if(!state[k].locked)state[k].value=pick(k)});render();showSummary();});
+const favKey='hotspin_favs_v1';let favs=[];try{favs=JSON.parse(localStorage.getItem(favKey)||'[]')}catch(e){}
+function count(){document.getElementById('favCount').textContent=favs.length}
+document.getElementById('save').addEventListener('click',()=>{const item=keys.map(k=>state[k].value).join(' | ');if(!favs.includes(item))favs.push(item);try{localStorage.setItem(favKey,JSON.stringify(favs));}catch(e){}count();document.getElementById('save').textContent='♥ Сохранено';});
+document.getElementById('ageYes').addEventListener('click',()=>{document.getElementById('ageGate').classList.add('hidden');try{sessionStorage.setItem('hotspin_age_ok','1')}catch(e){}});
+try{if(sessionStorage.getItem('hotspin_age_ok')==='1')document.getElementById('ageGate').classList.add('hidden')}catch(e){}
+count();render();
+})();
+</script>
+</body></html>
