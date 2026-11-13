@@ -13,12 +13,12 @@ h1{font-size:clamp(42px,11vw,68px);line-height:.95;letter-spacing:-3px;margin:24
 .pills{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 26px}.pill{border:1px solid var(--line);border-radius:30px;padding:10px 14px;color:#eee;background:#151219;font-size:14px}
 .card{background:linear-gradient(145deg,#211d26,#151219);border:1px solid #39323d;border-radius:28px;padding:21px 18px;margin:14px 0;box-shadow:0 12px 30px #0003}
 .cardhead{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a99eac;font-size:12px;letter-spacing:2px;text-transform:uppercase}.tools{display:flex;gap:8px}.icon{width:46px;height:46px;border-radius:50%;border:1px solid #514755;background:#29232e;color:white;font-size:22px;cursor:pointer}.value{font-size:clamp(23px,6vw,30px);font-weight:750;min-height:74px;display:flex;align-items:center;padding-right:4px;line-height:1.15;overflow-wrap:anywhere}.value.spinning{filter:blur(1.5px);opacity:.65}
-.single-drum{padding:13px 13px 9px;border-color:#6c2853;box-shadow:0 14px 40px #d3137820}
-.reelValues{margin-top:8px;border-radius:17px;overflow:hidden;background:linear-gradient(180deg,#100d14,#28202b 48%,#100d14);border:1px solid #493345}
-.reelRow{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 7px;padding:9px 11px;border-bottom:1px solid #493345;align-items:center;min-height:128px}
+.single-drum{padding:10px 11px 8px;border-color:#6c2853;box-shadow:0 14px 40px #d3137820}
+.reelValues{margin-top:6px;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,#100d14,#28202b 48%,#100d14);border:1px solid #493345}
+.reelRow{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:14px 1fr;gap:2px 6px;padding:7px 9px;border-bottom:1px solid #493345;align-items:center;height:112px;min-height:112px}
 .reelRow:last-child{border-bottom:0}
 .reelLabel{grid-column:1;color:#ff69b9;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
-.reelValue{grid-column:1;grid-row:2;font-size:clamp(19px,5.5vw,27px);font-weight:800;line-height:1.15;overflow-wrap:anywhere;word-break:normal;min-height:3.45em;height:auto;max-height:none;display:block;overflow:visible;align-self:center}
+.reelValue{grid-column:1;grid-row:2;font-size:clamp(17px,4.8vw,23px);font-weight:800;line-height:1.1;overflow-wrap:anywhere;word-break:normal;height:3.4em;min-height:0;max-height:none;display:block;overflow:visible;align-self:center}
 .reelTools{grid-column:2;grid-row:1 / span 2;display:flex;gap:5px}
 .reelTools .icon{width:39px;height:39px;font-size:19px}
 .reelValue.rolling{animation:reelSpinDown .11s linear infinite;filter:blur(1.5px);opacity:.72}
