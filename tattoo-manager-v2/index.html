@@ -850,72 +850,8 @@ try{render();if(tg&&tg.initData)syncAppointments()}catch(err){console.error('TAT
 })();
 </script><script>
 (()=>{
-  if(window.__tmPwaInstallInit)return;
-  window.__tmPwaInstallInit=true;
-  const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
   if("serviceWorker" in navigator && location.protocol==="https:"){
     window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA service worker:",err)));
   }
-  let installPrompt=null;
-  window.addEventListener("beforeinstallprompt",event=>{
-    event.preventDefault();
-    installPrompt=event;
-    const btn=document.getElementById("tmInstallApp");
-    if(btn)btn.textContent="Установить приложение";
-  });
-  window.addEventListener("appinstalled",()=>{
-    installPrompt=null;
-    document.getElementById("tmInstallApp")?.remove();
-  });
-  if(isStandalone())return;
-  const btn=document.createElement("button");
-  btn.id="tmInstallApp";
-  btn.type="button";
-  btn.textContent="Установить приложение";
-  btn.style.cssText="position:fixed;right:14px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:20;background:#df2632;color:#fff;border:1px solid #f05b64;border-radius:999px;padding:11px 15px;font:700 12px system-ui;box-shadow:0 8px 24px #0009";
-  btn.textContent="Добавить на главный экран";
-  const tg=window.Telegram?.WebApp;
-  const isTelegram=!!(tg&&tg.initData);
-  if(isTelegram){
-    btn.style.bottom="calc(82px + env(safe-area-inset-bottom))";
-    const onAdded=()=>{
-      btn.textContent="Приложение добавлено ✓";
-      btn.disabled=true;
-      btn.style.opacity=".75";
-    };
-    tg.onEvent?.("homeScreenAdded",onAdded);
-    tg.onEvent?.("homeScreenChecked",event=>{
-      if(event?.status==="added")onAdded();
-      else if(event?.status==="unsupported"){
-        btn.textContent="Добавление недоступно";
-        btn.disabled=true;
-        btn.title="Обновите Telegram до последней версии";
-      }
-    });
-    try{tg.checkHomeScreenStatus?.();}catch(err){console.warn("Home screen status:",err);}
-  }
-  btn.addEventListener("click",async()=>{
-    if(isTelegram){
-      if(typeof tg.addToHomeScreen==="function" && Number.parseFloat(tg.version||"0")>=8){
-        try{tg.addToHomeScreen();}
-        catch(err){alert("Telegram не смог добавить ярлык. Обновите Telegram и попробуйте ещё раз.");}
-      }else{
-        alert("Эта функция доступна в Telegram версии 8.0 и новее. Обновите Telegram, затем откройте приложение снова.");
-      }
-      return;
-    }
-    if(installPrompt){
-      installPrompt.prompt();
-      try{await installPrompt.userChoice;}catch(_){}
-      installPrompt=null;
-      btn.textContent="Добавить на главный экран";
-      return;
-    }
-    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-    alert(isIOS
-      ?"Чтобы добавить приложение: нажмите «Поделиться» в Safari, затем «На экран Домой» и подтвердите добавление."
-      :"Чтобы установить приложение: откройте меню браузера ⋮ и выберите «Установить приложение» или «Добавить на главный экран».");
-  });
-  document.body.appendChild(btn);
 })();
 </script></body></html>
