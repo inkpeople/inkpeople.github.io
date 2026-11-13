@@ -88,7 +88,9 @@ h1{font-size:clamp(27px,6vw,34px);font-weight:780;letter-spacing:-.055em;line-he
 .panelhead{margin-bottom:13px}
 .panelhead b{font-size:14px;font-weight:720;letter-spacing:-.015em}
 .appointment,.listitem{border-color:#252a2a}
-.appointment{gap:13px;padding:14px 0}
+.appointment{gap:13px;padding:14px 0;flex-wrap:wrap;align-items:flex-start}
+.apptmain{min-width:0;flex:1 1 180px}
+.appointment>.tag{flex:0 1 auto;max-width:100%;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box}
 .time{color:#f06a71;font-size:13px;font-variant-numeric:tabular-nums}
 .apptmain b,.listitem b{font-weight:680;font-size:13px}
 .apptmain small{font-size:11px;line-height:1.5;color:#929999}
