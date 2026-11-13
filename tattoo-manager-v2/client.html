@@ -285,14 +285,14 @@ function clientAIInlineFormat(parent,text){
 function clientAITableCells(line){return line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(cell=>cell.trim());}
 function clientAIIsTableSeparator(line){const cells=clientAITableCells(line);return cells.length>1&&cells.every(cell=>/^:?-{3,}:?$/.test(cell));}
 function clientAINormalizeAnswer(raw){
- let text=String(raw??'').replace(/\\r\\n?/g,'\\n').replace(/[\\t ]+/g,' ').trim();
+ let text=String(raw??'').replace(/\r\n?/g,'\n').replace(/[\t ]+/g,' ').trim();
  // Модели иногда выдают Markdown-списки в одной строке. Разделяем пункты до парсинга.
- text=text.replace(/\\s+(?=\\d+[.)]\\s+)/g,'\\n');
- text=text.replace(/\\s+(?=[-*+]\\s+(?=\\*\\*|[А-Яа-яA-Za-z]))/g,'\\n');
+ text=text.replace(/\s+(?=\d+[.)]\s+)/g,'\n');
+ text=text.replace(/\s+(?=[-*+]\s+(?=\*\*|[А-Яа-яA-Za-z]))/g,'\n');
  // Отделяем выделенные подзаголовки, за которыми сразу идут пункты.
- text=text.replace(/(?<!\\d)([.!?])\\s+(?=\\*\\*[^*]{1,80}\\*\\*\\s+(?:[-*+]\\s+|\\d+[.)]\\s+))/g,'$1\\n');
+ text=text.replace(/(?<!\d)([.!?])\s+(?=\*\*[^*]{1,80}\*\*\s+(?:[-*+]\s+|\d+[.)]\s+))/g,'$1\n');
  // Отделяем заголовок ответа от первого пункта списка.
- text=text.replace(/(\\*\\*[^*]+\\*\\*)\\s+(?=\\d+[.)]\\s+)/g,'$1\\n');
+ text=text.replace(/(\*\*[^*]+\*\*)\s+(?=\d+[.)]\s+)/g,'$1\n');
  return text;
 }
 function clientAIFormatAnswer(parent,raw){
