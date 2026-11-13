@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="69">
+<meta charset="utf-8"><meta name="tm-version" content="70">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b10"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -411,7 +411,7 @@ function masterCard(m,mode){
 }
 function mastersPage(){
  view.innerHTML=heading('СООБЩЕСТВО','Мастера','Находи коллег и добавляй их в друзья')+
- '<section class="panel"><b>Найти мастера</b><div class="row" style="margin-top:10px"><input class="field" id="masterSearchQuery" placeholder="Имя или город" style="margin:0"><button class="primary" id="searchMasters">Найти</button></div><div id="masterSearchResults" class="muted" style="font-size:12px;margin-top:8px">Введи имя мастера или город.</div></section>'+
+ '<section class="panel"><b>Найти мастера</b><p class="muted" style="font-size:12px;margin:7px 0 10px">Выбери коллег из телефонной книги — приложение покажет тех, кто уже зарегистрирован.</p><button class="primary" id="findMastersFromContacts" style="width:100%">📱 Выбрать контакты телефона</button><div id="masterContactsStatus" class="muted" style="font-size:11px;margin-top:8px">Контакты не загружаются автоматически. Ты сам выбираешь, какие показать приложению.</div><div class="row" style="margin-top:13px"><input class="field" id="masterSearchQuery" placeholder="Или имя, город, @username" style="margin:0"><button class="primary" id="searchMasters">Найти</button></div><div id="masterSearchResults" class="muted" style="font-size:12px;margin-top:8px">Введи имя мастера или выбери контакты.</div></section>'+
  '<section class="panel"><div class="panelhead"><b>Входящие заявки</b><span class="tag" id="masterIncomingCount">0</span></div><div id="masterIncoming"><div class="empty">Загрузка…</div></div></section>'+
  '<section class="panel"><div class="panelhead"><b>Исходящие заявки</b><span class="tag" id="masterOutgoingCount">0</span></div><div id="masterOutgoing"><div class="empty">Загрузка…</div></div></section>'+
  '<section class="panel"><div class="panelhead"><b>Мои друзья</b><span class="tag" id="masterFriendsCount">0</span></div><div id="masterFriends"><div class="empty">Загрузка…</div></div></section>';
@@ -432,6 +432,34 @@ async function searchMasterDirectory(){
  if(box)box.innerHTML='<div class="empty">Ищем мастеров…</div>';
  try{const d=await api('',{method:'POST',body:JSON.stringify({action:'search_masters',query})});const rows=d.masters||[];if(box)box.innerHTML=rows.length?rows.map(x=>masterCard(x,'search')).join(''):'<div class="empty">Мастера не найдены.</div>';}
  catch(err){if(box)box.innerHTML='<div class="empty">Ошибка поиска: '+esc(err.message)+'</div>';}
+}
+async function findMastersFromContacts(){
+ const status=$('#masterContactsStatus'),box=$('#masterSearchResults'),button=$('#findMastersFromContacts');
+ if(!navigator.contacts||typeof navigator.contacts.select!=='function'){
+  if(status)status.innerHTML='Встроенный просмотр телефонной книги не поддерживается этим браузером. Открой приложение в Chrome на Android и попробуй снова. Telegram не предоставляет Mini App доступ ко всему списку друзей.';
+  return;
+ }
+ try{
+  button.disabled=true;button.textContent='Открываем контакты…';
+  const selected=await navigator.contacts.select(['name','tel'],{multiple:true});
+  if(!selected||!selected.length){if(status)status.textContent='Контакты не выбраны.';return;}
+  const contacts=[];
+  for(const c of selected){
+   const name=Array.isArray(c.name)?c.name.join(' ').trim():String(c.name||'').trim();
+   const tels=Array.isArray(c.tel)?c.tel:[c.tel||''];
+   for(const tel of tels){if(String(tel||'').trim())contacts.push({name:name.slice(0,120),tel:String(tel).slice(0,100)});}
+  }
+  if(!contacts.length){if(status)status.textContent='В выбранных контактах не нашлось телефонных номеров.';return;}
+  if(status)status.textContent='Проверяем '+selected.length+' выбранных контактов…';
+  box.innerHTML='<div class="empty">Ищем совпадения среди мастеров TATTOO MANAGER…</div>';
+  const d=await api('',{method:'POST',body:JSON.stringify({action:'find_masters_by_contacts',contacts})});
+  const rows=d.masters||[];
+  box.innerHTML=rows.length?rows.map(x=>masterCard(x,'search')).join(''):'<div class="empty">Совпадений пока нет. Мастер должен быть зарегистрирован и указать этот номер в профиле.</div>';
+  if(status)status.textContent='Проверено контактов: '+selected.length+'. Найдено мастеров: '+rows.length+'. Номера не сохраняются в телефонную книгу приложения.';
+ }catch(err){
+  if(err&&err.name==='AbortError'){if(status)status.textContent='Выбор контактов отменён.';}
+  else{if(status)status.textContent='Не удалось проверить контакты: '+esc(err.message);}
+ }finally{button.disabled=false;button.textContent='📱 Выбрать контакты телефона';}
 }
 function profile(){const artistName=masterStudio?(masterStudio.artist_name||masterStudio.studio_name||'Мастер'):'Мастер';const city=masterStudio?(masterStudio.city||''):'';
 view.innerHTML=heading('АККАУНТ','Профиль мастера','Настройки рабочего пространства')+'<section class="panel"><div class="eyebrow">ПРОФИЛЬ</div><h2 style="margin:8px 0">'+artistName+'</h2><div class="muted">'+city+'</div><div class="listitem"><span>Роль</span><b>'+(serverConnected?'Мастер · сервер':'Мастер · проверка сервера')+'</b></div><div class="listitem"><span>Telegram</span><b>'+((tg&&tg.initData)?'Подключён':'Предпросмотр')+'</b></div><div class="listitem"><span>Telegram ID</span><b>'+((tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.id)||'Откройте через меню бота')+'</b></div><div class="listitem"><span>Синхронизация</span><b>'+(serverConnected?'Сервер подключён':'Не подтверждена')+'</b></div></section><section class="panel"><b>Персональная ссылка для клиентов</b><p class="muted" style="font-size:13px;line-height:1.5">Отправьте эту ссылку клиенту. При переходе бот автоматически закрепит ваш кабинет в профиле клиента.</p><input class="field" id="masterInviteLink" readonly value="'+masterReferralLink+'" placeholder="Ссылка появится после подключения"><button class="primary" id="copyMasterInvite" style="width:100%;margin-top:10px" '+(masterReferralLink?'':'disabled')+'>Скопировать ссылку</button></section><section class="panel"><div class="eyebrow">ОТЗЫВЫ</div><b>Куда отправлять клиента за отзывом</b><p class="muted" style="font-size:13px;line-height:1.5">Укажите личную ссылку на отзывы: Яндекс Карты, 2ГИС, VK или другую площадку. Через 14 дней после завершённого сеанса бот отправит клиенту эту ссылку.</p><input class="field" id="masterReviewUrl" type="url" maxlength="500" placeholder="https://..." value="'+esc(masterStudio&&masterStudio.review_url||'')+'"><button class="primary" id="saveMasterReviewUrl" style="width:100%;margin-top:10px">Сохранить ссылку для отзывов</button><div class="muted" style="font-size:12px;margin-top:8px">Можно оставить пустым — тогда клиент сможет отправить отзыв сообщением мастеру через бота.</div></section><section class="panel"><div class="eyebrow">БРОНЬ И ПЕРЕНОСЫ</div><b>Повторная бронь после 3 переносов</b><p class="muted" style="font-size:13px;line-height:1.5">Укажите сумму и реквизиты. Клиент увидит их в личном кабинете и получит в Telegram, когда исчерпает лимит переносов.</p><label>Сумма брони, ₽</label><input class="field" id="masterDepositAmount" type="number" min="0" max="10000000" step="1" placeholder="Например, 2000" value="'+esc(masterStudio&&masterStudio.deposit_amount||'')+'"><label>Способ перевода</label><input class="field" id="masterDepositMethod" maxlength="100" placeholder="СБП, перевод на карту..." value="'+esc(masterStudio&&masterStudio.deposit_method||'')+'"><label>Получатель</label><input class="field" id="masterDepositRecipient" maxlength="160" placeholder="Имя получателя" value="'+esc(masterStudio&&masterStudio.deposit_recipient||'')+'"><label>Реквизиты и инструкция</label><textarea class="field" id="masterDepositDetails" maxlength="2000" rows="3" placeholder="Номер телефона или карты, банк, комментарий к переводу">'+esc(masterStudio&&masterStudio.deposit_details||'')+'</textarea><button class="primary" id="saveMasterDeposit" style="width:100%;margin-top:10px">Сохранить настройки брони</button><div class="muted" style="font-size:12px;margin-top:8px">Подтверждайте получение денег вручную в карточке записи клиента.</div></section><section class="panel"><b>Статус подключения</b><p class="muted" style="font-size:13px;line-height:1.5">'+(serverConnected?'Telegram распознан как аккаунт мастера. Записи загружаются с сервера.':'Telegram открыт, но успешный ответ сервера ещё не подтверждён. Проверь подключение перед использованием реальных данных.')+'</p></section>'}
@@ -559,6 +587,7 @@ $('#nav').addEventListener('click',e=>{const more=e.target.closest('[data-more-t
 document.body.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){page=go.dataset.go;render();return}const actionEl=e.target.closest('[data-action]');const a=actionEl?actionEl.dataset.action:null;if(a==='add'){addBooking();return}if(a==='calc'||a==='stock'||a==='forms'||a==='ai'||a==='tasks'){page='tools';render();detail(a);return}});
 document.body.addEventListener('click',async e=>{
  if(e.target.id==='searchMasters'){searchMasterDirectory();return}
+ if(e.target.id==='findMastersFromContacts'){findMastersFromContacts();return}
  const friendButton=e.target.closest('[data-friend-action]');
  if(friendButton){
   const action=friendButton.dataset.friendAction,friendshipId=friendButton.dataset.friendshipId,studioId=friendButton.dataset.studioId;
