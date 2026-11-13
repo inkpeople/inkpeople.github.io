@@ -28,24 +28,39 @@ h1{font-size:clamp(42px,11vw,68px);line-height:.95;letter-spacing:-3px;margin:24
 button{font:inherit}.spin{width:100%;border:1px solid #ff64b8;border-radius:100px;padding:21px 16px;margin:18px 0 10px;background:linear-gradient(100deg,#9d0c68,#f02b91,#bd167b);color:white;font-weight:850;font-size:24px;box-shadow:0 12px 32px #d3137845;cursor:pointer}.spin:disabled{opacity:.65}.secondary{border:1px solid var(--line);background:#17131b;color:#f6eaf2;border-radius:18px;padding:12px 16px;cursor:pointer}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.result{border:1px solid #7b2859;background:#241321;border-radius:22px;padding:18px;margin-top:16px}.result h2{font-size:13px;letter-spacing:2px;color:#ff66b7;margin:0 0 10px}.result p{margin:7px 0;color:#eee}.note{color:var(--muted);font-size:12px;line-height:1.5;margin:18px 4px}.locked{color:#ff69b9}.gate{position:fixed;inset:0;background:#09070cf5;z-index:5;display:grid;place-items:center;padding:24px}.gatebox{max-width:420px;text-align:center;background:#1b1620;border:1px solid #493044;border-radius:28px;padding:28px}.gate h2{font-size:30px;margin:0 0 8px}.gate p{color:var(--muted);line-height:1.5}.gate button{background:var(--pink);color:white;border:0;border-radius:30px;padding:15px 24px;font-weight:800;width:100%;margin-top:10px}.hidden{display:none!important}
 @media(prefers-reduced-motion:no-preference){.spin{transition:none;transform:none}.spin:active{transform:none}.card{transition:border-color .2s}}
 
-/* Premium sensual ambient background */
+/* Erotic street-art ambient */
 body{position:relative;overflow-x:hidden;background-color:#08060b}
-.ambient{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;isolation:isolate;background:radial-gradient(ellipse at 50% 115%,#5b123d35,transparent 55%)}
-.ambient::before,.ambient::after{content:"";position:absolute;inset:-35%;pointer-events:none;filter:blur(34px);will-change:transform}
-.ambient::before{background:radial-gradient(ellipse 34% 17% at 24% 42%,#f02b9125,transparent 72%),radial-gradient(ellipse 27% 19% at 77% 63%,#7925a52a,transparent 74%),radial-gradient(ellipse 20% 30% at 54% 15%,#e94c9d18,transparent 75%);animation:velvetGlow 24s ease-in-out infinite alternate}
-.ambient::after{inset:-20%;opacity:.7;background:conic-gradient(from 20deg at 50% 50%,transparent 0deg,#f02b910d 55deg,transparent 115deg,#a12a9a14 205deg,transparent 280deg);animation:slowAura 38s linear infinite}
-.ambient span{position:absolute;display:block;color:#ff3d9f;opacity:0;font-weight:800;white-space:nowrap;text-shadow:0 0 22px #f02b9170;animation:ambientFloat var(--duration,27s) ease-in-out infinite;animation-delay:var(--delay,0s);left:var(--x,50%);top:110%;font-size:var(--size,28px);transform:rotate(var(--rot,0deg));will-change:transform,opacity}
-.ambient .symbol{font-size:var(--size,34px);color:#ff65b8}
-.ambient .word{font-size:var(--size,15px);letter-spacing:4px;color:#ff79c2}
-@keyframes velvetGlow{0%{transform:translate3d(-3%,1%,0) scale(.94) rotate(-5deg)}50%{transform:translate3d(2%,-2%,0) scale(1.06) rotate(3deg)}100%{transform:translate3d(4%,2%,0) scale(.98) rotate(7deg)}}
-@keyframes slowAura{from{transform:rotate(0deg) scale(1)}to{transform:rotate(360deg) scale(1.08)}}
-@keyframes ambientFloat{0%{opacity:0;transform:translate3d(0,0,0) rotate(var(--rot,0deg)) scale(.86)}14%{opacity:.12}52%{opacity:.16;transform:translate3d(var(--drift,22px),-58vh,0) rotate(calc(var(--rot,0deg) + 10deg)) scale(1)}88%{opacity:.08}100%{opacity:0;transform:translate3d(calc(var(--drift,22px) * -1),-125vh,0) rotate(calc(var(--rot,0deg) + 24deg)) scale(.9)}}
+.ambient{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;isolation:isolate;background:radial-gradient(ellipse at 50% 110%,#68113f3d,transparent 56%),linear-gradient(135deg,#08060b 0%,#130914 48%,#09070c 100%)}
+.ambient::before,.ambient::after{content:"";position:absolute;inset:-30%;pointer-events:none;will-change:transform}
+.ambient::before{filter:blur(28px);background:radial-gradient(ellipse 28% 18% at 20% 40%,#f02b9133,transparent 75%),radial-gradient(ellipse 30% 20% at 82% 65%,#7e2be033,transparent 74%),radial-gradient(ellipse 23% 26% at 52% 18%,#f04c9b20,transparent 76%);animation:streetGlow 20s ease-in-out infinite alternate}
+.ambient::after{opacity:.28;background-image:radial-gradient(#ff58b6 1px,transparent 1.5px),radial-gradient(#a84dff 1px,transparent 1.5px);background-size:27px 27px,41px 41px;background-position:0 0,13px 19px;mask-image:linear-gradient(135deg,transparent 5%,#000 45%,transparent 92%);animation:halftoneDrift 30s linear infinite}
+.ambient span{position:absolute;display:block;white-space:nowrap;left:var(--x,50%);top:110%;animation:streetFloat var(--duration,25s) ease-in-out infinite;animation-delay:var(--delay,0s);will-change:transform,opacity}
+.ambient .symbol{font-size:var(--size,34px);font-weight:900;color:#ff65b8;opacity:0;text-shadow:0 0 18px #f02b91a8,2px 2px 0 #32102d}
+.ambient .word{font-size:var(--size,17px);font-weight:1000;letter-spacing:3px;color:#ff69bd;opacity:0;text-transform:uppercase;-webkit-text-stroke:.35px #ffd2e9;text-shadow:3px 3px 0 #74104d,0 0 18px #f02b91b0;transform:rotate(var(--rot,-8deg))}
+.ambient .tag{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:var(--size,26px);letter-spacing:1px;color:#c6a0ff;-webkit-text-stroke:1px #45134f;text-shadow:3px 3px 0 #f02b91,0 0 18px #b64cff;opacity:0}
+.ambient .dance-shadow{position:absolute;top:27%;left:50%;width:min(62vw,360px);height:440px;opacity:.13;filter:blur(1px);transform:translateX(-50%);background:radial-gradient(ellipse at 34% 12%,#ff73bd 0 5%,transparent 5.8%),radial-gradient(ellipse at 65% 18%,#b77aff 0 5%,transparent 5.8%),radial-gradient(ellipse at 39% 38%,#ff5aa8 0 12%,transparent 12.8%),radial-gradient(ellipse at 61% 43%,#a86bff 0 13%,transparent 13.8%),linear-gradient(115deg,transparent 28%,#ff5aa8 29% 38%,transparent 39%),linear-gradient(65deg,transparent 53%,#a86bff 54% 63%,transparent 64%);mask-image:radial-gradient(ellipse at center,#000 15%,transparent 72%);animation:closeDance 8s ease-in-out infinite alternate}
+@keyframes streetGlow{0%{transform:translate3d(-3%,1%,0) scale(.94) rotate(-5deg)}100%{transform:translate3d(4%,2%,0) scale(1.07) rotate(7deg)}}
+@keyframes halftoneDrift{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(2%,-2%,0) rotate(8deg)}}
+@keyframes closeDance{0%{transform:translateX(-50%) rotate(-3deg) scale(.96)}100%{transform:translateX(-50%) rotate(3deg) scale(1.04)}}
+@keyframes streetFloat{0%{opacity:0;transform:translate3d(0,0,0) rotate(var(--rot,-8deg)) scale(.8)}14%{opacity:.17}52%{opacity:.2;transform:translate3d(var(--drift,22px),-58vh,0) rotate(calc(var(--rot,-8deg) + 8deg)) scale(1)}88%{opacity:.08}100%{opacity:0;transform:translate3d(calc(var(--drift,22px) * -1),-125vh,0) rotate(calc(var(--rot,-8deg) + 18deg)) scale(.9)}}
 main{position:relative;z-index:1}
-@media(prefers-reduced-motion:reduce){.ambient::before,.ambient::after,.ambient span{animation:none}.ambient span{opacity:.025}}
+@media(prefers-reduced-motion:reduce){.ambient::before,.ambient::after,.ambient span,.ambient .dance-shadow{animation:none}.ambient span{opacity:.025}}
 .poseHelp{width:29px;height:29px;border-radius:50%;border:1px solid #b54b88;background:#32152a;color:#ff9bd0;font-size:15px;font-weight:900;line-height:1;cursor:pointer;align-self:center}.poseInfo{position:fixed;inset:0;z-index:8;background:#08060de8;display:grid;place-items:center;padding:22px}.poseInfoBox{width:min(100%,460px);max-height:80vh;overflow:auto;background:#211823;border:1px solid #a12b70;border-radius:22px;padding:22px;box-shadow:0 20px 60px #0009}.poseInfoBox h3{margin:0 34px 12px 0;color:#ff79c2;font-size:21px}.poseInfoBox p{color:#eee;line-height:1.55;margin:0 0 18px}.poseInfoBox button{border:1px solid #85436b;background:#35172b;color:#fff;border-radius:14px;padding:11px 18px}</style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"><span class="symbol" style="--x:7%;--size:36px;--duration:19s;--delay:-4s;--rot:-18deg">⛓</span><span class="word" style="--x:78%;--size:17px;--duration:23s;--delay:-12s;--drift:-25px">18+</span><span class="symbol" style="--x:88%;--size:31px;--duration:21s;--delay:-8s;--rot:16deg">♡</span><span class="word" style="--x:17%;--size:15px;--duration:25s;--delay:-17s;--drift:22px">DESIRE</span><span class="symbol" style="--x:68%;--size:38px;--duration:22s;--delay:-2s">🔗</span><span class="word" style="--x:42%;--size:16px;--duration:27s;--delay:-20s">SEX</span><span class="symbol" style="--x:28%;--size:29px;--duration:20s;--delay:-10s">💋</span><span class="word" style="--x:92%;--size:14px;--duration:24s;--delay:-15s">HOT</span><span class="symbol" style="--x:53%;--size:33px;--duration:26s;--delay:-6s">⛓</span><span class="word" style="--x:3%;--size:14px;--duration:22s;--delay:-14s">PASSION</span></div>
+<div class="ambient" aria-hidden="true">
+<span class="dance-shadow"></span>
+<span class="symbol" style="--x:7%;--size:38px;--duration:23s;--delay:-4s;--rot:-18deg">⛓</span>
+<span class="tag" style="--x:74%;--size:31px;--duration:26s;--delay:-12s;--rot:8deg">AFTER DARK</span>
+<span class="symbol" style="--x:88%;--size:34px;--duration:22s;--delay:-8s;--rot:16deg">♡</span>
+<span class="word" style="--x:13%;--size:19px;--duration:25s;--delay:-17s;--drift:22px;--rot:-12deg">NO RULES</span>
+<span class="symbol" style="--x:68%;--size:39px;--duration:24s;--delay:-2s">🔗</span>
+<span class="tag" style="--x:39%;--size:27px;--duration:29s;--delay:-20s;--rot:-6deg">KISS ME</span>
+<span class="symbol" style="--x:28%;--size:31px;--duration:20s;--delay:-10s">💋</span>
+<span class="word" style="--x:91%;--size:16px;--duration:24s;--delay:-15s;--rot:10deg">18+ ONLY</span>
+<span class="symbol" style="--x:53%;--size:35px;--duration:26s;--delay:-6s">✦</span>
+<span class="tag" style="--x:3%;--size:28px;--duration:22s;--delay:-14s;--rot:7deg">DESIRE</span>
+</div>
 
 <div class="gate" id="ageGate"><div class="gatebox"><div class="brand">HOT SPIN</div><h2>Только 18+</h2><p>Игра предназначена исключительно для совершеннолетних. Все сценарии предполагают добровольное согласие и уважение личных границ.</p><button id="ageYes">Мне есть 18 лет — войти</button></div></div>
 <main>
