@@ -245,6 +245,26 @@ details.calendar-connect-compact:not([open])>.calendar-connect-body{display:none
 
 /* MASTER PORTFOLIO */
 .portfolio-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.portfolio-item{position:relative;aspect-ratio:1/1;border-radius:11px;overflow:hidden;background:#202424;border:1px solid #303737}.portfolio-item img{width:100%;height:100%;object-fit:cover;display:block}.portfolio-item button{position:absolute;right:6px;top:6px;border:1px solid #ffffff55;background:#111c;color:#fff;border-radius:8px;padding:5px 7px;font-size:11px}.portfolio-viewer{position:fixed;inset:0;z-index:1000;background:#000e;display:flex;align-items:center;justify-content:center;padding:18px}.portfolio-viewer img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:10px}.portfolio-viewer button{position:absolute;right:18px;top:calc(18px + env(safe-area-inset-top));border:1px solid #ffffff55;background:#171717;color:white;border-radius:10px;padding:10px 14px;font-size:18px}
+
+
+/* UNIFIED TATTOO MANAGER PALETTE: BLACK · GRAPHITE · RED · VIOLET */
+:root{
+ --bg:#09090c;--panel:#141419;--panel2:#1d1d25;--line:#30303b;
+ --text:#f5f3f7;--muted:#a09baa;
+ --accent:#e12635;--accent2:#b51d2b;--red:#e12635;
+ --pink:#e12635;--violet:#8b5cf6;--purple:#8b5cf6;
+ color-scheme:dark;
+}
+body{background:radial-gradient(ellipse at 86% -8%,#39205d 0,transparent 38%),radial-gradient(ellipse at 0% 45%,#35151c 0,transparent 30%),var(--bg)!important;color:var(--text)}
+.stat,.panel,.tile,.card{background:linear-gradient(145deg,#202027,#141419);border-color:var(--line)}
+.brand,.eyebrow,.link,.ico{color:var(--violet)}
+.avatar,.masterpic{background:linear-gradient(135deg,#8b5cf6,#e12635)!important;border:1px solid #8b5cf680;color:#fff}
+.primary,.event-agenda-actions .primary{background:linear-gradient(105deg,#e12635,#b51d2b)!important;border:1px solid #f04450!important;color:#fff!important;box-shadow:0 5px 18px #e1263533!important}
+.primary:active{background:#a71927!important}
+.slot.active,.tile:active{border-color:var(--violet)!important}
+.nav button.active,.nav button.active strong,.nav button.active .icon{color:#e12635!important}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--violet)!important}
+.ai-compose button,.ai-client-compose button{background:linear-gradient(105deg,#8b5cf6,#e12635)!important;color:#fff!important}
 </style></head><body><div id="tmSplash" role="status" aria-label="Загрузка TATTOO MANAGER AI"><div class="tm-splash-content"><div class="tm-splash-mark">TM</div><div class="tm-splash-title">TATTOO MANAGER</div><div class="tm-splash-ai">A I</div><div class="tm-splash-caption">Управление тату-бизнесом нового поколения</div><div class="tm-splash-loader"><i></i></div></div></div><script>window.setTimeout(()=>document.getElementById('tmSplash')?.classList.add('hide'),1750);</script>
 <div class="app">
 <header class="top"><div class="brand">TATTOO MANAGER<small id="connectionLabel">ПАНЕЛЬ МАСТЕРА · ПОДКЛЮЧЕНИЕ</small></div><div class="avatar">R</div></header>
