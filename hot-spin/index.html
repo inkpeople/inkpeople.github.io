@@ -65,7 +65,7 @@ main{position:relative;z-index:1}
 <div class="wall-tag wall-five">DESIRE</div>
 </div>
 
-<div class="gate" id="ageGate"><div class="gatebox"><div class="brand">HOT SPIN</div><h2>Только 18+</h2><p>Игра предназначена исключительно для совершеннолетних. Все сценарии предполагают добровольное согласие и уважение личных границ.</p><button id="ageYes">Мне есть 18 лет — войти</button></div></div>
+<div class="gate" id="ageGate"><div class="gatebox"><div class="brand">HOT SPIN</div><h2>Только 18+</h2><p>Игра предназначена исключительно для совершеннолетних. Все сценарии предполагают добровольное согласие и уважение личных границ.</p><button id="ageYes" type="button" style="position:relative;z-index:2;pointer-events:auto;touch-action:manipulation">Мне есть 18 лет — войти</button></div></div>
 <main>
 <div class="top"><span class="brand">HOT SPIN</span><span>ИГРА ДЛЯ ДВОИХ · 18+</span></div>
 <h1>ЧТО <span class="hot">ВЫПАДЕТ</span><br>СЕГОДНЯ?</h1><p class="sub">Три барабана. Тысячи идей. Ваши правила.</p>
@@ -362,7 +362,7 @@ document.getElementById('again').addEventListener('click',()=>{keys.forEach(k=>{
 const favKey='hotspin_favs_v1';let favs=[];try{favs=JSON.parse(localStorage.getItem(favKey)||'[]')}catch(e){}
 function count(){document.getElementById('favCount').textContent=favs.length}
 document.getElementById('save').addEventListener('click',()=>{const item=keys.map(k=>state[k].value).join(' | ');if(!favs.includes(item))favs.push(item);try{localStorage.setItem(favKey,JSON.stringify(favs));}catch(e){}count();document.getElementById('save').textContent='СОХРАНЕНО';});
-document.getElementById('ageYes').addEventListener('click',()=>{document.getElementById('ageGate').classList.add('hidden');try{sessionStorage.setItem('hotspin_age_ok','1')}catch(e){}});
+const ageButton=document.getElementById('ageYes');const enterAgeGate=()=>{const gate=document.getElementById('ageGate');if(!gate||gate.dataset.accepted==='1')return;gate.dataset.accepted='1';gate.classList.add('hidden');gate.style.display='none';try{sessionStorage.setItem('hotspin_age_ok','1')}catch(e){}};ageButton.onclick=enterAgeGate;ageButton.addEventListener('click',enterAgeGate);ageButton.addEventListener('pointerup',enterAgeGate,{passive:true});
 try{if(sessionStorage.getItem('hotspin_age_ok')==='1')document.getElementById('ageGate').classList.add('hidden')}catch(e){}
 count();render();
 })();
