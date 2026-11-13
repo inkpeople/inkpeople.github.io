@@ -873,19 +873,42 @@ try{render();if(tg&&tg.initData)syncAppointments()}catch(err){console.error('TAT
   btn.type="button";
   btn.textContent="Установить приложение";
   btn.style.cssText="position:fixed;right:14px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:20;background:#df2632;color:#fff;border:1px solid #f05b64;border-radius:999px;padding:11px 15px;font:700 12px system-ui;box-shadow:0 8px 24px #0009";
+  btn.textContent="Добавить на главный экран";
+  const tg=window.Telegram?.WebApp;
+  const isTelegram=!!(tg&&tg.initData);
+  if(isTelegram){
+    btn.style.bottom="calc(82px + env(safe-area-inset-bottom))";
+    const onAdded=()=>{
+      btn.textContent="Приложение добавлено ✓";
+      btn.disabled=true;
+      btn.style.opacity=".75";
+    };
+    tg.onEvent?.("homeScreenAdded",onAdded);
+    tg.onEvent?.("homeScreenChecked",event=>{
+      if(event?.status==="added")onAdded();
+      else if(event?.status==="unsupported"){
+        btn.textContent="Добавление недоступно";
+        btn.disabled=true;
+        btn.title="Обновите Telegram до последней версии";
+      }
+    });
+    try{tg.checkHomeScreenStatus?.();}catch(err){console.warn("Home screen status:",err);}
+  }
   btn.addEventListener("click",async()=>{
-    const tg=window.Telegram?.WebApp;
-    const inTelegram=!!(tg&&tg.initData);
+    if(isTelegram){
+      if(typeof tg.addToHomeScreen==="function" && Number.parseFloat(tg.version||"0")>=8){
+        try{tg.addToHomeScreen();}
+        catch(err){alert("Telegram не смог добавить ярлык. Обновите Telegram и попробуйте ещё раз.");}
+      }else{
+        alert("Эта функция доступна в Telegram версии 8.0 и новее. Обновите Telegram, затем откройте приложение снова.");
+      }
+      return;
+    }
     if(installPrompt){
       installPrompt.prompt();
       try{await installPrompt.userChoice;}catch(_){}
       installPrompt=null;
-      btn.textContent="Установить приложение";
-      return;
-    }
-    if(inTelegram){
-      alert("Чтобы установить приложение на главный экран, откройте TATTOO MANAGER в обычном браузере телефона.");
-      try{tg.openLink(location.href);}catch(_){}
+      btn.textContent="Добавить на главный экран";
       return;
     }
     const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
