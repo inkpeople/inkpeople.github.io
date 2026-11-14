@@ -741,7 +741,7 @@ function finance(){view.innerHTML=heading('УПРАВЛЕНИЕ ДЕНЬГАМИ
 async function loadFinance(){
  const box=$('#financeDetail');if(!box)return;box.innerHTML='<section class="panel">Загрузка…</section>';
  try{
- const d=await api(),tx=d.financeTransactions||[],plans=d.financePlans||[],payments=d.financePayments||[];
+ const d=await api('?section=finance'),tx=d.financeTransactions||[],plans=d.financePlans||[],payments=d.financePayments||[];
  const money=n=>Number(n||0).toLocaleString('ru-RU')+' ₽';
  const today=localISO(new Date()),monthKey=today.slice(0,7),yearKey=today.slice(0,4);const incomeTx=tx.filter(x=>x.transaction_type==='income'),todayIncome=incomeTx.filter(x=>x.transaction_date===today).reduce((a,x)=>a+Number(x.amount),0),monthIncome=incomeTx.filter(x=>String(x.transaction_date).slice(0,7)===monthKey).reduce((a,x)=>a+Number(x.amount),0),yearIncome=incomeTx.filter(x=>String(x.transaction_date).slice(0,4)===yearKey).reduce((a,x)=>a+Number(x.amount),0),avgCheck=incomeTx.length?incomeTx.reduce((a,x)=>a+Number(x.amount),0)/incomeTx.length:0,paidDebt=payments.reduce((a,x)=>a+Number(x.amount_paid||0),0);
  const opts=clients.filter(c=>c.id&&!c.localOnly).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
