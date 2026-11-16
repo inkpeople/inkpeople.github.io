@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const base=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const APP_URL="https://inkpeople.github.io/tattoo-manager-v2/";
+const APP_URL="https://tattoo-manager-recovery.onrender.com/";
 async function db(path:string,init:RequestInit={}){const r=await fetch(base+"/rest/v1/"+path,{...init,headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,"Content-Type":"application/json",Prefer:"return=representation",...(init.headers||{})}});const t=await r.text();if(!r.ok)throw new Error("DATABASE_ERROR_"+r.status+": "+t);return t?JSON.parse(t):null}
 async function sha(s:string){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function encryptionKey(){const seed=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!seed)throw new Error("SERVICE_ROLE_KEY_MISSING");const raw=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(seed+"|tattoo-manager-yandex-calendar-v1"));return crypto.subtle.importKey("raw",raw,{name:"AES-GCM"},false,["encrypt","decrypt"])}
@@ -16,7 +16,7 @@ Deno.serve(async req=>{
   const row=rows?.[0];if(!row||!row.oauth_state_expires_at||new Date(row.oauth_state_expires_at).getTime()<Date.now())return redirect("expired");
   const clientId=Deno.env.get("YANDEX_CLIENT_ID"),clientSecret=Deno.env.get("YANDEX_CLIENT_SECRET");
   if(!clientId||!clientSecret)throw new Error("YANDEX_OAUTH_SECRETS_MISSING");
-  const form=new URLSearchParams({grant_type:"authorization_code",code,client_id:clientId,client_secret:clientSecret,redirect_uri:"https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-calendar-yandex-callback"});
+  const form=new URLSearchParams({grant_type:"authorization_code",code,client_id:clientId,client_secret:clientSecret,redirect_uri:"https://ndetzxmpkfqcbzftaxtv.supabase.co/functions/v1/tattoo-calendar-yandex-callback"});
   const tokenResponse=await fetch("https://oauth.yandex.ru/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:form});
   const tokenData=await tokenResponse.json();if(!tokenResponse.ok||!tokenData.access_token){console.error("YANDEX_TOKEN_EXCHANGE_FAILED",tokenData);return redirect("token_error")}
   const infoResponse=await fetch("https://login.yandex.ru/info?format=json",{headers:{Authorization:"OAuth "+tokenData.access_token}});
