@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="74"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8"><meta name="tm-version" content="75"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09090c"><title>TATTOO MANAGER — Кабинет клиента</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -447,8 +447,10 @@ async function compressReference(file){const dataUrl=await new Promise((resolve,
 async function submitReferences(){const files=Array.from(document.getElementById('files').files||[]),studioId=document.getElementById('masterSelect').value,comment=document.getElementById('refnote').value.trim(),button=document.getElementById('submitReferences'),status=document.getElementById('referenceStatus');if(!studioId){demo('Сначала выберите мастера на главной странице.');return}if(!files.length){demo('Сначала выберите изображения.');return}if(files.length>6){demo('За один раз можно отправить не более 6 изображений.');return}if(files.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type))){demo('Поддерживаются только JPG, PNG и WEBP.');return}if(files.some(f=>f.size>15*1024*1024)){demo('Одно из изображений превышает 15 МБ.');return}button.disabled=true;status.textContent='Подготавливаем изображения…';try{for(let i=0;i<files.length;i++){status.textContent='Отправка изображения '+(i+1)+' из '+files.length+'…';const compressed=await compressReference(files[i]);await api({method:'POST',body:JSON.stringify({action:'submit_client_reference',studio_id:studioId,mime_type:'image/jpeg',image_base64:compressed,comment})})}document.getElementById('files').value='';document.getElementById('refnote').value='';document.getElementById('preview').innerHTML='';status.textContent='Референсы отправлены мастеру. Он получит уведомление в Telegram.';demo('Референсы успешно отправлены!');await loadAppointments()}catch(e){status.textContent='Не удалось отправить: '+(e.message==='CLIENT_NOT_LINKED_TO_STUDIO'?'Сначала привяжите свой Telegram к карточке клиента у мастера.':e.message)}finally{button.disabled=false;button.textContent='Отправить референсы мастеру'}}
 function renderReferralRewards(rewards){
  const box=document.getElementById('referralRewards');if(!box)return;
- const total=(rewards||[]).reduce((sum,r)=>sum+(Number(r.reward_amount)||0),0);
- box.innerHTML=total?'<div class="notice" style="margin:0"><b>🎉 Ваша скидка доступна</b><br>Начислено: <b>'+total.toLocaleString('ru-RU')+' ₽</b>. Количество наград: '+rewards.length+'. Сообщите мастеру при следующей записи — скидка будет учтена в стоимости сеанса.</div>':'<div class="muted" style="font-size:10px">Начисленные скидки появятся здесь после того, как приглашённый вами клиент завершит первый сеанс.</div>';
+ const rows=Array.isArray(rewards)?rewards:[];
+ const total=Math.max(0,rows.reduce((sum,r)=>sum+(r.type==='redeemed'?-1:1)*Math.abs(Number(r.reward_amount)||0),0));
+ const history=rows.slice().sort((a,b)=>String(b.created_at||b.earned_at||'').localeCompare(String(a.created_at||a.earned_at||''))).slice(0,6);
+ box.innerHTML='<div class="notice" style="margin:0"><b>🎁 Ваш баланс скидки</b><br><strong style="font-size:24px">'+total.toLocaleString('ru-RU')+' ₽</strong><br><span class="muted" style="font-size:11px">Баланс обновляется после начисления или списания мастером.</span></div>'+(history.length?'<div style="margin-top:10px"><b style="font-size:12px">История бонусов</b>'+history.map(r=>'<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:11px"><span>'+(r.type==='redeemed'?'Списано':r.type==='credited'?'Начислено мастером':'За приглашение')+' · '+new Date(r.created_at||r.earned_at||Date.now()).toLocaleDateString('ru-RU')+'</span><b>'+(r.type==='redeemed'?'−':'+')+Math.abs(Number(r.reward_amount)||0).toLocaleString('ru-RU')+' ₽</b></div>').join('')+'</div>':'<div class="muted" style="font-size:10px;margin-top:8px">Начислений пока нет.</div>');
 }
 document.getElementById('createReferralLink')?.addEventListener('click',async function(){
  const button=this,studioId=document.getElementById('masterSelect')?.value,box=document.getElementById('referralLinkResult');
