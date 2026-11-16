@@ -55,12 +55,14 @@ On the backup project, `tattoo-manager-api` is currently ACTIVE (version 1). The
 ## Required Edge Function secrets
 Configure secrets directly in the backup project's Supabase dashboard. Copy values securely from the primary project's secret store; never paste them into chat or commit them to Git.
 
-Required names found in the function sources:
-- Common: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TELEGRAM_BOT_TOKEN`
+Custom secret names found in the function sources:
+- Common: `TELEGRAM_BOT_TOKEN`
 - AI: `GROQ_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
 - Yandex: `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`
 
-Set `SUPABASE_URL` to the backup project URL on backup functions. Use the backup project's own service-role key, not the primary project's key. Preserve the same Telegram, AI-provider and Yandex credentials where the service is intended to continue using the same integrations. Do not copy secret values into this repository.
+Supabase injects `SUPABASE_URL` and the legacy `SUPABASE_SERVICE_ROLE_KEY` into hosted Edge Functions by default. Verify that the latter is available in the backup runtime; never expose it to the browser. If the project uses the newer key model, the function code will need to be updated to read `SUPABASE_SECRET_KEYS` instead.
+
+Set the custom secret values directly in the backup project's Edge Function Secrets dashboard. Use the credentials belonging to the same Telegram bot, AI provider accounts and Yandex OAuth application that the app already uses. Never paste values into chat or commit them to this repository.
 
 ## Not yet complete — do not activate failover
 - Deploy and configure the six remaining Edge Functions.
