@@ -34,7 +34,7 @@ Deno.serve(async req=>{
    const payload={studio_id:studio.id,owner_telegram_user_id:user.id,provider:"yandex",oauth_state_hash:stateHash,oauth_state_expires_at:expires,updated_at:new Date().toISOString()};
    if(existing?.length)await db("tm_calendar_connections?studio_id=eq."+studio.id,{method:"PATCH",body:JSON.stringify(payload)});
    else await db("tm_calendar_connections",{method:"POST",body:JSON.stringify(payload)});
-   const redirect="https://jgzzdsittnzomedvsspj.supabase.co/functions/v1/tattoo-calendar-yandex-callback";
+   const redirect="https://ndetzxmpkfqcbzftaxtv.supabase.co/functions/v1/tattoo-calendar-yandex-callback";
    const url=new URL("https://oauth.yandex.ru/authorize");url.searchParams.set("response_type","code");url.searchParams.set("client_id",clientId);url.searchParams.set("redirect_uri",redirect);url.searchParams.set("state",state);
    return out({ok:true,authorize_url:url.toString()});
   }
