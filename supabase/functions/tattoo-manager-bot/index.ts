@@ -2,8 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const token = Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
 const base = Deno.env.get("SUPABASE_URL") || "";
 const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const masterUrl = "https://inkpeople.github.io/tattoo-manager-v2/?v=82";
-const clientUrl = "https://inkpeople.github.io/tattoo-manager-v2/client.html?v=28";
+const masterUrl = "https://tattoo-manager-recovery.onrender.com/?v=82";
+const clientUrl = "https://tattoo-manager-recovery.onrender.com/client.html?v=28";
 
 function reply(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
