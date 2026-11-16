@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="80">
+<meta charset="utf-8"><meta name="tm-version" content="81">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09090c"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -755,7 +755,7 @@ async function loadFinance(){
  const money=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:0})+' ₽';
  const today=localISO(new Date()),monthKey=today.slice(0,7),yearKey=today.slice(0,4),incomeTx=tx.filter(x=>x.transaction_type==='income'),sum=(rows,fn)=>rows.reduce((a,x)=>a+Number(fn(x)||0),0);
  const todayIncome=sum(incomeTx.filter(x=>x.transaction_date===today),x=>x.amount),monthIncome=sum(incomeTx.filter(x=>String(x.transaction_date).slice(0,7)===monthKey),x=>x.amount),yearIncome=sum(incomeTx.filter(x=>String(x.transaction_date).slice(0,4)===yearKey),x=>x.amount);
- const completedAppointments=appointments.filter(x=>x.status==='completed'&&Number(x.price)>0),avgCheck=completedAppointments.length?sum(completedAppointments,x=>x.price)/completedAppointments.length:(incomeTx.length?sum(incomeTx,x=>x.amount)/incomeTx.length:0),paidDebt=sum(payments,x=>x.amount_paid);
+ const completedAppointments=appointments.filter(x=>x.status==='completed'&&Number(x.price)>0),avgCheck=completedAppointments.length?sum(completedAppointments,x=>x.price)/completedAppointments.length:0,paidDebt=sum(payments,x=>x.amount_paid);
  const confirmedFuture=appointments.filter(x=>x.status==='confirmed'&&x.requested_date>=today&&Number(x.price)>0),pendingFuture=appointments.filter(x=>x.status==='pending'&&x.requested_date>=today&&Number(x.price)>0);
  const monthBooked=sum(confirmedFuture.filter(x=>String(x.requested_date).slice(0,7)===monthKey),x=>x.price),monthPending=sum(pendingFuture.filter(x=>String(x.requested_date).slice(0,7)===monthKey),x=>x.price);
  const nextDate=new Date();nextDate.setDate(1);nextDate.setMonth(nextDate.getMonth()+1);const nextMonthKey=localISO(nextDate).slice(0,7),nextBooked=sum(confirmedFuture.filter(x=>String(x.requested_date).slice(0,7)===nextMonthKey),x=>x.price),nextPending=sum(pendingFuture.filter(x=>String(x.requested_date).slice(0,7)===nextMonthKey),x=>x.price);
