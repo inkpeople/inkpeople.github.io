@@ -118,8 +118,8 @@ Deno.serve(async (req: Request) => {
         "&event_type=in.(session,correction,consult,student,model)&select=id,studio_id,client_id,event_date,event_time,event_type,name,note,studio:tm_studios!inner(owner_telegram_user_id,timezone),client:tm_clients(telegram_user_id,full_name)&limit=1000")
     ]);
     let visitChecked = 0, visitSent = 0, visitSkipped = 0, visitFailed = 0;
-    const masterUrl = "https://inkpeople.github.io/tattoo-manager-v2/?v=75";
-    const clientUrl = "https://inkpeople.github.io/tattoo-manager-v2/client.html?v=22";
+    const masterUrl = "https://tattoo-manager-recovery.onrender.com/?v=75";
+    const clientUrl = "https://tattoo-manager-recovery.onrender.com/client.html?v=22";
     async function sendVisitReminder(targetType: string, targetId: string, offset: number, role: string, chatId: number, message: string, confirmButton?: {text:string;callback_data:string}, actionButtons?: {text:string;callback_data:string}[]) {
       const claim = await db("tm_visit_reminder_log?on_conflict=target_type,target_id,offset_minutes,recipient_role,recipient_telegram_user_id", {
         method: "POST",
