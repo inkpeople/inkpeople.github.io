@@ -1,0 +1,3053 @@
+{
+  "captured_at": "2026-11-16",
+  "project_ref": "jgzzdsittnzomedvsspj",
+  "tables": [
+    {
+      "name": "public.tm_studios",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "owner_user_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "studio_name",
+          "type": "text",
+          "nullable": false,
+          "default": "'TATTOO MANAGER'::text"
+        },
+        {
+          "name": "artist_name",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "city",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "public_booking_enabled",
+          "type": "boolean",
+          "nullable": false,
+          "default": "true"
+        },
+        {
+          "name": "owner_telegram_user_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "timezone",
+          "type": "text",
+          "nullable": false,
+          "default": "'Asia/Novosibirsk'::text"
+        },
+        {
+          "name": "review_url",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "deposit_amount",
+          "type": "numeric",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "deposit_method",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "deposit_recipient",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "deposit_details",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_master_friendships_requested_by_studio_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "requested_by_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_studios_owner_user_id_fkey",
+          "source_table": "public.tm_studios",
+          "source_columns": [
+            "owner_user_id"
+          ],
+          "target_table": "auth.users",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_clients_studio_id_fkey",
+          "source_table": "public.tm_clients",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_appointments_studio_id_fkey",
+          "source_table": "public.tm_appointments",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_user_roles_studio_id_fkey",
+          "source_table": "public.tm_user_roles",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_user_profiles_preferred_studio_id_fkey",
+          "source_table": "public.tm_user_profiles",
+          "source_columns": [
+            "preferred_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_gallery_studio_id_fkey",
+          "source_table": "public.tm_client_gallery",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_link_tokens_studio_id_fkey",
+          "source_table": "public.tm_client_link_tokens",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_transactions_studio_id_fkey",
+          "source_table": "public.tm_finance_transactions",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_plans_studio_id_fkey",
+          "source_table": "public.tm_finance_installment_plans",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_payments_studio_id_fkey",
+          "source_table": "public.tm_finance_installment_payments",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_references_studio_id_fkey",
+          "source_table": "public.tm_client_references",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_calendar_events_studio_id_fkey",
+          "source_table": "public.tm_calendar_events",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_inventory_items_studio_id_fkey",
+          "source_table": "public.tm_inventory_items",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_inventory_movements_studio_id_fkey",
+          "source_table": "public.tm_inventory_movements",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_tasks_studio_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_projects_studio_id_fkey",
+          "source_table": "public.tm_projects",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_project_sessions_studio_id_fkey",
+          "source_table": "public.tm_project_sessions",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_message_queue_studio_id_fkey",
+          "source_table": "public.tm_client_message_queue",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_calendar_connections_studio_id_fkey",
+          "source_table": "public.tm_calendar_connections",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_apple_calendar_connections_studio_id_fkey",
+          "source_table": "public.tm_apple_calendar_connections",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_friendships_studio_low_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "studio_low_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_friendships_studio_high_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "studio_high_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_messages_sender_studio_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "sender_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_messages_recipient_studio_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "recipient_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_studio_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referral_visits_studio_id_fkey",
+          "source_table": "public.tm_referral_visits",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_clients",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "telegram_user_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "telegram_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "vk_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "threads_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "instagram_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "website_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "other_links",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "name": "referral_code",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_client_message_queue_client_id_fkey",
+          "source_table": "public.tm_client_message_queue",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_plans_client_id_fkey",
+          "source_table": "public.tm_finance_installment_plans",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_references_client_id_fkey",
+          "source_table": "public.tm_client_references",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_tasks_client_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_calendar_events_client_id_fkey",
+          "source_table": "public.tm_calendar_events",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_projects_client_id_fkey",
+          "source_table": "public.tm_projects",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_referrer_client_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referrer_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_clients_studio_id_fkey",
+          "source_table": "public.tm_clients",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_clients_user_id_fkey",
+          "source_table": "public.tm_clients",
+          "source_columns": [
+            "user_id"
+          ],
+          "target_table": "auth.users",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_appointments_client_id_fkey",
+          "source_table": "public.tm_appointments",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_gallery_client_id_fkey",
+          "source_table": "public.tm_client_gallery",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_link_tokens_client_id_fkey",
+          "source_table": "public.tm_client_link_tokens",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_transactions_client_id_fkey",
+          "source_table": "public.tm_finance_transactions",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referral_visits_referrer_client_id_fkey",
+          "source_table": "public.tm_referral_visits",
+          "source_columns": [
+            "referrer_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_referred_client_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referred_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_appointments",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "client_user_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "client_name",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_contact",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "project_type",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "body_placement",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "idea",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "requested_date",
+          "type": "date",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "requested_time",
+          "type": "time without time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text"
+        },
+        {
+          "name": "reschedule_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "client_telegram_user_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "client_username",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "proposed_date",
+          "type": "date",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "proposed_time",
+          "type": "time without time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "proposal_note",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "proposal_previous_status",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "duration_minutes",
+          "type": "integer",
+          "nullable": false,
+          "default": "120"
+        },
+        {
+          "name": "telegram_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "vk_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "threads_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "instagram_link",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "client_confirmation_required",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        },
+        {
+          "name": "deposit_rebooking_required",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        },
+        {
+          "name": "deposit_rebooking_requested_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_appointments_client_user_id_fkey",
+          "source_table": "public.tm_appointments",
+          "source_columns": [
+            "client_user_id"
+          ],
+          "target_table": "auth.users",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_tasks_appointment_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_referred_appointment_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referred_appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_reward_appointment_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "reward_appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_appointments_client_id_fkey",
+          "source_table": "public.tm_appointments",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_appointments_studio_id_fkey",
+          "source_table": "public.tm_appointments",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_user_profiles",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "first_name",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "last_name",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "preferred_studio_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "date_of_birth",
+          "type": "date",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "referral_code",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "telegram_user_id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_user_roles_telegram_user_id_fkey",
+          "source_table": "public.tm_user_roles",
+          "source_columns": [
+            "telegram_user_id"
+          ],
+          "target_table": "public.tm_user_profiles",
+          "target_columns": [
+            "telegram_user_id"
+          ]
+        },
+        {
+          "name": "tm_bot_registration_telegram_user_id_fkey",
+          "source_table": "public.tm_bot_registration",
+          "source_columns": [
+            "telegram_user_id"
+          ],
+          "target_table": "public.tm_user_profiles",
+          "target_columns": [
+            "telegram_user_id"
+          ]
+        },
+        {
+          "name": "tm_user_profiles_preferred_studio_id_fkey",
+          "source_table": "public.tm_user_profiles",
+          "source_columns": [
+            "preferred_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_user_roles",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_user_roles_studio_id_fkey",
+          "source_table": "public.tm_user_roles",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_user_roles_telegram_user_id_fkey",
+          "source_table": "public.tm_user_roles",
+          "source_columns": [
+            "telegram_user_id"
+          ],
+          "target_table": "public.tm_user_profiles",
+          "target_columns": [
+            "telegram_user_id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_bot_registration",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "step",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "draft",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "telegram_user_id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_bot_registration_telegram_user_id_fkey",
+          "source_table": "public.tm_bot_registration",
+          "source_columns": [
+            "telegram_user_id"
+          ],
+          "target_table": "public.tm_user_profiles",
+          "target_columns": [
+            "telegram_user_id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_bot_settings",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "setting_key",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "setting_value",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "setting_key"
+      ]
+    },
+    {
+      "name": "public.tm_client_gallery",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "file_path",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "caption",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_client_gallery_client_id_fkey",
+          "source_table": "public.tm_client_gallery",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_gallery_studio_id_fkey",
+          "source_table": "public.tm_client_gallery",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_client_link_tokens",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "token_hash",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "used_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "redeemed_by_telegram_user_id",
+          "type": "bigint",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_by_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_client_link_tokens_client_id_fkey",
+          "source_table": "public.tm_client_link_tokens",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_link_tokens_studio_id_fkey",
+          "source_table": "public.tm_client_link_tokens",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_finance_transactions",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "transaction_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "nullable": false,
+          "default": "'other'::text"
+        },
+        {
+          "name": "amount",
+          "type": "numeric",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "payment_method",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "transaction_date",
+          "type": "date",
+          "nullable": false,
+          "default": "CURRENT_DATE"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_finance_transactions_studio_id_fkey",
+          "source_table": "public.tm_finance_transactions",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_transactions_client_id_fkey",
+          "source_table": "public.tm_finance_transactions",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_finance_installment_plans",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_amount",
+          "type": "numeric",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "down_payment",
+          "type": "numeric",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "installments_count",
+          "type": "integer",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "frequency",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'active'::text"
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_finance_installment_payments_plan_id_fkey",
+          "source_table": "public.tm_finance_installment_payments",
+          "source_columns": [
+            "plan_id"
+          ],
+          "target_table": "public.tm_finance_installment_plans",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_plans_client_id_fkey",
+          "source_table": "public.tm_finance_installment_plans",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_plans_studio_id_fkey",
+          "source_table": "public.tm_finance_installment_plans",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_finance_installment_payments",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "plan_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "installment_number",
+          "type": "integer",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "amount_due",
+          "type": "numeric",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "amount_paid",
+          "type": "numeric",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "paid_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_finance_installment_payments_plan_id_fkey",
+          "source_table": "public.tm_finance_installment_payments",
+          "source_columns": [
+            "plan_id"
+          ],
+          "target_table": "public.tm_finance_installment_plans",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_finance_installment_payments_studio_id_fkey",
+          "source_table": "public.tm_finance_installment_payments",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_client_references",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "file_path",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_client_references_studio_id_fkey",
+          "source_table": "public.tm_client_references",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_references_client_id_fkey",
+          "source_table": "public.tm_client_references",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_calendar_events",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "event_date",
+          "type": "date",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "event_time",
+          "type": "time without time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "event_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "created_by_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_calendar_events_client_id_fkey",
+          "source_table": "public.tm_calendar_events",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_calendar_events_studio_id_fkey",
+          "source_table": "public.tm_calendar_events",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_inventory_items",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "nullable": false,
+          "default": "'Расходники'::text"
+        },
+        {
+          "name": "quantity",
+          "type": "numeric",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "nullable": false,
+          "default": "'шт'::text"
+        },
+        {
+          "name": "min_quantity",
+          "type": "numeric",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_inventory_items_studio_id_fkey",
+          "source_table": "public.tm_inventory_items",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_inventory_movements_item_id_fkey",
+          "source_table": "public.tm_inventory_movements",
+          "source_columns": [
+            "item_id"
+          ],
+          "target_table": "public.tm_inventory_items",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_inventory_movements",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "item_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "movement_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "quantity",
+          "type": "numeric",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "created_by_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_inventory_movements_item_id_fkey",
+          "source_table": "public.tm_inventory_movements",
+          "source_columns": [
+            "item_id"
+          ],
+          "target_table": "public.tm_inventory_items",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_inventory_movements_studio_id_fkey",
+          "source_table": "public.tm_inventory_movements",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_tasks",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "due_time",
+          "type": "time without time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "nullable": false,
+          "default": "'medium'::text"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text"
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "appointment_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_by_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "reminder_sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "reminder_claimed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_tasks_client_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_tasks_studio_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_tasks_appointment_id_fkey",
+          "source_table": "public.tm_tasks",
+          "source_columns": [
+            "appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_task_reminder_guard",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "boolean",
+          "nullable": false,
+          "default": "true"
+        },
+        {
+          "name": "secret_hash",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.tm_visit_reminder_log",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "target_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "target_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "offset_minutes",
+          "type": "integer",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "recipient_role",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "recipient_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.tm_projects",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "body_placement",
+          "type": "text",
+          "nullable": false,
+          "default": "''::text"
+        },
+        {
+          "name": "price",
+          "type": "numeric",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'new'::text"
+        },
+        {
+          "name": "images",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "completion_percent",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_project_sessions_project_id_fkey",
+          "source_table": "public.tm_project_sessions",
+          "source_columns": [
+            "project_id"
+          ],
+          "target_table": "public.tm_projects",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_projects_client_id_fkey",
+          "source_table": "public.tm_projects",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_projects_studio_id_fkey",
+          "source_table": "public.tm_projects",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_project_sessions",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "project_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "session_number",
+          "type": "integer",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "completed",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_project_sessions_studio_id_fkey",
+          "source_table": "public.tm_project_sessions",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_project_sessions_project_id_fkey",
+          "source_table": "public.tm_project_sessions",
+          "source_columns": [
+            "project_id"
+          ],
+          "target_table": "public.tm_projects",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_client_message_queue",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "message_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "target_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "target_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "scheduled_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_client_message_queue_studio_id_fkey",
+          "source_table": "public.tm_client_message_queue",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_client_message_queue_client_id_fkey",
+          "source_table": "public.tm_client_message_queue",
+          "source_columns": [
+            "client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_calendar_connections",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "owner_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "nullable": false,
+          "default": "'yandex'::text"
+        },
+        {
+          "name": "account_email",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "access_token_encrypted",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "token_expires_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "oauth_state_hash",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "oauth_state_expires_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "connected_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "studio_id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_calendar_connections_studio_id_fkey",
+          "source_table": "public.tm_calendar_connections",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_apple_calendar_connections",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "owner_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "account_email",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "credentials_encrypted",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "principal_url",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "calendar_home_url",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "connected_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "studio_id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_apple_calendar_connections_studio_id_fkey",
+          "source_table": "public.tm_apple_calendar_connections",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_master_friendships",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_low_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "studio_high_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "requested_by_studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_master_friendships_studio_high_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "studio_high_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_messages_friendship_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "friendship_id"
+          ],
+          "target_table": "public.tm_master_friendships",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_friendships_requested_by_studio_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "requested_by_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_friendships_studio_low_id_fkey",
+          "source_table": "public.tm_master_friendships",
+          "source_columns": [
+            "studio_low_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_master_messages",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "friendship_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "sender_studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "recipient_studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "read_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_master_messages_friendship_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "friendship_id"
+          ],
+          "target_table": "public.tm_master_friendships",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_messages_sender_studio_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "sender_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_master_messages_recipient_studio_id_fkey",
+          "source_table": "public.tm_master_messages",
+          "source_columns": [
+            "recipient_studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_referrals",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referrer_client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referrer_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referred_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referred_client_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "referred_appointment_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "reward_appointment_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "reward_amount",
+          "type": "numeric",
+          "nullable": false,
+          "default": "3000"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "'pending'::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "earned_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "redeemed_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default": null
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_referrals_referrer_client_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referrer_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_referred_client_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referred_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_referred_appointment_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "referred_appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_reward_appointment_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "reward_appointment_id"
+          ],
+          "target_table": "public.tm_appointments",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referrals_studio_id_fkey",
+          "source_table": "public.tm_referrals",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.tm_referral_visits",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "studio_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referrer_client_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referred_telegram_user_id",
+          "type": "bigint",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "referred_name",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "referred_username",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "tm_referral_visits_studio_id_fkey",
+          "source_table": "public.tm_referral_visits",
+          "source_columns": [
+            "studio_id"
+          ],
+          "target_table": "public.tm_studios",
+          "target_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "tm_referral_visits_referrer_client_id_fkey",
+          "source_table": "public.tm_referral_visits",
+          "source_columns": [
+            "referrer_client_id"
+          ],
+          "target_table": "public.tm_clients",
+          "target_columns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  ]
+}
