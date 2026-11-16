@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - backup/tattoo-manager-2026-11-16
   workflow_dispatch:
 
 permissions:
