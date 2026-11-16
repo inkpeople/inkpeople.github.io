@@ -1941,6 +1941,39 @@ function openClientMenu(id){
     <button class="btn btn-block" onclick="closeSheet();openMessageTemplates('${id}')">${icon('message')} Готовые сообщения</button>
     <button class="btn btn-block btn-danger" onclick="closeSheet();closeModal();deleteClient('${id}')">Удалить клиента</button></div>`);
 }
+function openReferralRedeem(clientId){
+  const client=S.clients.find(x=>String(x.id)===String(clientId));
+  if(!client){toast('Клиент не найден');return;}
+  const balance=Math.max(0,Number(client.referralPointsBalance||0));
+  openModal(`<div class="modal-header"><h3>Списание реферальных баллов</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="card" style="margin-bottom:10px"><div class="small dim">Доступный баланс</div><div class="profit" style="font-size:24px">${balance} баллов</div></div>
+    <form id="referralRedeemForm">
+      <label>Сколько списать</label><input id="referralRedeemAmount" type="number" min="1" max="${balance}" step="1" required ${balance<1?'disabled':''} placeholder="Количество баллов">
+      <label>Причина списания</label><input id="referralRedeemReason" type="text" maxlength="160" placeholder="Например, скидка на сеанс" ${balance<1?'disabled':''}>
+      <div class="row" style="margin-top:14px"><span></span><button class="btn btn-primary" type="submit" ${balance<1?'disabled':''}>Списать баллы</button></div>
+      ${balance<1?'<p class="small dim">У клиента пока нет доступных баллов.</p>':''}
+    </form>`);
+  const form=$('#referralRedeemForm');
+  if(!form)return;
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    const amount=Number($('#referralRedeemAmount').value);
+    const reason=($('#referralRedeemReason').value||'').trim()||'Списание баллов';
+    const current=Math.max(0,Number(client.referralPointsBalance||0));
+    if(!Number.isInteger(amount)||amount<1){toast('Укажи целое количество баллов');return;}
+    if(amount>current){toast('Недостаточно баллов. Текущий баланс: '+current);return;}
+    client.referralPointsBalance=current-amount;
+    client.referralPointsHistory=Array.isArray(client.referralPointsHistory)?client.referralPointsHistory:[];
+    client.referralPointsHistory.unshift({id:uid(),type:'redeem',amount,reason,date:new Date().toISOString(),balanceAfter:client.referralPointsBalance});
+    try{
+      await idbPut('clients',client);
+      addNotification('У клиента '+(client.name||'')+' списано '+amount+' реферальных баллов. Остаток: '+client.referralPointsBalance+'.','info','referral-'+client.id+'-'+Date.now());
+      closeModal();
+      openClient(client.id,'info');
+      toast('Списано '+amount+' баллов. Остаток: '+client.referralPointsBalance);
+    }catch(err){toast('Не удалось сохранить списание: '+err.message);}
+  };
+}
 function openClient(id,tab){
   const c=S.clients.find(x=>x.id===id); if(!c) return;
   const events=S.events.filter(e=>e.clientId===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -1998,6 +2031,12 @@ function openClient(id,tab){
     </div>
     <div class="cl-card"><div class="cl-lbl">История</div>
       <div class="cl-row"><span class="cl-ic">${icon('coin')}</span><span><b>${visits}</b> ${plr(visits,'визит','визита','визитов')} · <b>${finVal(fmtMoney(sum))}</b></span><span class="cl-ago dim">Средний чек · ${finVal(fmtMoney(avg))}</span></div>
+    </div>
+    <div class="cl-card">
+      <div class="row"><div class="cl-lbl" style="margin:0">Реферальные баллы</div><b>${Math.max(0,Number(c.referralPointsBalance||0))} баллов</b></div>
+      <div class="small dim" style="margin:6px 0 10px">Баланс клиента и история списаний.</div>
+      <button class="btn btn-primary btn-block" onclick="openReferralRedeem('${id}')">Списать баллы</button>
+      ${(Array.isArray(c.referralPointsHistory)&&c.referralPointsHistory.length)?'<div style="margin-top:10px">'+c.referralPointsHistory.slice(0,5).map(h=>'<div class="kv"><span>'+esc(h.reason||'Операция')+' · '+(h.date?fmtDate(h.date.slice(0,10)):'')+'</span><b style="color:'+(h.type==='redeem'?'#f87171':'#2ecc71')+'">'+(h.type==='redeem'?'-':'+')+Number(h.amount||0)+'</b></div>').join('')+'</div>':'<div class="small dim" style="margin-top:8px">Операций пока нет.</div>'}
     </div>
     <div class="cl-bottom">
       <button onclick="openClient('${id}','anketa')">${icon('consents')}<span>Анкета</span></button>
@@ -3253,6 +3292,12 @@ RENDERERS.finance=function(){
   const fcExpected=fcList.reduce((s,x)=>s+x.rest,0);
   window._finForecast=fcList;
   const fcLabel={day:'сегодня',week:'до конца недели',month:'до конца месяца',quarter:'до конца квартала',year:'до конца года'}[financePeriod]||'';
+  // Forecast from calendar bookings: exclude canceled/no-show and non-priced events.
+  const calendarIncomeEvents=periodEvts.filter(e=>!['cancelled','noshow'].includes(e.status)&&Number(e.cost||0)>0);
+  const calendarPlannedTotal=calendarIncomeEvents.reduce((sum,e)=>sum+Number(e.cost||0),0);
+  const calendarEarned=calendarIncomeEvents.filter(e=>e.status==='completed').reduce((sum,e)=>sum+Number(e.cost||0),0);
+  const calendarExpected=calendarPlannedTotal-calendarEarned;
+  const calendarBookings=calendarIncomeEvents.length;
 
   const granularity = financePeriod==='year' ? 'month' : financePeriod==='quarter' ? 'week' : 'day';
   const seriesRange = financePeriod==='all' ? periodRangeISO('year',0) : {start,end};
@@ -3266,6 +3311,10 @@ RENDERERS.finance=function(){
   <div class="fin-pair">
     <div class="fin-card inc">${icon('coin')}<div class="fl">Доход</div><div class="fv">${finVal(fmtMoney(income))}</div></div>
     <div class="fin-card exp">${icon('reports')}<div class="fl">Расходы</div><div class="fv">${finVal(fmtMoney(expense))}</div></div>
+  </div>
+  <div class="card" style="margin:10px 0 14px;border-color:var(--line-red)">
+    <div class="row"><div><div class="sec-label" style="margin:0">Плановый доход по календарю</div><div class="small dim">${calendarBookings} записей · завершено ${fmtMoney(calendarEarned)} · ожидается ${fmtMoney(calendarExpected)}</div></div><div class="profit" style="font-size:20px">${finVal(fmtMoney(calendarPlannedTotal))}</div></div>
+    <div class="small dim" style="margin-top:6px">Сумма стоимости всех активных и завершённых записей за выбранный период. Отменённые записи и неявки не учитываются.</div>
   </div>
   ${financePeriod!=='all'?`<div class="fin-forecast" onclick="openForecastSheet()">
     <div><div class="fl">Ещё заработаю ${fcLabel}</div><div class="fv">+${finVal(fmtMoney(fcExpected))}</div><div class="small dim">${fcList.length?fcList.length+' '+financePlural(fcList.length,'запись','записи','записей')+' с неоплаченным остатком':'Нет предстоящих записей с остатком'}</div></div>
