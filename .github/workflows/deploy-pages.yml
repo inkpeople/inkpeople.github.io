@@ -1,4 +1,4 @@
-name: Deploy INK.OS to GitHub Pages
+name: Deploy INK.OS to GitHub Pages (backup publish trigger)
 
 on:
   push:
