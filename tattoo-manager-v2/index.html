@@ -343,6 +343,33 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .event-agenda-panel .calendar-more-actions .calendar-extra-grid .danger-action{border-color:#633238!important;color:#f18b91!important}
 
 
+
+/* EVENT TYPE COLOR PULSE · calendar */
+@keyframes tmEventTypePulse{
+  0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--event-color) 34%,transparent),0 0 5px color-mix(in srgb,var(--event-color) 24%,transparent);filter:brightness(1)}
+  50%{box-shadow:0 0 0 1px color-mix(in srgb,var(--event-color) 78%,transparent),0 0 13px color-mix(in srgb,var(--event-color) 72%,transparent),0 0 22px color-mix(in srgb,var(--event-color) 30%,transparent);filter:brightness(1.3)}
+}
+.event-agenda-panel .event-type{
+  color:var(--event-color)!important;
+  border:1px solid color-mix(in srgb,var(--event-color) 72%,transparent)!important;
+  background:color-mix(in srgb,var(--event-color) 12%,#17171e)!important;
+  animation:tmEventTypePulse 1.8s ease-in-out infinite;
+}
+.event-agenda-panel .event-type i{
+  background:var(--event-color)!important;
+  box-shadow:0 0 7px var(--event-color);
+  animation:tmEventTypePulse 1.8s ease-in-out infinite;
+}
+.cal-legend .legend-dot,.cal-markers i,.timeline-allday,.timeline-event{
+  animation:tmEventTypePulse 1.8s ease-in-out infinite;
+}
+.event-agenda-panel .event-color{
+  box-shadow:0 0 8px var(--event-color),0 0 16px color-mix(in srgb,var(--event-color) 38%,transparent);
+  animation:tmEventTypePulse 1.8s ease-in-out infinite;
+}
+@media(prefers-reduced-motion:reduce){
+  .event-agenda-panel .event-type,.event-agenda-panel .event-type i,.cal-legend .legend-dot,.cal-markers i,.timeline-allday,.timeline-event,.event-agenda-panel .event-color{animation:none!important}
+}
 </style><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
