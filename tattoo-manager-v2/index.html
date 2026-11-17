@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="tm-version" content="105">
+<meta charset="utf-8"><meta name="tm-version" content="106">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09090c"><title>TATTOO MANAGER</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -484,6 +484,25 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .cal-day,.cal-empty{min-height:43px}
   .cal-day{border-radius:12px}
   .cal-legend{gap:9px 8px;font-size:10px}
+}
+
+/* CALENDAR EVENT DOTS · compact animated indicators */
+@keyframes tmCalendarDotPulse{
+  0%,100%{transform:scale(.82);opacity:.72;filter:brightness(.92);box-shadow:0 0 3px color-mix(in srgb,var(--event-color) 35%,transparent)}
+  50%{transform:scale(1.12);opacity:1;filter:brightness(1.22);box-shadow:0 0 0 2px color-mix(in srgb,var(--event-color) 18%,transparent),0 0 7px color-mix(in srgb,var(--event-color) 68%,transparent)}
+}
+.cal-markers{gap:4px;min-height:6px;align-items:center}
+.cal-markers i{
+  display:block!important;flex:0 0 5px!important;
+  width:5px!important;height:5px!important;min-width:5px!important;
+  border-radius:50%!important;
+  box-shadow:0 0 4px color-mix(in srgb,var(--event-color) 45%,transparent);
+  transform-origin:center;
+  animation:tmCalendarDotPulse 1.55s ease-in-out infinite!important;
+}
+.cal-day.selected .cal-markers i{animation-duration:1.25s!important}
+@media(prefers-reduced-motion:reduce){
+  .cal-markers i{animation:none!important;opacity:1;box-shadow:0 0 0 1px color-mix(in srgb,var(--event-color) 25%,transparent)}
 }
 </style><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <link rel="manifest" href="./manifest.webmanifest">
