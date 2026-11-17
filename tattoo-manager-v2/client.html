@@ -473,7 +473,39 @@ document.getElementById('createReferralLink')?.addEventListener('click',async fu
  }catch(e){demo('Не удалось создать ссылку: '+e.message)}
  finally{button.disabled=false;button.textContent='Создать реферальную ссылку'}
 });
-async function submitBooking(){const name=document.getElementById('name').value.trim();const contact=document.getElementById('contact').value.trim();const date=document.getElementById('date').value;const time=document.querySelector('.slot.active')?.textContent.trim();const studioId=document.getElementById('masterSelect').value;if(!studioId){demo('Сначала выберите мастера.');return}if(!name||!contact||!date||!time){demo('Заполните имя, контакт, дату и время.');return}const button=document.querySelector('#booking .primary');button.disabled=true;button.textContent='Отправляем…';try{await api({method:'POST',body:JSON.stringify({action:'create_booking',studio_id:studioId,client_name:name,client_contact:contact,project_type:document.getElementById('kind').value,body_placement:document.getElementById('zone').value,idea:document.getElementById('idea').value,requested_date:date,requested_time:time})});demo('Заявка отправлена мастеру! Ожидайте подтверждения.');show('home');await loadAppointments()}catch(e){demo(e.message.includes('NOT_CONFIGURED')?'Сервер ожидает безопасной настройки Telegram-ключа. Попробуйте позже.':e.message)}finally{button.disabled=false;button.textContent='Отправить заявку мастеру'}}
+async function submitBooking(){
+ const booking=document.getElementById('booking');
+ const value=id=>(booking?.querySelector('#'+id)?.value||'').trim();
+ const name=value('name');
+ const contact=value('contact');
+ const date=value('date');
+ const time=booking?.querySelector('#slots .slot.active')?.textContent?.replace(/\\s+/g,'').trim()||'';
+ const studioId=value('masterSelect');
+ const missing=[];
+ if(!name)missing.push('имя');
+ if(!contact)missing.push('контакт');
+ if(!date)missing.push('дату');
+ if(!time)missing.push('время');
+ if(!studioId){demo('Сначала выберите мастера.');return}
+ if(missing.length){demo('Не удалось прочитать: '+missing.join(', ')+'. Проверьте поля и выберите время ещё раз.');return}
+ const button=booking.querySelector('.primary');
+ if(!button){demo('Не найдена кнопка отправки заявки.');return}
+ button.disabled=true;button.textContent='Отправляем…';
+ try{
+  const result=await api({method:'POST',body:JSON.stringify({
+   action:'create_booking',studio_id:studioId,client_name:name,client_contact:contact,
+   project_type:value('kind'),body_placement:value('zone'),idea:value('idea'),
+   requested_date:date,requested_time:time
+  })});
+  if(!result||result.ok===false)throw new Error(result?.error||'Не удалось сохранить заявку');
+  demo('Заявка отправлена мастеру! Ожидайте подтверждения.');
+  show('home');await loadAppointments();
+ }catch(e){
+  console.error('TATTOO MANAGER BOOKING ERROR',e);
+  const message=String(e?.message||e);
+  demo(message.includes('402')?'Сервер базы данных временно отклоняет запросы (HTTP 402). Заявка не сохранена.':message.includes('NOT_CONFIGURED')?'Сервер ожидает безопасной настройки Telegram-ключа. Попробуйте позже.':message);
+ }finally{button.disabled=false;button.textContent='Отправить заявку мастеру'}
+}
 let availableStudios=[];
 function updateStudioDisplay(){const select=document.getElementById('masterSelect');const studio=availableStudios.find(x=>x.id===select.value)||null;const title=document.getElementById('homeMasterName');const city=document.getElementById('homeMasterCity');if(studio){title.textContent=studio.artist_name||studio.studio_name||'Мастер';city.textContent=[studio.city,studio.studio_name].filter(Boolean).join(' · ')}else{title.textContent='Пока нет доступных мастеров';city.textContent='Список мастеров появится после регистрации'}}
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='masterSelect')updateStudioDisplay()});
