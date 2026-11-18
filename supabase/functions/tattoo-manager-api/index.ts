@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type, x-telegram-init-data, x-tm-role, x-tm-skip-photos","Access-Control-Allow-Methods":"GET, POST, PATCH, OPTIONS"};
+import postgres from "npm:postgres@3.4.5";
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type, x-telegram-init-data, x-tm-role, x-tm-skip-photos","Access-Control-Allow-Methods":"GET, POST, PATCH, DELETE, OPTIONS"};
 function out(data:unknown,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors,"Content-Type":"application/json"}})}
 async function telegramUser(initData:string){
  const token=Deno.env.get("TELEGRAM_BOT_TOKEN");if(!token)throw new Error("TELEGRAM_BOT_TOKEN_NOT_CONFIGURED");
@@ -15,8 +16,38 @@ async function telegramUser(initData:string){
  const raw=p.get("user");if(!raw)throw new Error("TELEGRAM_USER_MISSING");return JSON.parse(raw) as {id:number;first_name?:string;username?:string};
 }
 const base=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const MASTER_APP_URL="https://tattoo-manager-recovery.onrender.com/?v=83";const CLIENT_APP_URL="https://tattoo-manager-recovery.onrender.com/client.html?v=27";
-async function notifyTelegram(chatId:number|string|null|undefined,text:string,recipientRole?:"master"|"client"){const token=Deno.env.get("TELEGRAM_BOT_TOKEN")||"";if(!token||!chatId)return false;try{let role=recipientRole;if(!role){const owners=await db("tm_studios?owner_telegram_user_id=eq."+encodeURIComponent(String(chatId))+"&select=id");role=owners?.length?"master":"client";}const url=role==="master"?MASTER_APP_URL:CLIENT_APP_URL;const button=role==="master"?"Открыть кабинет мастера":"Открыть личный кабинет";const r=await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:chatId,text,disable_web_page_preview:true,reply_markup:{inline_keyboard:[[{text:button,web_app:{url}}]]}})});const j=await r.json();if(!j?.ok)console.warn("TELEGRAM_NOTIFY_REJECTED",j?.description||"unknown");return !!j?.ok;}catch(err){console.error("TELEGRAM_NOTIFY_FAILED",err);return false;}}
+let directSql:ReturnType<typeof postgres>|null=null;function pg(){if(!directSql){const url=Deno.env.get("DATABASE_URL");if(!url)throw new Error("DATABASE_URL_MISSING");directSql=postgres(url,{ssl:"require",max:2,idle_timeout:10,connect_timeout:10});}return directSql;}
+const MASTER_APP_URL="https://inkpeople.github.io/tattoo-manager-v2/?v=89";const CLIENT_APP_URL="https://inkpeople.github.io/tattoo-manager-v2/client.html?v=75";
+
+async function decryptVkToken(ciphertext:string){
+ const raw=Deno.env.get("SOCIAL_TOKEN_ENCRYPTION_KEY");if(!raw)throw new Error("SOCIAL_TOKEN_ENCRYPTION_KEY_NOT_CONFIGURED");
+ const bytes=Uint8Array.from(atob(raw),c=>c.charCodeAt(0));if(bytes.length!==32)throw new Error("SOCIAL_TOKEN_ENCRYPTION_KEY_INVALID");
+ const k=await crypto.subtle.importKey("raw",bytes,"AES-GCM",false,["decrypt"]);const packed=Uint8Array.from(atob(ciphertext),c=>c.charCodeAt(0));
+ const clear=await crypto.subtle.decrypt({name:"AES-GCM",iv:packed.slice(0,12)},k,packed.slice(12));return new TextDecoder().decode(clear);
+}
+async function notifyClient(studioId:string,clientId:string|null,telegramId:number|null|undefined,text:string){
+ if(!clientId)return false;
+ const clients=await db("tm_clients?id=eq."+encodeURIComponent(clientId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=telegram_user_id,vk_user_id,preferred_notification_channel,notifications_enabled");
+ const c=clients?.[0];if(!c||c.notifications_enabled!==true)return false;
+ const channel=String(c.preferred_notification_channel||"telegram");
+ if(channel==="vk"){
+  if(!c.vk_user_id)throw new Error("VK_CLIENT_ID_MISSING");
+  const rows=await pg()`select access_token_ciphertext from private.tm_social_vk_communities where studio_id=${studioId}::uuid and status=${"connected"} order by created_at desc limit 1`;
+  if(!rows?.length)throw new Error("VK_COMMUNITY_NOT_CONNECTED");
+  const token=await decryptVkToken(String(rows[0].access_token_ciphertext));
+  const params=new URLSearchParams({peer_id:String(c.vk_user_id),random_id:String(crypto.getRandomValues(new Uint32Array(1))[0]),message:text,access_token:token,v:"5.199"});
+  const response=await fetch("https://api.vk.com/method/messages.send?"+params.toString());const result=await response.json().catch(()=>({}));
+  if(!response.ok||result.error)throw new Error("VK_SEND_FAILED:"+(result.error?.error_msg||response.status));
+  return true;
+ }
+ if(channel==="telegram"){
+  const chat=Number(c.telegram_user_id||telegramId||0);if(!chat)throw new Error("TELEGRAM_CLIENT_ID_MISSING");
+  return await notifyTelegram(chat,text,"client");
+ }
+ if(channel==="none")return false;
+ throw new Error("CLIENT_NOTIFICATION_CHANNEL_INVALID");
+}
+async function notifyTelegram(chatId:number|string|null|undefined,text:string,recipientRole?:"master"|"client"){const token=Deno.env.get("TELEGRAM_BOT_TOKEN")||"";if(!token||!chatId)return false;try{let role=recipientRole;if(!role){const owners=await db("tm_studios?owner_telegram_user_id=eq."+encodeURIComponent(String(chatId))+"&select=id");role=owners?.length?"master":"client";}const url=role==="master"?MASTER_APP_URL:CLIENT_APP_URL;const button=role==="master"?"Открыть кабинет мастера":"Открыть личный кабинет";const r=await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:chatId,text:text.replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\\r/g,"\n"),disable_web_page_preview:true,reply_markup:{inline_keyboard:[[{text:button,web_app:{url}}]]}})});const j=await r.json();if(!j?.ok)console.warn("TELEGRAM_NOTIFY_REJECTED",j?.description||"unknown");return !!j?.ok;}catch(err){console.error("TELEGRAM_NOTIFY_FAILED",err);return false;}}
 const telegramPhotoCache=new Map<number,{expiresAt:number,value:string|null}>();
 async function cachedTelegramPhoto(userId:number,token:string):Promise<string|null>{const cached=telegramPhotoCache.get(userId);if(cached&&cached.expiresAt>Date.now())return cached.value;const value=await telegramPhoto(userId,token);telegramPhotoCache.set(userId,{expiresAt:Date.now()+12*60*60*1000,value});return value;}
 async function telegramPhoto(userId:number,token:string):Promise<string|null>{try{const pr=await fetch("https://api.telegram.org/bot"+token+"/getUserProfilePhotos?user_id="+userId+"&limit=1");if(!pr.ok)return null;const pj=await pr.json();const sizes=pj?.result?.photos?.[0];if(!pj.ok||!sizes?.length)return null;const best=sizes[sizes.length-1];const fr=await fetch("https://api.telegram.org/bot"+token+"/getFile?file_id="+encodeURIComponent(best.file_id));const fj=await fr.json();const filePath=fj?.result?.file_path;if(!fj.ok||!filePath)return null;const imageResponse=await fetch("https://api.telegram.org/file/bot"+token+"/"+filePath);if(!imageResponse.ok)return null;const bytes=new Uint8Array(await imageResponse.arrayBuffer());if(bytes.length>500000)return null;let binary="";for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));const mime=imageResponse.headers.get("content-type")||"image/jpeg";return "data:"+mime+";base64,"+btoa(binary)}catch{return null}}
@@ -48,6 +79,13 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
  const user=await telegramUser(req.headers.get("x-telegram-init-data")||"");
  if(req.method==="POST"){
   const b=await req.json();
+  if(b.action==="get_social_connections"){
+   const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
+   if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
+   const studioId=String(own[0].id);
+   const rows=await db("tm_social_connections?studio_id=eq."+encodeURIComponent(studioId)+"&select=provider,status,account_name,connected_at,last_checked_at,last_error,granted_scopes&order=provider.asc");
+   return out({ok:true,connections:rows||[]});
+  }
   if(b.action==="get_client_referral_link"){
    if(req.headers.get("x-tm-role")!=="client")return out({error:"CLIENT_ROLE_REQUIRED"},403);
    const studioId=String(b.studio_id||"");if(!studioId)return out({error:"STUDIO_REQUIRED"},400);
@@ -70,18 +108,54 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    const link="https://t.me/TattooManagerAppBot?start=studio_"+studios[0].slug+"_ref_"+code;
    return out({ok:true,link,code,discount_amount:3000});
   }
+  if(b.action==="award_referral_reward"){
+   const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
+   if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
+   const studioId=String(own[0].id),referralId=String(b.referral_id||""),amount=Number(b.amount);
+   if(!referralId)return out({error:"REFERRAL_ID_REQUIRED"},400);
+   if(!Number.isFinite(amount)||amount<=0||amount>100000000)return out({error:"INVALID_REWARD_AMOUNT"},400);
+   const pending=await db("tm_referrals?id=eq."+encodeURIComponent(referralId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&status=eq.pending&select=id,referrer_client_id,referrer_telegram_user_id,referred_client_id,referred_telegram_user_id,reward_amount");
+   if(!pending?.length)return out({error:"REFERRAL_NOT_PENDING"},409);
+   const referral=pending[0];
+   const inviter=await db("tm_clients?id=eq."+encodeURIComponent(String(referral.referrer_client_id))+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id,full_name,telegram_user_id");
+   if(!inviter?.length)return out({error:"REFERRER_NOT_FOUND"},404);
+   const updated=await db("tm_referrals?id=eq."+encodeURIComponent(referralId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&status=eq.pending",{method:"PATCH",body:JSON.stringify({status:"earned",reward_amount:amount,earned_at:new Date().toISOString()})});
+   if(!updated?.length)return out({error:"REFERRAL_ALREADY_PROCESSED"},409);
+   const earned=await db("tm_referrals?studio_id=eq."+encodeURIComponent(studioId)+"&referrer_client_id=eq."+encodeURIComponent(String(referral.referrer_client_id))+"&status=eq.earned&select=reward_amount");
+   const transactions=await db("tm_referral_transactions?studio_id=eq."+encodeURIComponent(studioId)+"&client_id=eq."+encodeURIComponent(String(referral.referrer_client_id))+"&select=amount,transaction_type");
+   const balance=Math.max(0,(earned||[]).reduce((sum:number,x:any)=>sum+Number(x.reward_amount||0),0)+(transactions||[]).filter((x:any)=>x.transaction_type==="credited").reduce((sum:number,x:any)=>sum+Number(x.amount||0),0)-(transactions||[]).filter((x:any)=>x.transaction_type==="redeemed").reduce((sum:number,x:any)=>sum+Number(x.amount||0),0));
+   if(referral.referrer_telegram_user_id)await notifyTelegram(Number(referral.referrer_telegram_user_id),"🎁 Вам начислены реферальные баллы за приглашённого клиента: "+Math.round(amount).toLocaleString("ru-RU")+" ₽. Текущий баланс: "+Math.round(balance).toLocaleString("ru-RU")+" ₽.","client");
+   return out({ok:true,credited_amount:amount,balance});
+  }
+  if(b.action==="credit_referral_balance"){
+   const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
+   if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
+   const studioId=String(own[0].id),clientId=String(b.client_id||""),amount=Number(b.amount),note=String(b.note||"Начисление мастером").trim().slice(0,180);
+   if(!clientId)return out({error:"CLIENT_ID_REQUIRED"},400);
+   if(!Number.isFinite(amount)||amount<=0||amount>100000000)return out({error:"INVALID_CREDIT_AMOUNT"},400);
+   const client=await db("tm_clients?id=eq."+encodeURIComponent(clientId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id,telegram_user_id,full_name");
+   if(!client?.length)return out({error:"CLIENT_NOT_FOUND"},404);
+   const rows=await db("tm_referral_transactions",{method:"POST",body:JSON.stringify([{studio_id:studioId,client_id:clientId,transaction_type:"credited",amount,note}])});
+   if(!rows?.length)return out({error:"CREDIT_FAILED"},500);
+   const earned=await db("tm_referrals?studio_id=eq."+encodeURIComponent(studioId)+"&referrer_client_id=eq."+encodeURIComponent(clientId)+"&status=eq.earned&select=reward_amount");
+   const transactions=await db("tm_referral_transactions?studio_id=eq."+encodeURIComponent(studioId)+"&client_id=eq."+encodeURIComponent(clientId)+"&select=amount,transaction_type");
+   const balance=Math.max(0,(earned||[]).reduce((sum:number,x:any)=>sum+Number(x.reward_amount||0),0)+(transactions||[]).filter((x:any)=>x.transaction_type==="credited").reduce((sum:number,x:any)=>sum+Number(x.amount||0),0)-(transactions||[]).filter((x:any)=>x.transaction_type==="redeemed").reduce((sum:number,x:any)=>sum+Number(x.amount||0),0));
+   if(client[0].telegram_user_id)await notifyTelegram(Number(client[0].telegram_user_id),"🎁 Вам начислены бонусы мастером: "+Math.round(amount).toLocaleString("ru-RU")+" ₽. Причина: "+(note||"не указана")+". Текущий баланс: "+Math.round(balance).toLocaleString("ru-RU")+" ₽.","client");
+   return out({ok:true,credited_amount:amount,balance});
+  }
   if(b.action==="redeem_referral_discount"){
    const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
    if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
    const studioId=String(own[0].id),clientId=String(b.client_id||"");
    if(!clientId)return out({error:"CLIENT_ID_REQUIRED"},400);
-   const client=await db("tm_clients?id=eq."+encodeURIComponent(clientId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id");
+   const client=await db("tm_clients?id=eq."+encodeURIComponent(clientId)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id,telegram_user_id,full_name");
    if(!client?.length)return out({error:"CLIENT_NOT_FOUND"},404);
-   const rewards=await db("tm_referrals?studio_id=eq."+studioId+"&referrer_client_id=eq."+encodeURIComponent(clientId)+"&status=eq.earned&select=id,reward_amount&order=earned_at.asc&limit=1");
-   if(!rewards?.length)return out({error:"NO_AVAILABLE_REFERRAL_DISCOUNT"},409);
-   const redeemed=await db("tm_referrals?id=eq."+encodeURIComponent(rewards[0].id)+"&status=eq.earned",{method:"PATCH",body:JSON.stringify({status:"redeemed",redeemed_at:new Date().toISOString()})});
-   if(!redeemed?.length)return out({error:"REFERRAL_DISCOUNT_ALREADY_USED"},409);
-   return out({ok:true,redeemed_amount:Number(rewards[0].reward_amount)||3000});
+   const amount=Number(b.amount);
+   if(!Number.isFinite(amount)||amount<=0||amount>100000000)return out({error:"INVALID_REDEMPTION_AMOUNT"},400);
+   const result=await db("rpc/tm_redeem_referral_balance",{method:"POST",body:JSON.stringify({p_studio_id:studioId,p_client_id:clientId,p_amount:amount})});
+   const balance=Number(result?.balance)||0;
+   if(client[0].telegram_user_id)await notifyTelegram(Number(client[0].telegram_user_id),"🎁 Мастер списал с вашего реферального баланса: "+Math.round(amount).toLocaleString("ru-RU")+" ₽. Остаток: "+Math.round(balance).toLocaleString("ru-RU")+" ₽.","client");
+   return out({ok:true,redeemed_amount:amount,balance});
   }
   if(["search_masters","find_masters_by_contacts","list_master_friends","send_master_friend_request","list_master_chats","get_master_chat","send_master_message","respond_master_friend_request","remove_master_friend","get_master_public_profile","get_my_master_portfolio","add_master_portfolio_photo","delete_master_portfolio_photo"].includes(String(b.action||""))){
    const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
@@ -175,7 +249,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
     const recipientTelegramId=recipient?.[0]?.owner_telegram_user_id;
     if(recipientTelegramId){
      const preview=body.length>700?body.slice(0,697)+"…":body;
-     await notifyTelegram(String(recipientTelegramId),"💬 Новое сообщение от мастера «"+(sender?.artist_name||sender?.studio_name||"Мастер")+"»:\\n\\n"+preview,"master");
+     await notifyTelegram(String(recipientTelegramId),"💬 Новое сообщение от мастера «"+(sender?.artist_name||sender?.studio_name||"Мастер")+"»:\n\n"+preview,"master");
     }
     return out({ok:true,message:inserted?.[0]||null});
    }
@@ -289,7 +363,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&reschedule_count=eq."+Number(ap.reschedule_count||0),{method:"PATCH",body:JSON.stringify({requested_date:date,requested_time:time,client_telegram_user_id:user.id,reschedule_count:Number(ap.reschedule_count||0)+1,updated_at:new Date().toISOString()})});
    if(!rows?.length)return out({error:"RESCHEDULE_CONFLICT"},409);
    const studio=await db("tm_studios?id=eq."+encodeURIComponent(ap.studio_id)+"&select=owner_telegram_user_id");
-   if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,"🔁 Клиент перенёс сеанс самостоятельно\\n"+ap.client_name+"\\nНовая дата: "+date+" в "+time+"\\nИспользовано переносов: "+(Number(ap.reschedule_count||0)+1)+"/3","master");
+   if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,"🔁 Клиент перенёс сеанс самостоятельно\n"+ap.client_name+"\nНовая дата: "+date+" в "+time+"\nИспользовано переносов: "+(Number(ap.reschedule_count||0)+1)+"/3","master");
    return out({ok:true,appointment:rows[0]});
   }
   if(b.action==="client_request_deposit_rebooking"){
@@ -303,7 +377,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    const st=await db("tm_studios?id=eq."+encodeURIComponent(ap.studio_id)+"&select=deposit_amount,deposit_method,deposit_recipient,deposit_details,owner_telegram_user_id");
    const studio=st?.[0];if(!studio||!Number(studio.deposit_amount)||!studio.deposit_method||!studio.deposit_recipient||!studio.deposit_details)return out({error:"MASTER_DEPOSIT_NOT_CONFIGURED"},409);
    await db("tm_appointments?id=eq."+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify({deposit_rebooking_required:true,deposit_rebooking_requested_at:new Date().toISOString(),client_telegram_user_id:user.id,updated_at:new Date().toISOString()})});
-   const paymentText="💳 Повторная бронь сеанса\\nСумма: "+studio.deposit_amount+" ₽\\nСпособ: "+studio.deposit_method+"\\nПолучатель: "+studio.deposit_recipient+"\\nРеквизиты: "+studio.deposit_details+"\\n\\nПосле перевода дождитесь подтверждения мастера. Не отправляйте данные карты в ответ.";
+   const paymentText="💳 Повторная бронь сеанса\nСумма: "+studio.deposit_amount+" ₽\nСпособ: "+studio.deposit_method+"\nПолучатель: "+studio.deposit_recipient+"\nРеквизиты: "+studio.deposit_details+"\n\nПосле перевода дождитесь подтверждения мастера. Не отправляйте данные карты в ответ.";
    if(studio.owner_telegram_user_id)await notifyTelegram(studio.owner_telegram_user_id,"💳 Клиент запросил повторную бронь после исчерпания лимита переносов: "+ap.client_name+" · "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5),"master");
    await notifyTelegram(user.id,paymentText,"client");
    return out({ok:true,payment:{amount:studio.deposit_amount,method:studio.deposit_method,recipient:studio.deposit_recipient,details:studio.deposit_details}});
@@ -315,7 +389,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    if(!owned)return out({error:"APPOINTMENT_NOT_OWNED_BY_CLIENT"},403);if(!["confirmed","pending"].includes(ap.status))return out({error:"APPOINTMENT_NOT_ACTIVE"},409);
    const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&status=in.(confirmed,pending)",{method:"PATCH",body:JSON.stringify({status:"cancelled",updated_at:new Date().toISOString()})});if(!rows?.length)return out({error:"CANCEL_CONFLICT"},409);
    await db("tm_referrals?referred_appointment_id=eq."+encodeURIComponent(id)+"&status=eq.pending",{method:"PATCH",body:JSON.stringify({status:"cancelled"})});
-   const st=await db("tm_studios?id=eq."+encodeURIComponent(ap.studio_id)+"&select=owner_telegram_user_id");if(st?.[0]?.owner_telegram_user_id)await notifyTelegram(st[0].owner_telegram_user_id,"❌ Клиент отменил сеанс. Бронь сгорает.\\n"+ap.client_name+" · "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5),"master");
+   const st=await db("tm_studios?id=eq."+encodeURIComponent(ap.studio_id)+"&select=owner_telegram_user_id");if(st?.[0]?.owner_telegram_user_id)await notifyTelegram(st[0].owner_telegram_user_id,"❌ Клиент отменил сеанс. Бронь сгорает.\n"+ap.client_name+" · "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5),"master");
    return out({ok:true});
   }
   if(b.action==="master_confirm_deposit_rebooking"){
@@ -411,7 +485,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
     return out({ok:true,project:rows?.[0]||null});
    }
   }
-  if(b.action==="propose_booking_time"){const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);const studioId=own[0].id,id=String(b.id||""),date=String(b.proposed_date||""),time=String(b.proposed_time||""),note=String(b.proposal_note||"").trim();if(!id||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time)||note.length>1000)return out({error:"INVALID_PROPOSAL_FIELDS"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+studioId+"&select=*");if(!found?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);const ap=found[0];if(!["pending","confirmed"].includes(ap.status))return out({error:"BOOKING_CANNOT_BE_PROPOSED"},409);if(Number(ap.reschedule_count||0)>=3)return out({error:"RESCHEDULE_LIMIT_REACHED"},409);const conflicts=await scheduleConflictsServer(studioId,date,time,Number(ap.duration_minutes)||120,id);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+studioId,{method:"PATCH",body:JSON.stringify({status:"reschedule_pending",proposal_previous_status:ap.status,proposed_date:date,proposed_time:time,proposal_note:note,updated_at:new Date().toISOString()})});if(ap.client_telegram_user_id)await notifyTelegram(ap.client_telegram_user_id,"🕒 Мастер предлагает другое время записи\\nПервоначально: "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5)+"\\nНовое предложение: "+date+" в "+time+(note?"\\nКомментарий: "+note:"")+"\\n\\nОткройте личный кабинет и примите предложение или откажитесь.");return out({ok:true,appointment:rows?.[0]||null});}
+  if(b.action==="propose_booking_time"){const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);const studioId=own[0].id,id=String(b.id||""),date=String(b.proposed_date||""),time=String(b.proposed_time||""),note=String(b.proposal_note||"").trim();if(!id||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time)||note.length>1000)return out({error:"INVALID_PROPOSAL_FIELDS"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+studioId+"&select=*");if(!found?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);const ap=found[0];if(!["pending","confirmed"].includes(ap.status))return out({error:"BOOKING_CANNOT_BE_PROPOSED"},409);if(Number(ap.reschedule_count||0)>=3)return out({error:"RESCHEDULE_LIMIT_REACHED"},409);const conflicts=await scheduleConflictsServer(studioId,date,time,Number(ap.duration_minutes)||120,id);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+studioId,{method:"PATCH",body:JSON.stringify({status:"reschedule_pending",proposal_previous_status:ap.status,proposed_date:date,proposed_time:time,proposal_note:note,updated_at:new Date().toISOString()})});if(ap.client_telegram_user_id)await notifyTelegram(ap.client_telegram_user_id,"🕒 Мастер предлагает другое время записи\nПервоначально: "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5)+"\nНовое предложение: "+date+" в "+time+(note?"\nКомментарий: "+note:"")+"\n\nОткройте личный кабинет и примите предложение или откажитесь.","client");return out({ok:true,appointment:rows?.[0]||null});}
   if(b.action==="respond_booking_confirmation"){
    if(req.headers.get("x-tm-role")!=="client")return out({error:"CLIENT_ROLE_REQUIRED"},403);
    const id=String(b.id||""),decision=String(b.decision||"");
@@ -433,7 +507,9 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,decision==="confirm"?"✅ Клиент подтвердил запись: "+ap.client_name+" · "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5):"↩️ Клиент не сможет прийти: "+ap.client_name+" · "+ap.requested_date+" в "+String(ap.requested_time).slice(0,5),"master");
    return out({ok:true,appointment:rows[0]});
   }
-  if(b.action==="respond_booking_proposal"){if(req.headers.get("x-tm-role")!=="client")return out({error:"CLIENT_ROLE_REQUIRED"},403);const id=String(b.id||""),decision=String(b.decision||"");if(!id||!["accept","decline"].includes(decision))return out({error:"INVALID_PROPOSAL_RESPONSE"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&client_telegram_user_id=eq."+user.id+"&status=eq.reschedule_pending&select=*");if(!found?.length)return out({error:"PROPOSAL_NOT_FOUND"},404);const ap=found[0];if(decision==="accept"){const conflicts=await scheduleConflictsServer(ap.studio_id,String(ap.proposed_date),String(ap.proposed_time).slice(0,5),Number(ap.duration_minutes)||120,String(ap.id));if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);}const patch=decision==="accept"?{requested_date:ap.proposed_date,requested_time:ap.proposed_time,status:"confirmed",reschedule_count:Number(ap.reschedule_count||0)+1,proposal_previous_status:null,proposed_date:null,proposed_time:null,proposal_note:null,updated_at:new Date().toISOString()}:{status:ap.proposal_previous_status==="confirmed"?"confirmed":"pending",proposal_previous_status:null,proposed_date:null,proposed_time:null,proposal_note:null,updated_at:new Date().toISOString()};const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&client_telegram_user_id=eq."+user.id,{method:"PATCH",body:JSON.stringify(patch)});const studio=await db("tm_studios?id=eq."+ap.studio_id+"&select=owner_telegram_user_id");if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,decision==="accept"?"✅ Клиент принял предложенное время: "+ap.client_name+" · "+ap.proposed_date+" в "+String(ap.proposed_time).slice(0,5):"↩️ Клиент отклонил предложенное время: "+ap.client_name);return out({ok:true,appointment:rows?.[0]||null});}
+  if(b.action==="client_counter_propose_booking_time"){if(req.headers.get("x-tm-role")!=="client")return out({error:"CLIENT_ROLE_REQUIRED"},403);const id=String(b.id||""),date=String(b.date||""),time=String(b.time||"").slice(0,5);if(!id||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)||!/^[0-9]{2}:[0-9]{2}$/.test(time))return out({error:"INVALID_RESCHEDULE_DATA"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&status=eq.reschedule_pending&select=*");if(!found?.length)return out({error:"PROPOSAL_NOT_FOUND"},404);const ap=found[0];let owned=Number(ap.client_telegram_user_id)===user.id;if(!owned&&ap.client_id){const linked=await db("tm_clients?id=eq."+encodeURIComponent(ap.client_id)+"&studio_id=eq."+encodeURIComponent(ap.studio_id)+"&telegram_user_id=eq."+user.id+"&select=id");owned=!!linked?.length;}if(!owned)return out({error:"APPOINTMENT_NOT_OWNED_BY_CLIENT"},403);const conflicts=await scheduleConflictsServer(ap.studio_id,date,time,Number(ap.duration_minutes)||120,id);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&status=eq.reschedule_pending",{method:"PATCH",body:JSON.stringify({client_proposed_date:date,client_proposed_time:time,updated_at:new Date().toISOString()})});const studio=await db("tm_studios?id=eq."+encodeURIComponent(ap.studio_id)+"&select=owner_telegram_user_id");if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,"🗓 Клиент предлагает другое время\n"+ap.client_name+"\nДата: "+date+" · "+time,"master");return out({ok:true,appointment:rows?.[0]||null});}
+if(b.action==="master_respond_client_counterproposal"){const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);const id=String(b.id||""),decision=String(b.decision||"");if(!id||!["accept","decline"].includes(decision))return out({error:"INVALID_COUNTERPROPOSAL_RESPONSE"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+own[0].id+"&status=eq.reschedule_pending&select=*");if(!found?.length||!found[0].client_proposed_date||!found[0].client_proposed_time)return out({error:"COUNTERPROPOSAL_NOT_FOUND"},404);const ap=found[0];if(decision==="accept"){const conflicts=await scheduleConflictsServer(ap.studio_id,String(ap.client_proposed_date),String(ap.client_proposed_time).slice(0,5),Number(ap.duration_minutes)||120,id);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);}const patch=decision==="accept"?{requested_date:ap.client_proposed_date,requested_time:ap.client_proposed_time,status:"confirmed",reschedule_count:Number(ap.reschedule_count||0)+1}:{status:ap.proposal_previous_status==="confirmed"?"confirmed":"pending"};patch.client_proposed_date=null;patch.client_proposed_time=null;patch.proposal_previous_status=null;patch.proposed_date=null;patch.proposed_time=null;patch.proposal_note=null;patch.updated_at=new Date().toISOString();const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+own[0].id,{method:"PATCH",body:JSON.stringify(patch)});if(ap.client_telegram_user_id)await notifyTelegram(ap.client_telegram_user_id,decision==="accept"?"✅ Мастер подтвердил предложенное вами время: "+String(ap.client_proposed_date)+" · "+String(ap.client_proposed_time).slice(0,5):"Мастер не смог принять предложенное время. Свяжитесь с мастером, чтобы выбрать другое.","client");return out({ok:true,appointment:rows?.[0]||null});}
+if(b.action==="respond_booking_proposal"){if(req.headers.get("x-tm-role")!=="client")return out({error:"CLIENT_ROLE_REQUIRED"},403);const id=String(b.id||""),decision=String(b.decision||"");if(!id||!["accept","decline"].includes(decision))return out({error:"INVALID_PROPOSAL_RESPONSE"},400);const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&client_telegram_user_id=eq."+user.id+"&status=eq.reschedule_pending&select=*");if(!found?.length)return out({error:"PROPOSAL_NOT_FOUND"},404);const ap=found[0];if(decision==="accept"){const conflicts=await scheduleConflictsServer(ap.studio_id,String(ap.proposed_date),String(ap.proposed_time).slice(0,5),Number(ap.duration_minutes)||120,String(ap.id));if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);}const patch=decision==="accept"?{requested_date:ap.proposed_date,requested_time:ap.proposed_time,status:"confirmed",reschedule_count:Number(ap.reschedule_count||0)+1,proposal_previous_status:null,proposed_date:null,proposed_time:null,proposal_note:null,updated_at:new Date().toISOString()}:{status:ap.proposal_previous_status==="confirmed"?"confirmed":"pending",proposal_previous_status:null,proposed_date:null,proposed_time:null,proposal_note:null,updated_at:new Date().toISOString()};const rows=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&client_telegram_user_id=eq."+user.id,{method:"PATCH",body:JSON.stringify(patch)});const studio=await db("tm_studios?id=eq."+ap.studio_id+"&select=owner_telegram_user_id");if(studio?.[0]?.owner_telegram_user_id)await notifyTelegram(studio[0].owner_telegram_user_id,decision==="accept"?"✅ Клиент принял предложенное время: "+ap.client_name+" · "+ap.proposed_date+" в "+String(ap.proposed_time).slice(0,5):"↩️ Клиент отклонил предложенное время: "+ap.client_name);return out({ok:true,appointment:rows?.[0]||null});}
   if(["create_task","update_task","delete_task"].includes(b.action)){
    const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");
    if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
@@ -597,6 +673,18 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    try{const rows=await db("tm_client_gallery",{method:"POST",body:JSON.stringify([{studio_id:studioId,client_id:clientId,file_path:path,mime_type:mime,caption:String(b.caption||"").slice(0,500)}])});return out({ok:true,photo:rows[0]});}
    catch(err){await storageRequest("object/tm-client-gallery/"+path,{method:"DELETE"}).catch(()=>{});throw err;}
   }
+  if(b.action==="delete_appointment"){
+   const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
+   const studioId=String(own[0].id),id=String(b.id||"");
+   if(!/^[0-9a-f-]{36}$/i.test(id))return out({error:"INVALID_APPOINTMENT_ID"},400);
+   const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id,status");
+   if(!found?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);
+   await db("tm_tasks?appointment_id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId),{method:"PATCH",body:JSON.stringify({appointment_id:null,updated_at:new Date().toISOString()})});
+   await db("tm_referrals?or=(referred_appointment_id.eq."+encodeURIComponent(id)+",reward_appointment_id.eq."+encodeURIComponent(id)+")&studio_id=eq."+encodeURIComponent(studioId),{method:"PATCH",body:JSON.stringify({referred_appointment_id:null,reward_appointment_id:null})});
+   const removed=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId),{method:"DELETE"});
+   if(!removed?.length)return out({error:"APPOINTMENT_DELETE_FAILED"},500);
+   return out({ok:true,deleted_id:id});
+  }
   if(b.action==="update_appointment_duration"){
    const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
    const studioId=own[0].id,id=String(b.id||""),duration=Number(b.duration_minutes);
@@ -662,12 +750,12 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
    const studioId=own[0].id,date=String(b.requested_date||""),time=String(b.requested_time||""),name=String(b.client_name||"").trim(),duration=Math.max(15,Math.min(1440,Number.isInteger(Number(b.duration_minutes))?Number(b.duration_minutes):120));
    if(!name||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)||!/^[0-9]{2}:[0-9]{2}$/.test(time))return out({error:"INVALID_BOOKING_FIELDS"},400);
-   const conflicts=await scheduleConflictsServer(studioId,date,time,duration);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);
+   const bookingPrice=b.price===""||b.price==null?null:Number(b.price),bookingDeposit=Number(b.deposit_amount||0);if(bookingPrice!==null&&(!Number.isFinite(bookingPrice)||bookingPrice<0||bookingPrice>100000000))return out({error:"INVALID_PRICE"},400);if(!Number.isFinite(bookingDeposit)||bookingDeposit<0||bookingDeposit>100000000||(bookingPrice!==null&&bookingDeposit>bookingPrice))return out({error:"INVALID_DEPOSIT_AMOUNT"},400);const conflicts=await scheduleConflictsServer(studioId,date,time,duration);if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);
    let clientId=b.client_id||null;
    let linkedClientTelegramId:number|null=null;if(clientId){const found=await db("tm_clients?id=eq."+encodeURIComponent(String(clientId))+"&studio_id=eq."+studioId+"&select=id,telegram_user_id");if(!found?.length)return out({error:"CLIENT_NOT_FOUND"},404);linkedClientTelegramId=found[0].telegram_user_id?Number(found[0].telegram_user_id):null;}
    else{const created=await db("tm_clients",{method:"POST",body:JSON.stringify([{studio_id:studioId,full_name:name.slice(0,120),phone:String(b.client_contact||"").trim().slice(0,120)||null,description:""}])});clientId=created?.[0]?.id||null;}
-   const rows=await db("tm_appointments",{method:"POST",body:JSON.stringify([{studio_id:studioId,client_id:clientId,client_name:name.slice(0,120),client_contact:String(b.client_contact||"").trim().slice(0,120)||null,telegram_link:String(b.telegram_link||"").trim().slice(0,500)||null,vk_link:String(b.vk_link||"").trim().slice(0,500)||null,threads_link:String(b.threads_link||"").trim().slice(0,500)||null,instagram_link:String(b.instagram_link||"").trim().slice(0,500)||null,project_type:String(b.project_type||"").slice(0,100)||null,body_placement:String(b.body_placement||"").slice(0,100)||null,idea:String(b.idea||"").slice(0,3000)||null,requested_date:date,requested_time:time,duration_minutes:duration,status:"pending",client_telegram_user_id:linkedClientTelegramId,client_confirmation_required:true}])});
-   if(rows?.[0]&&linkedClientTelegramId)await notifyTelegram(linkedClientTelegramId,"🗓 Мастер создал для вас запись\\nДата и время: "+date+" в "+time+"\\nПроект: "+(rows[0].project_type||"не указан")+"\\nОткройте личный кабинет и подтвердите запись.");
+   const rows=await db("tm_appointments",{method:"POST",body:JSON.stringify([{studio_id:studioId,client_id:clientId,client_name:name.slice(0,120),client_contact:String(b.client_contact||"").trim().slice(0,120)||null,telegram_link:String(b.telegram_link||"").trim().slice(0,500)||null,vk_link:String(b.vk_link||"").trim().slice(0,500)||null,threads_link:String(b.threads_link||"").trim().slice(0,500)||null,instagram_link:String(b.instagram_link||"").trim().slice(0,500)||null,project_type:String(b.project_type||"").slice(0,100)||null,body_placement:String(b.body_placement||"").slice(0,100)||null,idea:String(b.idea||"").slice(0,3000)||null,price:Number.isFinite(Number(b.price))&&Number(b.price)>0?Math.min(100000000,Number(b.price)):null,deposit_amount:Number.isFinite(Number(b.deposit_amount))&&Number(b.deposit_amount)>0?Math.min(100000000,Number(b.deposit_amount)):0,deposit_paid_at:Number(b.deposit_amount)>0?new Date().toISOString():null,requested_date:date,requested_time:time,duration_minutes:duration,status:"pending",client_telegram_user_id:linkedClientTelegramId,client_confirmation_required:true}])});
+   if(rows?.[0]&&linkedClientTelegramId)await notifyTelegram(linkedClientTelegramId,"🗓 Мастер создал для вас запись\nДата и время: "+date+" в "+time+"\nПроект: "+(rows[0].project_type||"не указан")+"\nОткройте личный кабинет и подтвердите запись.");
    return out({ok:true,appointment:rows?.[0]||null});
   }
   if(b.action!=="create_booking")return out({error:"UNKNOWN_ACTION"},400);
@@ -676,7 +764,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
   if(!s?.length)return out({error:"STUDIO_NOT_FOUND"},404);
   const date=String(b.requested_date||""),time=String(b.requested_time||"");
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))return out({error:"INVALID_DATE_OR_TIME"},400);
-  const studioId=s[0].id;if(conflicts.length)return out({error:"SCHEDULE_CONFLICT",conflicts},409);
+  const studioId=s[0].id;
   let client=await db("tm_clients?studio_id=eq."+studioId+"&telegram_user_id=eq."+user.id+"&select=id,full_name,phone");
   if(!client?.length){
    const phone=String(b.client_contact||"").trim().slice(0,120);
@@ -707,7 +795,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    }catch(err){console.error("REFERRAL_ATTRIBUTION_ERROR",err);}
   }
   const studioOwner=await db("tm_studios?id=eq."+studioId+"&select=owner_telegram_user_id,artist_name");
-  if(rows?.[0]&&studioOwner?.[0]?.owner_telegram_user_id){const ap=rows[0];let referralLine="";try{const ref=await db("tm_referrals?referred_appointment_id=eq."+encodeURIComponent(String(ap.id))+"&status=eq.pending&select=referrer_client_id,referrer_telegram_user_id");if(ref?.[0]){const inviter=await db("tm_clients?id=eq."+encodeURIComponent(String(ref[0].referrer_client_id))+"&select=full_name,telegram_user_id");referralLine="\\n👥 Пришёл по рекомендации: "+(inviter?.[0]?.full_name||"Клиент")+(inviter?.[0]?.telegram_user_id?" · Telegram ID "+inviter[0].telegram_user_id:"");}}catch(err){console.error("REFERRAL_NOTIFICATION_LOOKUP_ERROR",err);}await notifyTelegram(studioOwner[0].owner_telegram_user_id,"🗓 Новая заявка на запись\\nКлиент: "+ap.client_name+referralLine+"\\nДата: "+ap.requested_date+" в "+ap.requested_time+"\\nПроект: "+(ap.project_type||"не указан"));}
+  if(rows?.[0]&&studioOwner?.[0]?.owner_telegram_user_id){const ap=rows[0];let referralLine="";try{const ref=await db("tm_referrals?referred_appointment_id=eq."+encodeURIComponent(String(ap.id))+"&status=eq.pending&select=referrer_client_id,referrer_telegram_user_id");if(ref?.[0]){const inviter=await db("tm_clients?id=eq."+encodeURIComponent(String(ref[0].referrer_client_id))+"&select=full_name,telegram_user_id");referralLine="\n👥 Пришёл по рекомендации: "+(inviter?.[0]?.full_name||"Клиент")+(inviter?.[0]?.telegram_user_id?" · Telegram ID "+inviter[0].telegram_user_id:"");}}catch(err){console.error("REFERRAL_NOTIFICATION_LOOKUP_ERROR",err);}await notifyTelegram(studioOwner[0].owner_telegram_user_id,"🗓 Новая заявка на запись\nКлиент: "+ap.client_name+referralLine+"\nДата: "+ap.requested_date+" в "+ap.requested_time+"\nПроект: "+(ap.project_type||"не указан"));}
   return out({ok:true,appointment:rows?.[0]||null});
  }
  if(req.method==="GET"){
@@ -715,7 +803,7 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
   const s=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id,slug,artist_name,studio_name,city,review_url,deposit_amount,deposit_method,deposit_recipient,deposit_details");
   if(s?.length&&requestedRole!=="client"){
    const studioId=s[0].id;
-   const a=await db("tm_appointments?studio_id=eq."+studioId+"&select=id,client_id,client_name,client_telegram_user_id,client_confirmation_required,reschedule_count,deposit_rebooking_required,proposed_date,proposed_time,proposal_note,duration_minutes,project_type,body_placement,idea,requested_date,requested_time,status&order=requested_date.asc,requested_time.asc");
+   const a=await db("tm_appointments?studio_id=eq."+studioId+"&select=id,client_id,client_name,client_telegram_user_id,client_confirmation_required,reschedule_count,deposit_rebooking_required,proposed_date,proposed_time,proposal_note,duration_minutes,project_type,body_placement,idea,price,requested_date,requested_time,status&order=requested_date.asc,requested_time.asc");
    const calendarEvents=await db("tm_calendar_events?studio_id=eq."+studioId+"&select=id,event_date,event_time,event_type,name,note,created_at&order=event_date.asc,event_time.asc");
    const includeFinance=new URL(req.url).searchParams.get("section")==="finance";
    const financeTransactions=includeFinance?await db("tm_finance_transactions?studio_id=eq."+studioId+"&select=transaction_type,amount,transaction_date,description,category&order=transaction_date.desc,created_at.desc"): [];
@@ -724,8 +812,11 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    const tasks=await db("tm_tasks?studio_id=eq."+studioId+"&select=id,title,description,status,priority,due_date,due_time,client_id&order=status.asc,due_date.asc,due_time.asc,created_at.desc");
    const inventoryItems=await db("tm_inventory_items?studio_id=eq."+studioId+"&select=id,name,quantity,unit,min_quantity,category&order=name.asc");
    const inventoryMovements=await db("tm_inventory_movements?studio_id=eq."+studioId+"&select=id,item_id,movement_type,quantity,reason,created_at&order=created_at.desc&limit=40");
-   const c=await db("tm_clients?studio_id=eq."+studioId+"&select=id,telegram_user_id,full_name,phone,description,telegram_link,vk_link,threads_link,instagram_link,website_link,other_links&order=created_at.desc");
-   const earnedReferralRewards=await db("tm_referrals?studio_id=eq."+studioId+"&status=eq.earned&select=referrer_client_id,reward_amount");
+   const c=await db("tm_clients?studio_id=eq."+studioId+"&select=id,telegram_user_id,full_name,phone,description,telegram_link,vk_link,vk_user_id,preferred_notification_channel,notifications_enabled,notification_consent_at,notification_consent_source,threads_link,instagram_link,website_link,other_links&order=created_at.desc");
+   const referralRows=await db("tm_referrals?studio_id=eq."+studioId+"&status=in.(pending,earned,redeemed)&select=id,referrer_client_id,referred_client_id,referred_telegram_user_id,referred_appointment_id,reward_amount,status,earned_at,redeemed_at,created_at&order=created_at.desc");
+   const earnedReferralRewards=(referralRows||[]).filter((r:any)=>r.status==="earned");
+   const referralTransactions=await db("tm_referral_transactions?studio_id=eq."+studioId+"&select=id,client_id,amount,transaction_type,note,created_at&order=created_at.desc");
+
    const token=Deno.env.get("TELEGRAM_BOT_TOKEN")||"";
    const ids=[...new Set([...(a||[]).map((x:any)=>Number(x.client_telegram_user_id)),...(c||[]).map((x:any)=>Number(x.telegram_user_id))].filter((x:number)=>Number.isSafeInteger(x)&&x>0))];
    const photos:Record<string,string|null>={};if(req.headers.get("x-tm-skip-photos")!=="1")await Promise.all(ids.map(async(id:number)=>{photos[String(id)]=token?await cachedTelegramPhoto(id,token):null}));
@@ -734,7 +825,8 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
    const clientReferences=await Promise.all((referenceRows||[]).map(async(g:any)=>{const signedUrl=await cachedSignedUrl("tm-client-references",g.file_path);return {...g,url:signedUrl};}));
    const galleryRows=await db("tm_client_gallery?studio_id=eq."+studioId+"&select=id,client_id,file_path,caption,mime_type,created_at&order=created_at.desc");
    const gallery=await Promise.all((galleryRows||[]).map(async(g:any)=>{const signedUrl=await cachedSignedUrl("tm-client-gallery",g.file_path);return {...g,url:signedUrl};}));
-   const enrichedClients=(c||[]).map((x:any)=>{const visits=(a||[]).filter((v:any)=>v.client_id===x.id);const last=visits.map((v:any)=>v.requested_date).filter(Boolean).sort().pop()||null;const referralDiscountAvailable=(earnedReferralRewards||[]).filter((r:any)=>String(r.referrer_client_id)===String(x.id)).reduce((sum:number,r:any)=>sum+(Number(r.reward_amount)||0),0);return {...x,referral_discount_available:referralDiscountAvailable,telegram_photo:x.telegram_user_id?photos[String(x.telegram_user_id)]||null:null,visits:visits.length,last_visit:last,gallery:gallery.filter((g:any)=>g.client_id===x.id),references:clientReferences.filter((g:any)=>g.client_id===x.id)};});
+   const pendingReferrals=(referralRows||[]).filter((r:any)=>r.status==="pending").map((r:any)=>{const referred=(c||[]).find((x:any)=>String(x.id)===String(r.referred_client_id));const inviter=(c||[]).find((x:any)=>String(x.id)===String(r.referrer_client_id));const appointment=(a||[]).find((x:any)=>String(x.id)===String(r.referred_appointment_id));return {...r,referrer_client_name:inviter?.full_name||"Клиент",referred_client_name:referred?.full_name||appointment?.client_name||"Новый клиент",appointment_date:appointment?.requested_date||null,appointment_time:appointment?.requested_time||null};});
+   const enrichedClients=(c||[]).map((x:any)=>{const visits=(a||[]).filter((v:any)=>v.client_id===x.id);const last=visits.map((v:any)=>v.requested_date).filter(Boolean).sort().pop()||null;const earnedBalance=(earnedReferralRewards||[]).filter((r:any)=>String(r.referrer_client_id)===String(x.id)).reduce((sum:number,r:any)=>sum+(Number(r.reward_amount)||0),0);const clientTransactions=(referralTransactions||[]).filter((r:any)=>String(r.client_id)===String(x.id));const creditedBalance=clientTransactions.filter((r:any)=>r.transaction_type==="credited").reduce((sum:number,r:any)=>sum+(Number(r.amount)||0),0);const redeemedBalance=clientTransactions.filter((r:any)=>r.transaction_type==="redeemed").reduce((sum:number,r:any)=>sum+(Number(r.amount)||0),0);const referralDiscountAvailable=Math.max(0,earnedBalance+creditedBalance-redeemedBalance);return {...x,referral_discount_available:referralDiscountAvailable,referral_history:[...(referralRows||[]).filter((r:any)=>String(r.referrer_client_id)===String(x.id)&&r.status==="earned").map((r:any)=>({...r,history_type:"earned"})),...(referralTransactions||[]).filter((r:any)=>String(r.client_id)===String(x.id)).map((r:any)=>({id:r.id,status:r.transaction_type||"redeemed",history_type:r.transaction_type||"redeemed",reward_amount:Math.abs(Number(r.amount)||0),note:r.note||null,created_at:r.created_at}))].sort((a:any,b:any)=>String(b.created_at||b.earned_at||b.redeemed_at||"").localeCompare(String(a.created_at||a.earned_at||a.redeemed_at||""))),telegram_photo:x.telegram_user_id?photos[String(x.telegram_user_id)]||null:null,visits:visits.length,last_visit:last,gallery:gallery.filter((g:any)=>g.client_id===x.id),references:clientReferences.filter((g:any)=>g.client_id===x.id)};});
    const projectRows=await db("tm_projects?studio_id=eq."+studioId+"&select=*&order=updated_at.desc");
    const projects=await Promise.all((projectRows||[]).map(async(p:any)=>{
     const signedImages=await Promise.all((Array.isArray(p.images)?p.images:[]).map(async(path:string)=>{
@@ -744,26 +836,157 @@ Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{heade
     const sessionRows=sessions||[],completionPercent=sessionRows.length?Math.round(sessionRows.filter((x:any)=>x.completed).length/sessionRows.length*100):0;
     return {...p,sessions:sessionRows,completion_percent:completionPercent,images:signedImages.filter(Boolean),client_name:(c||[]).find((x:any)=>x.id===p.client_id)?.full_name||null};
    }));
-   return out({role:"master",studio:s[0],clients:enrichedClients,appointments:enrichedAppointments,calendarEvents,tasks,financeTransactions,financePlans,financePayments,inventoryItems,inventoryMovements,projects});
+   return out({role:"master",studio:s[0],clients:enrichedClients,pendingReferrals,appointments:enrichedAppointments,calendarEvents,tasks,financeTransactions,financePlans,financePayments,inventoryItems,inventoryMovements,projects});
   }
   const linkedClients=await db("tm_clients?telegram_user_id=eq."+user.id+"&select=id,studio_id");
   const linkedClientIds=[...new Set((linkedClients||[]).map((x:any)=>String(x.id)))];
   const directAppointments=await db("tm_appointments?client_telegram_user_id=eq."+user.id+"&select=id,client_id,studio_id,client_name,project_type,body_placement,idea,requested_date,requested_time,status,reschedule_count,proposed_date,proposed_time,proposal_note,created_at,client_confirmation_required,deposit_rebooking_required&order=created_at.desc");
-  const linkedAppointments=linkedClientIds.length?await db("tm_appointments?client_id=in.("+linkedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,client_id,client_name,project_type,body_placement,idea,requested_date,requested_time,status,reschedule_count,proposed_date,proposed_time,proposal_note,created_at,client_confirmation_required&order=created_at.desc"):[];
+  const linkedAppointments=linkedClientIds.length?await db("tm_appointments?client_id=in.("+linkedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,client_id,studio_id,client_name,project_type,body_placement,idea,requested_date,requested_time,status,reschedule_count,proposed_date,proposed_time,proposal_note,created_at,client_confirmation_required&order=created_at.desc"):[];
   const appointmentsById=new Map<string,any>();for(const x of [...(directAppointments||[]),...(linkedAppointments||[])])appointmentsById.set(String(x.id),x);
   const a=[...appointmentsById.values()].sort((x:any,y:any)=>String(y.created_at||"").localeCompare(String(x.created_at||"")));
   const p=await db("tm_user_profiles?telegram_user_id=eq."+user.id+"&select=telegram_user_id,username,first_name,last_name,full_name,preferred_studio_id");
   const studios=await db("tm_studios?public_booking_enabled=eq.true&select=id,slug,artist_name,studio_name,city,deposit_amount,deposit_method,deposit_recipient,deposit_details&order=artist_name.asc");
   const appointmentLinks=await db("tm_appointments?client_telegram_user_id=eq."+user.id+"&select=client_id,studio_id");
   const allowedClientIds=[...new Set([...(linkedClients||[]).map((x:any)=>x.id),...(appointmentLinks||[]).map((x:any)=>x.client_id).filter(Boolean)])];
+  const calendarEvents=allowedClientIds.length?await db("tm_calendar_events?client_id=in.("+allowedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,studio_id,client_id,event_date,event_time,event_type,name,note&order=event_date.asc,event_time.asc"):[];
+  const clientStudioIds=[...new Set([...(a||[]).map((x:any)=>x.studio_id),...(calendarEvents||[]).map((x:any)=>x.studio_id)].filter(Boolean).map((x:any)=>String(x)))];
+  const clientStudios=clientStudioIds.length?await db("tm_studios?id=in.("+clientStudioIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,artist_name,studio_name,owner_telegram_user_id"):[];
+  const masterTelegramIds=[...new Set((clientStudios||[]).map((x:any)=>Number(x.owner_telegram_user_id)).filter((x:number)=>Number.isSafeInteger(x)&&x>0))];
+  const masterProfiles=masterTelegramIds.length?await db("tm_user_profiles?telegram_user_id=in.("+masterTelegramIds.join(",")+")&select=telegram_user_id,username,first_name,last_name,full_name"):[];
+  const clientMasters=(clientStudios||[]).map((studio:any)=>{
+   const ownerId=Number(studio.owner_telegram_user_id||0),profile=(masterProfiles||[]).find((x:any)=>Number(x.telegram_user_id)===ownerId);
+   const name=profile?.full_name||[profile?.first_name,profile?.last_name].filter(Boolean).join(" ")||studio.artist_name||studio.studio_name||"Мастер";
+   const username=String(profile?.username||"").replace(/^@/,"");
+   return {studio_id:studio.id,name,telegram_url:username?"https://t.me/"+username:(ownerId?"tg://user?id="+ownerId:null)};
+  });
   const galleryRows=allowedClientIds.length?await db("tm_client_gallery?client_id=in.("+allowedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,client_id,studio_id,file_path,caption,mime_type,created_at&order=created_at.desc"): [];
   const gallery=await Promise.all((galleryRows||[]).map(async(g:any)=>{const signedUrl=await cachedSignedUrl("tm-client-gallery",g.file_path);return {id:g.id,caption:g.caption,mime_type:g.mime_type,created_at:g.created_at,url:signedUrl};}));
   const clientReferenceRows=allowedClientIds.length?await db("tm_client_references?client_id=in.("+allowedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,client_id,studio_id,file_path,mime_type,comment,created_at&order=created_at.desc"): [];
   const clientReferences=await Promise.all((clientReferenceRows||[]).map(async(g:any)=>{const signedUrl=await cachedSignedUrl("tm-client-references",g.file_path);return {id:g.id,comment:g.comment,created_at:g.created_at,url:signedUrl};}));
-  const referralRewards=await db("tm_referrals?referrer_telegram_user_id=eq."+user.id+"&status=eq.earned&select=id,reward_amount,earned_at&order=earned_at.asc");
-  return out({role:"client",profile:p?.[0]||null,studios,appointments:a,gallery,references:clientReferences,referralRewards});
+  const referralRewards=await db("tm_referrals?referrer_telegram_user_id=eq."+user.id+"&status=in.(earned,redeemed)&select=id,reward_amount,status,earned_at,created_at&order=earned_at.asc");
+  const referralTransactions=allowedClientIds.length?await db("tm_referral_transactions?client_id=in.("+allowedClientIds.map((x:string)=>encodeURIComponent(x)).join(",")+")&select=id,client_id,transaction_type,amount,note,created_at&order=created_at.desc"): [];
+  const clientReferralHistory=[...(referralRewards||[]).map((r:any)=>({...r,type:"earned"})),...(referralTransactions||[]).map((r:any)=>({id:r.id,type:r.transaction_type||"redeemed",reward_amount:Math.abs(Number(r.amount)||0),note:r.note||null,created_at:r.created_at}))];
+  return out({role:"client",profile:p?.[0]||null,studios,appointments:a,calendarEvents:calendarEvents||[],masters:clientMasters,gallery,references:clientReferences,referralRewards:clientReferralHistory});
  }
- if(req.method==="PATCH"){const b=await req.json(),s=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!s?.length)return out({error:"MASTER_NOT_LINKED"},403);if(!["confirmed","declined","cancelled","completed"].includes(b.status))return out({error:"INVALID_STATUS"},400);const before=await db("tm_appointments?id=eq."+encodeURIComponent(String(b.id))+"&studio_id=eq."+s[0].id+"&select=*");if(!before?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);if(b.status==="confirmed"&&before[0].status==="pending"&&before[0].client_confirmation_required===true)return out({error:"CLIENT_CONFIRMATION_REQUIRED"},409);const a=await db("tm_appointments?id=eq."+encodeURIComponent(String(b.id))+"&studio_id=eq."+s[0].id,{method:"PATCH",body:JSON.stringify({status:b.status,updated_at:new Date().toISOString()})});if(!a?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);if(before[0].status!==b.status&&a[0].client_telegram_user_id){const labels:Record<string,string>={confirmed:"подтверждена",declined:"отклонена",cancelled:"отменена",completed:"отмечена как завершённая"};await notifyTelegram(a[0].client_telegram_user_id,"📌 Изменение записи\\nВаша запись "+(labels[b.status]||"обновлена")+"."+((a[0].requested_date&&a[0].requested_time)?"\\nДата и время: "+a[0].requested_date+" в "+a[0].requested_time:""));}if(b.status==="completed"&&before[0].status!=="completed"&&a[0].client_telegram_user_id){const care="🖤 СПАСИБО ЗА СЕАНС!\n\nТатуировка готова — теперь важно правильно ухаживать за ней.\n\n• Следуйте индивидуальной инструкции мастера.\n• Соблюдайте чистоту и не трогайте татуировку грязными руками.\n• Не сдирайте корочки и не трите участок.\n• Избегайте трения и воздействия, которые мастер попросил исключить.\n\nЕсли появятся вопросы по заживлению, напишите мастеру. Берегите свою новую татуировку!";await notifyTelegram(a[0].client_telegram_user_id,care,"client");let linkedClientId=a[0].client_id||null;if(!linkedClientId){const linked=await db("tm_clients?studio_id=eq."+encodeURIComponent(String(a[0].studio_id))+"&telegram_user_id=eq."+Number(a[0].client_telegram_user_id)+"&select=id");linkedClientId=linked?.[0]?.id||null;}if(linkedClientId){const reviewAt=new Date(Date.now()+14*24*60*60*1000).toISOString();const correctionAt=new Date(Date.now()+30*24*60*60*1000).toISOString();await db("tm_client_message_queue?on_conflict=message_type,target_type,target_id,scheduled_at",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=representation"},body:JSON.stringify([{message_type:"review",studio_id:a[0].studio_id,client_id:linkedClientId,target_type:"appointment",target_id:a[0].id,telegram_user_id:Number(a[0].client_telegram_user_id),scheduled_at:reviewAt},{message_type:"correction_reminder",studio_id:a[0].studio_id,client_id:linkedClientId,target_type:"appointment",target_id:a[0].id,telegram_user_id:Number(a[0].client_telegram_user_id),scheduled_at:correctionAt}])});}}
+ if(req.method==="DELETE"){
+   const raw=await req.text();const b=raw?JSON.parse(raw):{};const id=String(b.id||new URL(req.url).searchParams.get("id")||"");
+   if(!/^[0-9a-f-]{36}$/i.test(id))return out({error:"INVALID_APPOINTMENT_ID"},400);
+   const own=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!own?.length)return out({error:"MASTER_NOT_LINKED"},403);
+   const studioId=String(own[0].id);
+   const found=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId)+"&select=id,status");
+   if(!found?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);
+   await db("tm_tasks?appointment_id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId),{method:"PATCH",body:JSON.stringify({appointment_id:null,updated_at:new Date().toISOString()})});
+   await db("tm_referrals?or=(referred_appointment_id.eq."+encodeURIComponent(id)+",reward_appointment_id.eq."+encodeURIComponent(id)+")&studio_id=eq."+encodeURIComponent(studioId),{method:"PATCH",body:JSON.stringify({referred_appointment_id:null,reward_appointment_id:null})});
+   const removed=await db("tm_appointments?id=eq."+encodeURIComponent(id)+"&studio_id=eq."+encodeURIComponent(studioId),{method:"DELETE"});
+   if(!removed?.length)return out({error:"APPOINTMENT_DELETE_FAILED"},500);
+   return out({ok:true,deleted_id:id});
+  }
+ if(req.method==="PATCH"){const b=await req.json(),s=await db("tm_studios?owner_telegram_user_id=eq."+user.id+"&select=id");if(!s?.length)return out({error:"MASTER_NOT_LINKED"},403);if(b.status!==undefined&&!["confirmed","declined","cancelled","completed"].includes(b.status))return out({error:"INVALID_STATUS"},400);const before=await db("tm_appointments?id=eq."+encodeURIComponent(String(b.id))+"&studio_id=eq."+s[0].id+"&select=*");if(!before?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);if(b.status==="confirmed"&&before[0].status==="pending"&&before[0].client_confirmation_required===true)return out({error:"CLIENT_CONFIRMATION_REQUIRED"},409);const patch:any={updated_at:new Date().toISOString()};if(b.status!==undefined){patch.status=b.status;if(["confirmed","declined","cancelled","completed"].includes(String(b.status)))patch.client_confirmation_required=false;}if(b.price!==undefined){const price=Number(b.price);if(!Number.isFinite(price)||price<0||price>100000000||price<Number(before[0].deposit_amount||0))return out({error:"INVALID_PRICE_OR_BELOW_DEPOSIT"},400);patch.price=price;}if(b.deposit_amount!==undefined){const deposit=Number(b.deposit_amount),total=Number(b.price!==undefined?b.price:before[0].price||0);if(!Number.isFinite(deposit)||deposit<0||deposit>100000000||deposit>total)return out({error:"INVALID_DEPOSIT_AMOUNT"},400);patch.deposit_amount=deposit;patch.deposit_paid_at=deposit>0?new Date().toISOString():null;}const a=await db("tm_appointments?id=eq."+encodeURIComponent(String(b.id))+"&studio_id=eq."+s[0].id,{method:"PATCH",body:JSON.stringify(patch)});if(!a?.length)return out({error:"APPOINTMENT_NOT_FOUND"},404);if(b.status!==undefined&&b.status!=="completed"&&before[0].status!==b.status&&(a[0].client_id||a[0].client_telegram_user_id)){const labels:Record<string,string>={confirmed:"подтверждена",declined:"отклонена",cancelled:"отменена"};const clientId=String(a[0].client_id||"");if(clientId){const linked=await db("tm_clients?id=eq."+encodeURIComponent(clientId)+"&studio_id=eq."+encodeURIComponent(String(a[0].studio_id))+"&select=preferred_notification_channel");if(String(linked?.[0]?.preferred_notification_channel||"telegram")!=="vk")await notifyClient(String(a[0].studio_id),clientId,Number(a[0].client_telegram_user_id||0)||null,"📌 Изменение записи\nВаша запись "+(labels[b.status]||"обновлена")+"."+((a[0].requested_date&&a[0].requested_time)?"\nДата и время: "+a[0].requested_date+" в "+a[0].requested_time:""));}}if(b.status==="completed"&&before[0].status!=="completed"&&(a[0].client_id||a[0].client_telegram_user_id)){
+ let linkedClientId=a[0].client_id||null;
+ let clientTelegramId=Number(a[0].client_telegram_user_id||0)||null;
+ let linkedClient=null;
+ if(linkedClientId){
+  const linked=await db("tm_clients?id=eq."+encodeURIComponent(String(linkedClientId))+"&studio_id=eq."+encodeURIComponent(String(a[0].studio_id))+"&select=id,telegram_user_id,vk_user_id,preferred_notification_channel,notifications_enabled");
+  linkedClient=linked?.[0]||null;
+  if(!clientTelegramId&&linkedClient?.telegram_user_id)clientTelegramId=Number(linkedClient.telegram_user_id)||null;
+ }
+ if(!linkedClientId&&clientTelegramId){
+  const linked=await db("tm_clients?studio_id=eq."+encodeURIComponent(String(a[0].studio_id))+"&telegram_user_id=eq."+clientTelegramId+"&select=id,telegram_user_id,vk_user_id,preferred_notification_channel,notifications_enabled");
+  linkedClient=linked?.[0]||null;linkedClientId=linkedClient?.id||null;
+ }
+ if((linkedClientId&&(clientTelegramId||linkedClient?.vk_user_id))||(!linkedClientId&&clientTelegramId)){
+  const appointmentText=[a[0].project_type,a[0].body_placement,a[0].idea].filter(Boolean).join(" ").toLowerCase();
+  const appointmentKind=/(коррек|доработ|продолжение существующей работы)/i.test(appointmentText)?"correction":/(консультац|разработк.*эскиз|эскиз)/i.test(appointmentText)?"consult":/(ученик|обучен|практика)/i.test(appointmentText)?"student":/(модел)/i.test(appointmentText)?"model":"session";
+  const completionVariants:Record<string,string[]>={
+   session:[
+    "🖤 СПАСИБО ЗА СЕАНС!\\n\\nСегодня мы завершили работу над вашей татуировкой. Теперь начинается важный этап — заживление.\\n\\n• Следуйте индивидуальной инструкции мастера.\\n• Поддерживайте чистоту участка.\\n• Не сдирайте корочки и не трите кожу.\\n• Избегайте трения и других воздействий, о которых предупредил мастер.\\n\\nЕсли появятся вопросы, напишите мне. Берегите новую татуировку!",
+    "🖤 ВАША ТАТУИРОВКА ГОТОВА!\\n\\nСпасибо за доверие и сегодняшний сеанс. Чтобы результат хорошо зажил, придерживайтесь рекомендаций, которые я вам дал.\\n\\nНе травмируйте участок, не сдирайте корочки и соблюдайте гигиену. При любых сомнениях по заживлению лучше сразу связаться со мной.\\n\\nДо новых творческих встреч!",
+    "🖤 БЛАГОДАРЮ ЗА ВЫБОР RAMZES!\\n\\nРабота завершена — теперь дайте коже спокойно восстановиться.\\n\\nПомните об индивидуальном уходе: чистые руки, аккуратное обращение с татуировкой и никаких самостоятельных попыток ускорить заживление.\\n\\nЕсли что-то насторожит или понадобится совет, я на связи. Спасибо за сеанс!"
+,
+    "🖤 СЕАНС ЗАВЕРШЁН — СПАСИБО ЗА ДОВЕРИЕ!\\\n\\\nСегодня ваша идея стала частью реальности. Теперь самое важное — спокойно пройти этап заживления.\\\n\\\nДержите участок в чистоте, не трите и не травмируйте кожу, не снимайте корочки. Следуйте именно той инструкции, которую я вам выдал.\\\n\\\nЕсли что-то смутит или понадобится совет, напишите мне. Пусть новая работа радует вас долгие годы!",
+    "🖤 НОВАЯ ТАТУИРОВКА — НОВАЯ ИСТОРИЯ!\\\n\\\nСпасибо, что доверили мне воплотить вашу задумку. Работа закончена, а теперь дайте коже время на восстановление.\\\n\\\nСоблюдайте рекомендации по уходу, избегайте трения и не пытайтесь ускорить заживление самостоятельно.\\\n\\\nЯ на связи, если появятся вопросы. До новых встреч!",
+    "🖤 БЛАГОДАРЮ ЗА СЕГОДНЯШНИЙ ДЕНЬ!\\\n\\\nБыло приятно поработать над вашей татуировкой. Чтобы сохранить результат, внимательно отнеситесь к периоду заживления.\\\n\\\nНе трогайте участок грязными руками, не сдирайте корочки и придерживайтесь индивидуальной памятки.\\\n\\\nЕсли понадобится помощь или рекомендация, просто напишите.",
+    "🖤 ВАША ИДЕЯ ТЕПЕРЬ НА КОЖЕ!\\\n\\\nСпасибо за доверие и комфортную работу на сеансе. Теперь позаботьтесь о татуировке так, как мы обсудили.\\\n\\\nЧистота, бережное отношение и соблюдение инструкции мастера — главные правила на ближайшее время. Не травмируйте и не трите участок.\\\n\\\nБудут вопросы — я рядом!",
+    "🖤 СПАСИБО, ЧТО ВЫБРАЛИ МЕНЯ!\\\n\\\nСеанс завершён, и теперь начинается восстановление кожи. Пожалуйста, не пренебрегайте рекомендациями по уходу.\\\n\\\nНе сдирайте корочки, не расчёсывайте татуировку и избегайте действий, о которых мы говорили.\\\n\\\nЕсли заживление вызывает вопросы, свяжитесь со мной — помогу разобраться.",
+    "🖤 ЕЩЁ ОДНА ИСТОРИЯ НАЧАЛАСЬ!\\\n\\\nСпасибо, что пришли со своей идеей и доверили её мне. Надеюсь, результат будет радовать вас долго.\\\n\\\nСейчас важно дать коже восстановиться: соблюдайте индивидуальную инструкцию, поддерживайте чистоту и не травмируйте участок.\\\n\\\nБуду рад вашим вопросам и обратной связи после заживления.",
+    "🖤 СЕГОДНЯ МЫ СОЗДАЛИ НЕЧТО ОСОБЕННОЕ.\\\n\\\nСпасибо за доверие и проведённое вместе время. Теперь позвольте татуировке спокойно зажить.\\\n\\\nСледуйте рекомендациям мастера, не трите участок и не удаляйте корочки самостоятельно. Бережный уход поможет пройти восстановление.\\\n\\\nЕсли потребуется консультация по уходу, напишите мне."
+   ],
+   correction:[
+    "💜 СПАСИБО ЗА ВИЗИТ НА КОРРЕКЦИЮ!\\n\\nМы доработали татуировку. Теперь важно дать коже восстановиться и оценить результат после заживления.\\n\\nСоблюдайте рекомендации по уходу за обработанным участком. Если появятся вопросы или сомнения, напишите мне.\\n\\nБуду рад увидеть итоговый результат!",
+    "💜 КОРРЕКЦИЯ ЗАВЕРШЕНА!\\n\\nСпасибо, что вернулись и доверили мне финальные штрихи. Надеюсь, теперь работа выглядит именно так, как вы задумывали.\\n\\nПожалуйста, аккуратно ухаживайте за участком по инструкции мастера и не пропускайте этапы заживления. Я остаюсь на связи!",
+    "💜 БЛАГОДАРЮ ЗА ПОВТОРНУЮ ВСТРЕЧУ!\\n\\nСегодня мы внесли необходимые доработки. Дайте коже спокойно зажить, не травмируйте участок и придерживайтесь выданных рекомендаций.\\n\\nЕсли после восстановления захотите показать результат или уточнить детали — буду рад вашему сообщению."
+,
+    "💜 ДОРАБОТКА ЗАВЕРШЕНА — СПАСИБО ЗА ДОВЕРИЕ!\\\n\\\nСегодня мы добавили необходимые штрихи к вашей татуировке. Теперь дайте коже восстановиться после процедуры.\\\n\\\nСоблюдайте рекомендации по уходу и не травмируйте обработанный участок. После заживления можно будет объективно оценить итог.\\\n\\\nЕсли появятся вопросы, я на связи.",
+    "💜 РАДЫ БЫЛИ ВИДЕТЬ ВАС СНОВА!\\\n\\\nСпасибо, что вернулись ко мне для коррекции. Мы сделали ещё один шаг к желаемому результату.\\\n\\\nПожалуйста, ухаживайте за участком по выданной инструкции, избегайте трения и не торопите процесс восстановления.\\\n\\\nБуду ждать ваших впечатлений после заживления!",
+    "💜 ФИНАЛЬНЫЕ ШТРИХИ НА МЕСТЕ!\\\n\\\nБлагодарю за терпение и повторный визит. Надеюсь, обновлённая работа теперь радует вас ещё больше.\\\n\\\nДайте коже спокойно восстановиться и следуйте рекомендациям мастера. Если что-то будет непонятно, напишите мне.",
+    "💜 СПАСИБО ЗА ОБРАТНУЮ СВЯЗЬ И ДОВЕРИЕ!\\\n\\\nКоррекция выполнена. Ценю, что вы поделились своими пожеланиями и дали возможность довести работу до нужного результата.\\\n\\\nТеперь важно бережно ухаживать за обработанной зоной и дождаться полного заживления. Я остаюсь на связи!",
+    "💜 МЫ СДЕЛАЛИ ЕЩЁ ОДИН ШАГ К ИДЕАЛЬНОМУ РЕЗУЛЬТАТУ!\\\n\\\nСпасибо за сегодняшний визит. Не забывайте, что после коррекции коже снова требуется время на восстановление.\\\n\\\nСоблюдайте индивидуальные рекомендации, не трите участок и не снимайте корочки. При вопросах обращайтесь.",
+    "💜 БЛАГОДАРЮ ЗА ПОВТОРНЫЙ ВИЗИТ!\\\n\\\nСегодня мы уделили внимание деталям и завершили запланированную доработку. Пусть кожа спокойно восстановится.\\\n\\\nСледуйте инструкции по уходу, а после заживления оцените результат при обычном освещении. Буду рад обратной связи!",
+    "💜 ВАША ТАТУИРОВКА СТАЛА ЕЩЁ БЛИЖЕ К ЗАДУМАННОМУ!\\\n\\\nСпасибо, что доверили мне коррекцию. Теперь не забывайте о бережном уходе за обработанным участком.\\\n\\\nНе травмируйте кожу и придерживайтесь рекомендаций мастера. Если понадобится совет, всегда можете написать."
+   ],
+   consult:[
+    "💙 СПАСИБО ЗА КОНСУЛЬТАЦИЮ!\\n\\nРад, что мы смогли обсудить вашу идею и наметить направление будущей татуировки.\\n\\nЕсли захотите дополнить задумку, изменить детали или прислать референсы — напишите мне. Следующий шаг — согласовать эскиз, стоимость и дату.",
+    "💙 БЫЛ РАД ОБСУДИТЬ ВАШУ ИДЕЮ!\\n\\nСпасибо за встречу и доверие. Обдумайте предложенные варианты, а если появятся новые пожелания или вопросы, смело пишите.\\n\\nКогда определимся с деталями проекта, подберём удобное время для сеанса.",
+    "💙 НАШУ ВСТРЕЧУ ЗАВЕРШИЛИ — ИДЕЯ В РАБОТЕ!\\n\\nБлагодарю за интерес к моей работе. Если после консультации вспомните важные детали или найдёте подходящие примеры, отправьте их мне.\\n\\nПродолжим с согласования эскиза и плана будущей татуировки!"
+,
+    "💙 СПАСИБО, ЧТО НАШЛИ ВРЕМЯ ДЛЯ ВСТРЕЧИ!\\\n\\\nРад знакомству и возможности разобрать вашу задумку. После консультации можете спокойно обдумать формат, размер и расположение будущей татуировки.\\\n\\\nКогда будете готовы, напишите мне — согласуем эскиз, стоимость и дату.",
+    "💙 ВАША ИДЕЯ ЗАСЛУЖИВАЕТ ВНИМАНИЯ!\\\n\\\nСпасибо за интересную беседу. Если найдёте дополнительные референсы или захотите уточнить детали, отправьте их в ответном сообщении.\\\n\\\nЯ помогу сформировать проект и определить дальнейшие шаги к сеансу.",
+    "💙 БЛАГОДАРЮ ЗА ДОВЕРИЕ И ВОПРОСЫ!\\\n\\\nНадеюсь, встреча помогла лучше представить будущую татуировку. Не обязательно принимать решение сразу — дайте себе время всё обдумать.\\\n\\\nКогда появится ясность по идее, продолжим обсуждение эскиза и записи.",
+    "💙 ПРИЯТНО БЫЛО ПОЗНАКОМИТЬСЯ!\\\n\\\nСпасибо, что поделились своей задумкой. Если после разговора появятся новые мысли, пожелания по стилю или примеры работ, присылайте их мне.\\\n\\\nБудем постепенно собирать проект и согласуем удобную дату.",
+    "💙 ПЕРВЫЙ ШАГ К БУДУЩЕЙ ТАТУИРОВКЕ СДЕЛАН!\\\n\\\nБлагодарю за консультацию. Мы обсудили направление, а теперь можно уточнить детали и подготовить эскиз.\\\n\\\nНапишите, если захотите что-то дополнить или изменить. После согласования проекта определимся со временем сеанса.",
+    "💙 СПАСИБО ЗА ИНТЕРЕС К МОЕЙ РАБОТЕ!\\\n\\\nРад, что мы смогли обсудить вашу задумку. Сохраните понравившиеся референсы и отметьте, что именно в них вам близко. Это поможет точнее сформировать будущий проект.\\\n\\\nБуду ждать вашего сообщения, когда будете готовы двигаться дальше.",
+    "💙 НАДЕЮСЬ, КОНСУЛЬТАЦИЯ БЫЛА ПОЛЕЗНОЙ!\\\n\\\nСпасибо за встречу. Если захотите вернуться к обсуждению, уточнить стоимость или задать вопрос по подготовке, просто напишите.\\\n\\\nКогда все детали будут согласованы, подберём дату и начнём работу над вашей идеей."
+   ],
+   student:[
+    "🧡 СПАСИБО ЗА СЕГОДНЯШНЕЕ ЗАНЯТИЕ!\\n\\nСегодня разобрали важные моменты и продвинулись ещё на один шаг. Теперь закрепи материал самостоятельно и обрати внимание на ошибки, которые мы обсудили.\\n\\nПрактика, терпение и аккуратность — основа роста. До следующего занятия!",
+    "🧡 ЕЩЁ ОДИН ШАГ В ОБУЧЕНИИ СДЕЛАН!\\n\\nСпасибо за старание и включённость. Повтори сегодняшний материал, потренируй отдельные движения и запиши вопросы, которые появятся во время практики.\\n\\nНа следующей встрече разберём результаты вместе!",
+    "🧡 БЛАГОДАРЮ ЗА РАБОТУ НА ЗАНЯТИИ!\\n\\nНе стремись освоить всё за один день: лучше спокойно отработать базу и закрепить правильную технику.\\n\\nПовтори упражнения, следи за аккуратностью и не бойся задавать вопросы. Увидимся на следующем занятии!"
+,
+    "🧡 ЗАНЯТИЕ ЗАВЕРШЕНО — ВРЕМЯ ЗАКРЕПИТЬ РЕЗУЛЬТАТ!\\\n\\\nСпасибо за работу сегодня. Повтори основные этапы, которые мы разобрали, и отдельно потренируй то, что пока вызывает затруднения.\\\n\\\nНе торопись: точность и стабильность важнее скорости. До следующей встречи!",
+    "🧡 ХОРОШАЯ РАБОТА СЕГОДНЯ!\\\n\\\nКаждое занятие складывается в опыт. Пересмотри заметки, вспомни замечания и выдели время на спокойную самостоятельную практику.\\\n\\\nЕсли при выполнении упражнения возникнут вопросы, запиши их — разберём вместе.",
+    "🧡 СПАСИБО ЗА ВОВЛЕЧЁННОСТЬ!\\\n\\\nСегодня ты получил(а) новые ориентиры для практики. Главное теперь — повторить материал и закрепить правильную последовательность действий.\\\n\\\nОшибки — часть обучения. Анализируй их и двигайся дальше шаг за шагом!",
+    "🧡 ЕСТЬ ПРОГРЕСС — ПРОДОЛЖАЕМ!\\\n\\\nБлагодарю за старание на занятии. Не сравнивай свой темп с чужим: сосредоточься на качестве каждого движения и аккуратности.\\\n\\\nПотренируй разобранные элементы и приходи с вопросами на следующую встречу.",
+    "🧡 СЕГОДНЯШНЯЯ ПРАКТИКА ПОЗАДИ!\\\n\\\nСпасибо за усердие. Чтобы знания не остались только теорией, повтори пройденное и попробуй применить рекомендации в упражнениях.\\\n\\\nРаботай внимательно, соблюдай последовательность и не пропускай базовые этапы.",
+    "🧡 ЕЩЁ ОДНО ЗАНЯТИЕ В КОПИЛКУ ОПЫТА!\\\n\\\nТы продвигаешься благодаря регулярной практике. Вспомни, что сегодня получилось лучше всего, а что стоит повторить ещё раз.\\\n\\\nЗапиши наблюдения — так мы сможем точнее выстроить следующее занятие.",
+    "🧡 БЛАГОДАРЮ ЗА СЕГОДНЯШНЮЮ РАБОТУ!\\\n\\\nПусть сегодняшний материал постепенно станет привычным навыком. Повтори упражнения без спешки и удели внимание тем моментам, на которые я указал.\\\n\\\nДо следующего занятия — продолжаем развиваться!"
+   ],
+   model:[
+    "💚 СПАСИБО, ЧТО СТАЛИ МОДЕЛЬЮ!\\n\\nБлагодарю за доверие и участие в творческом проекте. Благодаря вам идея стала реальной работой.\\n\\nПожалуйста, соблюдайте индивидуальные рекомендации по уходу за татуировкой. Буду рад увидеть результат после заживления!",
+    "💚 ВЫ ПОМОГЛИ СОЗДАТЬ ЧТО-ТО ОСОБЕННОЕ!\\n\\nСпасибо за смелость, открытость и участие в качестве модели. Теперь дайте коже спокойно восстановиться и придерживайтесь инструкции мастера.\\n\\nЕсли возникнут вопросы по уходу, обязательно напишите. И спасибо за доверие!",
+    "💚 БЛАГОДАРЮ ЗА УЧАСТИЕ В ПРОЕКТЕ!\\n\\nМне было приятно воплотить эту идею вместе с вами. Надеюсь, новая татуировка будет радовать вас долго.\\n\\nСоблюдайте рекомендации по заживлению и не стесняйтесь обращаться, если понадобится моя помощь. До новых встреч!"
+,
+    "💚 СПАСИБО ЗА ДОВЕРИЕ И УЧАСТИЕ!\\\n\\\nБлагодаря вам мы смогли реализовать творческую задумку. Очень ценю готовность стать частью проекта.\\\n\\\nТеперь соблюдайте рекомендации по уходу за татуировкой и дайте коже спокойно восстановиться. Буду рад увидеть заживший результат!",
+    "💚 ВЫ СТАЛИ ЧАСТЬЮ ТВОРЧЕСКОГО ПРОЦЕССА!\\\n\\\nСпасибо за открытость и участие в качестве модели. Надеюсь, новая работа принесёт вам много положительных эмоций.\\\n\\\nПожалуйста, придерживайтесь индивидуальной инструкции по уходу. Если возникнут вопросы, напишите мне.",
+    "💚 БЛАГОДАРЮ ЗА СМЕЛОСТЬ И ДОВЕРИЕ!\\\n\\\nСегодня мы вместе воплотили идею в татуировку. Спасибо, что помогли этому проекту состояться.\\\n\\\nБережно ухаживайте за кожей, не травмируйте участок и соблюдайте рекомендации мастера. До новых встреч!",
+    "💚 СПАСИБО, ЧТО ПОМОГЛИ МОЕМУ ПРОЕКТУ!\\\n\\\nВаше участие очень ценно. Теперь самое важное — дать татуировке правильно зажить.\\\n\\\nСледуйте выданной инструкции, поддерживайте чистоту и не пытайтесь ускорить восстановление. Буду благодарен за фото результата после заживления!",
+    "💚 НАША ТВОРЧЕСКАЯ ВСТРЕЧА СОСТОЯЛАСЬ!\\\n\\\nСпасибо за доверие и время. Было приятно работать над этой идеей вместе с вами.\\\n\\\nНе забывайте об уходе за новой татуировкой: придерживайтесь рекомендаций и обращайтесь, если появятся вопросы.",
+    "💚 ВАШЕ УЧАСТИЕ СДЕЛАЛО ЭТОТ ПРОЕКТ ВОЗМОЖНЫМ!\\\n\\\nИскренне благодарю за готовность стать моделью. Надеюсь, результат будет радовать вас и после полного заживления.\\\n\\\nСоблюдайте индивидуальные рекомендации мастера и берегите кожу.",
+    "💚 СПАСИБО, ЧТО СТАЛИ ЧАСТЬЮ ЭТОЙ ИСТОРИИ!\\\n\\\nЦеню ваше доверие и возможность воплотить задумку. Теперь позаботьтесь о татуировке и дайте коже время на восстановление.\\\n\\\nЕсли понадобится подсказка по уходу, напишите. Буду рад увидеть итог после заживления!"
+   ]
+  };
+  const variants=completionVariants[appointmentKind]||completionVariants.session;
+  let previousVariant=-1;
+  const history=await db("tm_client_message_queue?telegram_user_id=eq."+encodeURIComponent(String(clientTelegramId))+"&message_type=like.completion_"+appointmentKind+"_%&select=message_type&order=created_at.desc&limit=1");
+  const match=String(history?.[0]?.message_type||"").match(new RegExp("^completion_"+appointmentKind+"_(\\d+)$"));
+  if(match)previousVariant=Number(match[1]);
+  const variantIndex=previousVariant<0?0:(previousVariant+1)%variants.length;
+  const sent=linkedClientId?await notifyClient(String(a[0].studio_id),linkedClientId,clientTelegramId,variants[variantIndex]):await notifyTelegram(clientTelegramId,variants[variantIndex],"client");
+  if(sent){
+   const now=new Date().toISOString();
+   await db("tm_client_message_queue",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({message_type:"completion_"+appointmentKind+"_"+variantIndex,studio_id:a[0].studio_id,client_id:linkedClientId||null,target_type:"appointment",target_id:a[0].id,telegram_user_id:clientTelegramId,scheduled_at:now,sent_at:now})});
+  }
+ }
+ if(linkedClientId&&(clientTelegramId||linkedClient?.vk_user_id)){
+  const reviewAt=new Date(Date.now()+14*24*60*60*1000).toISOString();
+  const correctionAt=new Date(Date.now()+30*24*60*60*1000).toISOString();
+  const returnAt=new Date(Date.now()+60*24*60*60*1000).toISOString();
+  await db("tm_client_message_queue?on_conflict=message_type,target_type,target_id,scheduled_at",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=representation"},body:JSON.stringify([
+   {message_type:"review",studio_id:a[0].studio_id,client_id:linkedClientId,target_type:"appointment",target_id:a[0].id,telegram_user_id:Number(linkedClient?.telegram_user_id||0),channel:String(linkedClient?.preferred_notification_channel||"telegram"),scheduled_at:reviewAt},
+   {message_type:"correction_reminder",studio_id:a[0].studio_id,client_id:linkedClientId,target_type:"appointment",target_id:a[0].id,telegram_user_id:Number(linkedClient?.telegram_user_id||0),channel:String(linkedClient?.preferred_notification_channel||"telegram"),scheduled_at:correctionAt},
+   {message_type:"return_reminder",studio_id:a[0].studio_id,client_id:linkedClientId,target_type:"appointment",target_id:a[0].id,telegram_user_id:Number(linkedClient?.telegram_user_id||0),channel:String(linkedClient?.preferred_notification_channel||"telegram"),scheduled_at:returnAt}
+  ])});
+ }
+}
  if(b.status==="completed"&&before[0].status!=="completed"){
   const referrals=await db("tm_referrals?referred_appointment_id=eq."+encodeURIComponent(String(a[0].id))+"&status=eq.pending&select=id,referrer_telegram_user_id,reward_amount");
   for(const referral of referrals||[]){
